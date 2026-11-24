@@ -1,0 +1,49 @@
+[fake] generated_RSSD_768: 500 chosen, 500 to extract
+[fake] generated_SDFRS: 500 chosen, 500 to extract
+[fake] generated_crsdiff: 500 chosen, 500 to extract
+[fake] generated_diffusion_sat: 500 chosen, 500 to extract
+[fake] generated_diffusion_sat_256: 500 chosen, 500 to extract
+[fake] generated_geosynth: 500 chosen, 500 to extract
+[fake] generated_geosynth_canny: 500 chosen, 500 to extract
+[fake] generated_geosynth_sam: 500 chosen, 500 to extract
+[fake] generated_mapsat: 500 chosen, 500 to extract
+[fake] generated_rsinpaint: 500 chosen, 500 to extract
+[real] 5000 patches from 4532 parent fMoW test images
+[real] downloaded 200/4532 (ok=200)
+[real] downloaded 400/4532 (ok=400)
+[real] downloaded 600/4532 (ok=600)
+[real] downloaded 800/4532 (ok=800)
+[real] downloaded 1000/4532 (ok=1000)
+[real] downloaded 1200/4532 (ok=1200)
+[real] downloaded 1400/4532 (ok=1400)
+[real] downloaded 1600/4532 (ok=1600)
+[real] downloaded 1800/4532 (ok=1800)
+[real] downloaded 2000/4532 (ok=2000)
+[real] downloaded 2200/4532 (ok=2200)
+[real] downloaded 2400/4532 (ok=2400)
+[real] downloaded 2600/4532 (ok=2600)
+[real] downloaded 2800/4532 (ok=2800)
+[real] downloaded 3000/4532 (ok=3000)
+[real] downloaded 3200/4532 (ok=3200)
+[real] downloaded 3400/4532 (ok=3400)
+[real] downloaded 3600/4532 (ok=3600)
+[real] downloaded 3800/4532 (ok=3800)
+[real] downloaded 4000/4532 (ok=4000)
+[real] downloaded 4200/4532 (ok=4200)
+[real] downloaded 4400/4532 (ok=4400)
+[real] downloads ok=4532/4532
+[real] patches written/present: 5000/5000
+gen                          exists
+generated_RSSD_768           True       500
+generated_SDFRS              True       500
+generated_crsdiff            True       500
+generated_diffusion_sat      True       500
+generated_diffusion_sat_256  True       500
+generated_geosynth           True       500
+generated_geosynth_canny     True       500
+generated_geosynth_sam       True       500
+generated_mapsat             True       500
+generated_rsinpaint          True       500
+real_fmow                    True      5000
+dtype: int64
+[save] /home/adminuser/data/rsfake/subset_seed42_n500.csv

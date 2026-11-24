@@ -86,3 +86,17 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-23T18:11:29-06:00 | `SEED=42 EVAL_SPLITS=val,test RUN_TAG=full_s42 python dinov3_forensics_train_v2.py` | full_s42 | started |
 | 2026-11-23T18:14:27-06:00 | killed at Joe's request | resume_test | resume test aborted before completion; resume code untested |
 | 2026-11-23T18:31:00-06:00 | `SEED=42 EVAL_SPLITS=val,test RUN_TAG=full_s42 python dinov3_forensics_train_v2.py` | full_s42 | started |
+
+## 2026-11-23 Moved to second machine (native Linux, user adminuser)
+
+- GPU: NVIDIA GeForce RTX 4080 SUPER, 16376 MiB. Python 3.14.4 venv ~/Desktop/.venv, torch 2.14.1+cu126, transformers 5.22.2.
+- Copied bundle: grsl/ -> ~/grsl, results_dinov3/ -> ~/results_dinov3, overhead.tar -> ~/data/overhead (20002 train files, 6302 test files).
+- The bundle had no .git, so the earlier git history is not on this machine; new repo initialised from the bundle state.
+- pip-installed into the venv: timm, opencv-python-headless, scikit-learn, pandas, requests, tifffile.
+
+| time | command | tag | outcome |
+|---|---|---|---|
+| 2026-11-23T19:07:18-06:00 | `NUM_EPOCHS=1 RUN_TAG=smoke_machine2 EVAL_SPLITS=val,test python dinov3_forensics_train_v2.py` | smoke_machine2 | started |
+| 2026-11-23T19:09:26-06:00 |  | smoke_machine2 | interrupted at 468/3000 iters of epoch 1 (session interruption, not a crash); ~9 it/s, losses finite; no test_metrics.json |
+| 2026-11-23T19:12:10-06:00 | `SEED=42 EVAL_SPLITS=val,test RUN_TAG=full_s42 python dinov3_forensics_train_v2.py` | full_s42 | started |
+| 2026-11-23T22:05:03-06:00 | `./run_extra_seeds.sh` (SEEDS="43 44" ROWS="full plain" after the seed-42 queue) | extra_seeds | queued, waiting for run_everything.sh to finish |
