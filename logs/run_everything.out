@@ -1,1 +1,3 @@
-[2026-11-23T19:12:10-06:00] full_s42: started
+[2026-11-24T00:59:46-06:00] full_s42: started
+[2026-11-24T09:48:18-06:00] full_s42: exit=0, test_metrics.json written
+[2026-11-24T09:48:18-06:00] plain_s42: started

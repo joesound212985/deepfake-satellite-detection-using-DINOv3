@@ -120,3 +120,5 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-24T00:59:48-06:00 | `./run_extra_seeds.sh` | extra_seeds | re-queued behind the seed-42 rows |
 | 2026-11-24T09:06:57-06:00 | `CUDA_VISIBLE_DEVICES="" python count_flops.py` | flops | wrote flops.json (CPU, batch 1, 384x384, single view). torch FlopCounterMode counts 2 per multiply-add; gmacs = gflops/2 |
 | 2026-11-24T09:06:57-06:00 | `pip install einops open_clip_torch` | env | C-RADIO remote code needs both; they were missing on this machine and radio_s42 would have failed at import. torch/timm/transformers versions unchanged |
+| 2026-11-24T09:48:18-06:00 |  | full_s42 | exit=0, test_metrics.json written |
+| 2026-11-24T09:48:18-06:00 | `SEED=42 ABL_EDGE_GATE=0 ABL_BOUNDARY=0 ABL_DEEP_SUP=0 EVAL_SPLITS=val,test RUN_TAG=plain_s42 python dinov3_forensics_train_v2.py` | plain_s42 | started |
