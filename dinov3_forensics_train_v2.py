@@ -1549,6 +1549,7 @@ def train_3class(model: nn.Module,
         model.train()
         t_epoch = time.perf_counter()
         loop = tqdm(loader, desc=f"[train] epoch {epoch+1}/{epochs}")
+        amp_backoffs = 0  # [diag] GradScaler back-off events in this epoch
 
         total_loss = 0.0
         total_cls = 0.0
@@ -1648,8 +1649,20 @@ def train_3class(model: nn.Module,
             # Grad clipping to prevent NaNs with large backbone
             scaler.unscale_(opt)
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.3)
+            _scale_before = scaler.get_scale() if amp_enabled else 1.0
             scaler.step(opt)
             scaler.update()
+            # [diag] GradScaler lowers its scale only when the gradients of this step were
+            # non-finite (the optimizer step is then skipped). Report every such event.
+            if amp_enabled and scaler.get_scale() < _scale_before:
+                amp_backoffs += 1
+                if amp_backoffs <= 20 or amp_backoffs % 50 == 0:
+                    _bad = [n for n, p_ in model.named_parameters()
+                            if p_.grad is not None and not torch.isfinite(p_.grad).all()]
+                    print(f"\n[amp] non-finite gradients (event {amp_backoffs}): step skipped, scale "
+                          f"{_scale_before:.3e} -> {scaler.get_scale():.3e}; loss_cls={float(loss_cls):.4f} "
+                          f"loss_seg={float(loss_seg):.4f} n_tampered={int(tampered_mask.sum())}; "
+                          f"{len(_bad)} params affected, first: {_bad[:3]}")
 
             # Metrics
             total_loss += float(total_loss_batch.item())
@@ -1707,7 +1720,8 @@ def train_3class(model: nn.Module,
         print(f"[epoch {epoch+1}/{epochs}] train_loss={logs['loss'][-1]:.4f} train_acc={logs['acc'][-1]:.4f} "
               f"train_iou={logs['iou'][-1]:.4f} val_loss={logs['test_loss'][-1]:.4f} val_acc={logs['test_acc'][-1]:.4f} "
               f"val_f1={_vf1[-1]:.4f} val_iou={logs['test_iou'][-1]:.4f} monitor={monitor_value:.4f} "
-              f"best={max(best_score, monitor_value):.4f} sec={logs['epoch_sec'][-1]:.0f}", flush=True)
+              f"best={max(best_score, monitor_value):.4f} sec={logs['epoch_sec'][-1]:.0f} "
+              f"amp_scale={scaler.get_scale():.3e} amp_backoffs={amp_backoffs}", flush=True)
         if outdir is not None:
             try:
                 with open(Path(outdir) / "train_logs.json", "w", encoding="utf-8") as _f:

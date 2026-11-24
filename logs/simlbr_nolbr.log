@@ -1,0 +1,9 @@
+[data] train real=4462 manipulated=4538 | val n=1000 (real=502)
+[data] subset csv /home/adminuser/data/rsfake/subset_seed42_n500.csv: 10000 rows, 10000 files present
+/home/adminuser/grsl/simlbr_baseline.py:185: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  tot += float(loss) * len(idx)
+[seed 42] best epoch 10 val bal-acc 0.8047 | overhead_test: acc 0.6638 auc 0.7824 | cross_fmow: acc 0.4667 auc 0.4575 | cross_rsfake: acc 0.6404 auc 0.7000 | cross_uw: acc 0.3971 auc 0.6052
+[seed 43] best epoch 9 val bal-acc 0.8047 | overhead_test: acc 0.6613 auc 0.7821 | cross_fmow: acc 0.4750 auc 0.4650 | cross_rsfake: acc 0.6483 auc 0.7105 | cross_uw: acc 0.4020 auc 0.6179
+[seed 44] best epoch 10 val bal-acc 0.8116 | overhead_test: acc 0.6743 auc 0.7827 | cross_fmow: acc 0.4833 auc 0.4550 | cross_rsfake: acc 0.6466 auc 0.7047 | cross_uw: acc 0.4111 auc 0.6020
+[save] /home/adminuser/grsl/simlbr_nolbr_metrics.json
