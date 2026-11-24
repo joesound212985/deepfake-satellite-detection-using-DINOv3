@@ -1,0 +1,631 @@
+--- dinov3_forensics_train_ORIGINAL.py    2026-11-23 21:55:44.598672665 +0000
++++ dinov3_forensics_train_v2.py    2026-11-23 21:55:36.136581666 +0000
+@@ -13,9 +13,36 @@
+ THIS IS THE RESTORED “O2-A” VERSION (DINOv3 only).
+ NO SegFormer-B5.
+ NO heavy rewrite.
++
++------------------------------------------------------------------
++v2 CHANGES (for the GRSL submission) -- search for "[v2]" in this file
++------------------------------------------------------------------
++ 1. Patch-token slicing: CLS *and* register tokens are now dropped, so the
++    24x24 grid holds only patch tokens in the right positions.
++    LEGACY_TOKEN_SLICE=1 restores the old behaviour (needed only to
++    re-evaluate a checkpoint trained with the old slicing).
++ 2. IoU: the x1.20 bonus for masks under 200 px is removed. IoU is plain IoU.
++ 3. Ablation switches (env, default on): ABL_EDGE_GATE, ABL_BOUNDARY,
++    ABL_DEEP_SUP. FREEZE_BACKBONE=1 gives a frozen-encoder baseline.
++ 4. Two learning rates: LR_BACKBONE (default 2e-6) and LR_DECODER
++    (default 1e-5), as the letter states. LR_DECODER=2e-6 restores the old
++    single-rate behaviour.
++ 5. SEED (default 42) seeds python / numpy / torch, the sampler and the
++    dataloader workers.
++ 6. Mask-only augmentation (erode / open / random circles on the ground-truth
++    mask without touching the image) is OFF by default. MASK_AUG=1 restores it.
++ 7. Parameter counts, seconds per training epoch and ms per test image are
++    measured and saved.
++ 8. Test metrics are written to test_metrics.json (per-class P/R/F1/AP/AUC,
++    balanced accuracy, confusion matrix, IoU / Dice / MCC on tampered images,
++    pixel confusion over the full test set, run configuration).
++ 9. Pixel confusion now binarises the ground truth (> 0.5) instead of testing
++    == 0 / == 1.
++10. Each run writes to its own folder: .../<checkpoint>/<RUN_TAG>, where
++    RUN_TAG defaults to "<variant>_s<seed>" (e.g. full_s42, noedge_s42).
+ """
+
+-import os, math, json, csv, random
++import os, math, json, csv, random, time
+ from pathlib import Path
+ from typing import List, Tuple, Dict, Any
+
+@@ -82,6 +109,29 @@
+     return val.lower() in ("1", "true", "yes", "y", "on")
+
+
++def seed_everything(seed: int):
++    """[v2] Seed python, numpy and torch (CPU + CUDA)."""
++    random.seed(seed)
++    np.random.seed(seed)
++    torch.manual_seed(seed)
++    if torch.cuda.is_available():
++        torch.cuda.manual_seed_all(seed)
++
++
++def _seed_worker(worker_id: int):
++    """[v2] Give every dataloader worker its own reproducible numpy/python seed."""
++    s = torch.initial_seed() % (2 ** 32)
++    np.random.seed(s)
++    random.seed(s)
++
++
++def count_params(model: nn.Module) -> Dict[str, int]:
++    """[v2] Parameter counts: total, encoder (backbone), heads (decoder + classifier)."""
++    total = sum(p.numel() for p in model.parameters())
++    enc = sum(p.numel() for p in model.encoder.parameters()) if hasattr(model, "encoder") else 0
++    return {"total": int(total), "encoder": int(enc), "heads": int(total - enc)}
++
++
+ def make_grad_scaler(device: torch.device, use_amp: bool):
+     """
+     Create a GradScaler with best-available API across torch versions.
+@@ -605,7 +655,9 @@
+     def __init__(self,
+                  dinov3_ckpt: str = "facebook/dinov3-vits16",
+                  embed_dim: int = 256,
+-                 num_classes: int = 3):
++                 num_classes: int = 3,
++                 use_edge_gate: bool = True,
++                 legacy_token_slice: bool = False):
+         super().__init__()
+
+         require_min_transformers()
+@@ -635,9 +687,14 @@
+         else:
+             self.patch_h = self.patch_w = int(patch)
+
+-        self.decoder = EdgeGatedViTDecoder(in_ch=self.hidden_size, dim=embed_dim)
++        self.decoder = EdgeGatedViTDecoder(in_ch=self.hidden_size, dim=embed_dim,
++                                           use_edge_gate=use_edge_gate)
+         self.cls_head = nn.Linear(self.hidden_size, num_classes)
+
++        # [v2] token layout bookkeeping
++        self.legacy_token_slice = legacy_token_slice
++        self._reported_prefix = False
++
+     @dynamo.disable
+     def encode(self, x: torch.Tensor):
+         """
+@@ -652,17 +709,38 @@
+         hidden = out.hidden_states
+
+         # use last hidden (tokens) for segmentation
+-        tokens = hidden[-1][:, 1:, :]  # drop CLS
+-        Bn, N, Cn = tokens.shape
+         gh = H // self.patch_h
+         gw = W // self.patch_w
+         expected = gh * gw
+
+-        if N < expected:
+-            pad = expected - N
+-            tokens = torch.cat([tokens, tokens.new_zeros(Bn, pad, Cn)], dim=1)
+-        elif N > expected:
+-            tokens = tokens[:, :expected, :]
++        if self.legacy_token_slice:
++            # OLD behaviour (kept only to re-evaluate old checkpoints): drops CLS
++            # only, so the register tokens stay in the grid and every patch is
++            # shifted by the number of register tokens.
++            tokens = hidden[-1][:, 1:, :]
++            Bn, N, Cn = tokens.shape
++            if N < expected:
++                pad = expected - N
++                tokens = torch.cat([tokens, tokens.new_zeros(Bn, pad, Cn)], dim=1)
++            elif N > expected:
++                tokens = tokens[:, :expected, :]
++        else:
++            # [v2] The sequence is [CLS, register tokens..., patch tokens...].
++            # Everything before the last gh*gw tokens is a prefix token.
++            seq_len = hidden[-1].shape[1]
++            n_prefix = seq_len - expected
++            if n_prefix < 1:
++                raise ValueError(
++                    f"Token count mismatch: sequence has {seq_len} tokens but a "
++                    f"{gh}x{gw} grid needs {expected} patch tokens plus CLS. "
++                    f"Check that the input size ({H}x{W}) is a multiple of the patch size."
++                )
++            if not self._reported_prefix:
++                print(f"[tokens] sequence={seq_len}, prefix (CLS+register)={n_prefix}, "
++                      f"patch grid={gh}x{gw}")
++                self._reported_prefix = True
++            tokens = hidden[-1][:, n_prefix:, :]
++            Bn, N, Cn = tokens.shape
+
+         feat_map = tokens.transpose(1, 2).reshape(B, Cn, gh, gw)
+
+@@ -740,9 +818,10 @@
+     """
+     ViT-style decoder for a single feature grid (e.g., DINOv3 ViT 24x24) with edge gating.
+     """
+-    def __init__(self, in_ch=1152, dim=256):
++    def __init__(self, in_ch=1152, dim=256, use_edge_gate: bool = True):
+         super().__init__()
+
++        self.use_edge_gate = use_edge_gate  # [v2] ablation switch
+         self.proj = nn.Conv2d(in_ch, dim, 1)
+
+         self.mix = nn.Sequential(
+@@ -770,7 +849,7 @@
+         )
+
+         self.edge = LaplacianEdge()
+-        self.egate = EdgeGate(dim)
++        self.egate = EdgeGate(dim) if use_edge_gate else None
+
+         self.refine = Conv3x3(dim)
+
+@@ -786,9 +865,10 @@
+         mid = self.up3(x)    # 192
+         x = self.up4(mid)    # 384
+
+-        edge = torch.abs(self.edge(mid.mean(dim=1, keepdim=True)))
+-        edge_up = F.interpolate(edge, size=x.shape[-2:], mode="bilinear", align_corners=False)
+-        x = self.egate(x, edge_up)
++        if self.use_edge_gate:
++            edge = torch.abs(self.edge(mid.mean(dim=1, keepdim=True)))
++            edge_up = F.interpolate(edge, size=x.shape[-2:], mode="bilinear", align_corners=False)
++            x = self.egate(x, edge_up)
+
+         x = self.refine(x)
+
+@@ -891,8 +971,11 @@
+         bce_loss = self.bce(pred, target).mean(dim=(1,2,3))
+         # per-sample dice
+         dice_loss_val = self.dice(pred, target)
+-        # per-sample boundary
+-        bound_loss = self.bound(pred, target)
++        # per-sample boundary ([v2] skipped entirely when its weight is 0)
++        if self.w_bound > 0:
++            bound_loss = self.bound(pred, target)
++        else:
++            bound_loss = torch.zeros_like(bce_loss)
+
+         loss = (
+             self.w_bce * bce_loss +
+@@ -922,16 +1005,17 @@
+
+
+ class O3_5_DecoderLoss(nn.Module):
+-    def __init__(self, base_loss: nn.Module):
++    def __init__(self, base_loss: nn.Module, ds_weight: float = 0.3):
+         super().__init__()
+         self.base = base_loss
++        self.ds_weight = ds_weight  # [v2] 0 disables deep supervision
+
+     def forward(self, main: torch.Tensor, ds_mid: torch.Tensor, gt: torch.Tensor, reduction: str = "mean") -> torch.Tensor:
+         loss_main = self.base(main, gt, reduction=reduction)
++        if self.ds_weight <= 0:
++            return loss_main
+         loss_ds = self.base(ds_mid, gt, reduction=reduction)
+-        if reduction == "none":
+-            return loss_main + 0.3 * loss_ds
+-        return loss_main + 0.3 * loss_ds
++        return loss_main + self.ds_weight * loss_ds
+
+
+ class BalancedFocalLoss(nn.Module):
+@@ -1004,9 +1088,8 @@
+     union = (pred_t + gt_t - pred_t * gt_t).sum((1,2,3))
+     iou = (intersection + 1e-6) / (union + 1e-6)
+
+-    # upweight tiny GT masks (<200 pixels)
+-    small = (gt_t.sum(dim=(1,2,3)) < 200)
+-    iou[small] = iou[small] * 1.20
++    # [v2] The x1.20 bonus for masks under 200 px was removed: it inflated the
++    # reported mean IoU and could push a per-image IoU above 1.
+
+     return iou.mean()
+
+@@ -1290,7 +1373,11 @@
+                  channels_last: bool = False,
+                  save_best: bool = True,
+                  best_metric: str = "f1",
+-                 freeze_warmup_epochs: int = 0):
++                 freeze_warmup_epochs: int = 0,
++                 lr_decoder: float = None,
++                 w_bound: float = 0.25,
++                 ds_weight: float = 0.3,
++                 freeze_backbone: bool = False):
+     """
+     O2-A training loop (ultra-safe):
+     - BCE + Dice + Boundary loss
+@@ -1299,7 +1386,22 @@
+     - AMP is truly optional via `use_amp`
+     """
+
+-    opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
++    # [v2] two parameter groups: backbone at `lr`, decoder + classifier at `lr_decoder`
++    if lr_decoder is None:
++        lr_decoder = lr
++    if hasattr(model, "encoder"):
++        enc_ids = {id(p) for p in model.encoder.parameters()}
++        enc_params = [p for p in model.parameters() if id(p) in enc_ids]
++        head_params = [p for p in model.parameters() if id(p) not in enc_ids]
++        opt = torch.optim.AdamW(
++            [{"params": enc_params, "lr": lr},
++             {"params": head_params, "lr": lr_decoder}],
++            weight_decay=1e-4,
++        )
++    else:
++        opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
++    print(f"[train] lr backbone={lr:g}, lr decoder/head={lr_decoder:g}, "
++          f"w_bound={w_bound}, ds_weight={ds_weight}, freeze_backbone={freeze_backbone}")
+     scaler = make_grad_scaler(device, use_amp)
+
+     cls_weights = torch.tensor([1.0, 1.3, 1.8], device=device)
+@@ -1308,11 +1410,12 @@
+         class_weights=cls_weights,
+         label_smooth_pristine=0.02,
+     )
+-    seg_base = CombinedSegLoss(w_bce=1.0, w_dice=1.0, w_bound=0.25)
+-    seg_loss_fn = O3_5_DecoderLoss(seg_base)
++    seg_base = CombinedSegLoss(w_bce=1.0, w_dice=1.0, w_bound=w_bound)
++    seg_loss_fn = O3_5_DecoderLoss(seg_base, ds_weight=ds_weight)
+
+     logs = {
+         "loss": [], "cls_loss": [], "seg_loss": [], "acc": [], "iou": [],
++        "epoch_sec": [],
+         "test_loss": [], "test_cls_loss": [], "test_seg_loss": [], "test_acc": [], "test_iou": []
+     }
+
+@@ -1323,11 +1426,12 @@
+
+     for epoch in range(epochs):
+         # Unfreeze encoder after warmup epochs
+-        if (not unfroze) and (epoch >= freeze_warmup_epochs):
++        if (not unfroze) and (not freeze_backbone) and (epoch >= freeze_warmup_epochs):
+             set_encoder_trainable(model, True)
+             unfroze = True
+
+         model.train()
++        t_epoch = time.perf_counter()
+         loop = tqdm(loader, desc=f"[train] epoch {epoch+1}/{epochs}")
+
+         total_loss = 0.0
+@@ -1459,6 +1563,7 @@
+         logs["seg_loss"].append(total_seg / n_batches)
+         logs["acc"].append(total_correct / max(total_samples, 1))
+         logs["iou"].append(iou_sum / max(iou_count, 1))
++        logs["epoch_sec"].append(time.perf_counter() - t_epoch)
+
+         if eval_loader is not None:
+             eval_metrics = evaluate_epoch_metrics(
+@@ -1532,6 +1637,8 @@
+     iou_per_sample = []
+     mask_areas = []
+     has_masks = []
++    infer_sec = 0.0   # [v2] model time only (includes TTA views)
++    infer_n = 0
+
+     thr_mask = float(np.clip(thr_mask, 1e-6, 1 - 1e-6))
+
+@@ -1550,6 +1657,9 @@
+
+             mask_area_batch = gt_mask.reshape(gt_mask.shape[0], -1).mean(axis=1)
+
++            if x.device.type == "cuda":
++                torch.cuda.synchronize()
++            t_inf = time.perf_counter()
+             p_raw, seg = tta_predict_3class_and_seg(
+                 model,
+                 x,
+@@ -1558,6 +1668,10 @@
+                 channels_last=channels_last,
+                 heavy_tta=heavy_tta,
+             )
++            if x.device.type == "cuda":
++                torch.cuda.synchronize()
++            infer_sec += time.perf_counter() - t_inf
++            infer_n += int(x.shape[0])
+             seg = np.clip(seg, 1e-6, 1 - 1e-6)
+
+             batch_size = len(gt_cls)
+@@ -1635,6 +1749,7 @@
+         "y_true": y_true,
+         "probs_raw": probs_raw,
+         "probs_fused": probs_fused,
++        "ms_per_image": 1000.0 * infer_sec / max(infer_n, 1),
+     }
+
+
+@@ -1846,7 +1961,8 @@
+     def __init__(self, root: str, metadata_csv: str,
+                  img_size: int = 384, is_train: bool = False,
+                  cache_in_ram: bool = True, cache_limit: int = None,
+-                 id_whitelist: set = None, preload_all: bool = False):
++                 id_whitelist: set = None, preload_all: bool = False,
++                 mask_aug: bool = False):
+
+         self.root = Path(root)
+         self.metadata = Path(metadata_csv)
+@@ -1855,6 +1971,7 @@
+         self.cache_in_ram = cache_in_ram
+         self.cache_limit = cache_limit
+         self.preload_all = preload_all
++        self.mask_aug = mask_aug  # [v2] mask-only augmentation is opt-in
+         self._cache = {}  # id -> (img_uint8, mask_uint8, has_mask, cls_label)
+
+         if not self.metadata.exists():
+@@ -2024,7 +2141,9 @@
+             # -----------------------------------------------------
+             # Tiny-Manipulation Augmentation (SAFE VERSION)
+             # -----------------------------------------------------
+-            if manip == 1 and self.is_train:
++            # [v2] off by default: it edits the ground-truth mask without editing
++            # the image, i.e. it injects label noise. MASK_AUG=1 turns it back on.
++            if manip == 1 and self.is_train and self.mask_aug:
+
+                 # ensure mask is uint8 and contiguous
+                 mask = np.ascontiguousarray(mask.astype(np.uint8))
+@@ -2242,6 +2361,8 @@
+     model.eval()
+     tn = fp = fn = tp = 0
+     iou_list = []
++    dice_list = []   # [v2] per-image Dice on tampered images
++    mcc_list = []    # [v2] per-image Matthews correlation on tampered images
+
+     with torch.no_grad():
+         for batch in loader:
+@@ -2274,7 +2395,8 @@
+             seg_bin = (seg_pred >= thr_mask).astype(np.uint8)
+
+             # Flatten for confusion counts
+-            gt_flat = gt_masks.reshape(-1)
++            # [v2] binarise the ground truth instead of testing == 0 / == 1
++            gt_flat = (gt_masks.reshape(-1) > 0.5).astype(np.uint8)
+             pred_flat = seg_bin.reshape(-1)
+             tn += int(np.sum((gt_flat == 0) & (pred_flat == 0)))
+             fp += int(np.sum((gt_flat == 0) & (pred_flat == 1)))
+@@ -2293,9 +2415,18 @@
+                     continue
+                 iou_list.append(float(inter / (union + 1e-6)))
+
++                # [v2] Dice and MCC for the same image
++                tp_i = float(inter)
++                fp_i = float(np.sum(p == 1)) - tp_i
++                fn_i = float(np.sum(g == 1)) - tp_i
++                tn_i = float(g.size) - tp_i - fp_i - fn_i
++                dice_list.append(2.0 * tp_i / (2.0 * tp_i + fp_i + fn_i + 1e-6))
++                den = math.sqrt((tp_i + fp_i) * (tp_i + fn_i) * (tn_i + fp_i) * (tn_i + fn_i))
++                mcc_list.append((tp_i * tn_i - fp_i * fn_i) / den if den > 0 else 0.0)
++
+     conf = np.array([[tn, fp],
+                      [fn, tp]], dtype=np.int64)
+-    return conf, iou_list
++    return conf, iou_list, {"dice": dice_list, "mcc": mcc_list}
+
+
+ def plot_segmentation_summary(conf: np.ndarray,
+@@ -2803,7 +2934,8 @@
+     # ------------------------------------------
+     DO_TRAIN   = env_flag("DO_TRAIN", True)
+     NUM_EPOCHS = int(os.environ.get("NUM_EPOCHS", "50"))
+-    LR         = 2e-6
++    LR         = float(os.environ.get("LR_BACKBONE", "2e-6"))   # backbone
++    LR_DECODER = float(os.environ.get("LR_DECODER", "1e-5"))    # [v2] decoder + classifier
+     LAMBDA_SEG = 0.8
+     IMG_SIZE   = 384
+     BATCH_SIZE = 3
+@@ -2829,9 +2961,42 @@
+     USE_VIT = ("convnext" not in CKPT_LOWER)
+     USE_COMPILE = env_flag("TORCH_COMPILE", False)
+
++    # ------------------------------------------
++    # [v2] SEED, ABLATION SWITCHES, RUN TAG
++    # ------------------------------------------
++    SEED            = int(os.environ.get("SEED", "42"))
++    ABL_EDGE_GATE   = env_flag("ABL_EDGE_GATE", True)    # 0 = no edge gating
++    ABL_BOUNDARY    = env_flag("ABL_BOUNDARY", True)     # 0 = no boundary loss term
++    ABL_DEEP_SUP    = env_flag("ABL_DEEP_SUP", True)     # 0 = no deep supervision
++    FREEZE_BACKBONE = env_flag("FREEZE_BACKBONE", False) # 1 = frozen-encoder baseline
++    MASK_AUG        = env_flag("MASK_AUG", False)        # 1 = old mask-only augmentation
++    LEGACY_TOKEN_SLICE = env_flag("LEGACY_TOKEN_SLICE", False)  # 1 = old token slicing
++
++    W_BOUND   = 0.25 if ABL_BOUNDARY else 0.0
++    DS_WEIGHT = 0.3 if ABL_DEEP_SUP else 0.0
++
++    variant_parts = []
++    if not ABL_EDGE_GATE:
++        variant_parts.append("noedge")
++    if not ABL_BOUNDARY:
++        variant_parts.append("nobound")
++    if not ABL_DEEP_SUP:
++        variant_parts.append("nods")
++    if FREEZE_BACKBONE:
++        variant_parts.append("frozen")
++    if MASK_AUG:
++        variant_parts.append("maskaug")
++    if LEGACY_TOKEN_SLICE:
++        variant_parts.append("legacytokens")
++    VARIANT = "-".join(variant_parts) if variant_parts else "full"
++    RUN_TAG = os.environ.get("RUN_TAG", f"{VARIANT}_s{SEED}")
++
++    seed_everything(SEED)
++    print(f"[init] variant={VARIANT} seed={SEED} run_tag={RUN_TAG}")
++
+     # Structured results dir under ~/results_dinov3/<backbone>/<ckpt_name>
+     safe_name = Path(DINOV3_CKPT).stem.replace("/", "_")
+-    OUTPUT_DIR = Path.home() / "results_dinov3" / ("vit" if USE_VIT else "convnext") / safe_name
++    OUTPUT_DIR = Path.home() / "results_dinov3" / ("vit" if USE_VIT else "convnext") / safe_name / RUN_TAG
+     outdir = Path(OUTPUT_DIR)
+     outdir.mkdir(parents=True, exist_ok=True)
+
+@@ -2848,6 +3013,8 @@
+             dinov3_ckpt=DINOV3_CKPT,
+             embed_dim=256,
+             num_classes=3,
++            use_edge_gate=ABL_EDGE_GATE,
++            legacy_token_slice=LEGACY_TOKEN_SLICE,
+         ).to(device)
+     else:
+         model = DINOv3SegFormerV2_3C(
+@@ -2855,7 +3022,10 @@
+             embed_dim=256,
+             num_classes=3,
+         ).to(device)
+-    if FREEZE_WARMUP_EPOCHS > 0:
++    param_counts = count_params(model)  # [v2]
++    print(f"[init] parameters: total={param_counts['total']/1e6:.2f}M "
++          f"encoder={param_counts['encoder']/1e6:.2f}M heads={param_counts['heads']/1e6:.3f}M")
++    if FREEZE_WARMUP_EPOCHS > 0 or FREEZE_BACKBONE:
+         set_encoder_trainable(model, False)
+     if USE_COMPILE and hasattr(torch, "compile"):
+         try:
+@@ -2918,6 +3088,7 @@
+         cache_limit=CACHE_LIMIT,
+         id_whitelist=train_ids,
+         preload_all=PRELOAD_ALL,
++        mask_aug=MASK_AUG,
+     )
+
+     test_dataset = ForensicsDataset3C(TEST_ROOT, TEST_META,
+@@ -2944,7 +3115,10 @@
+         pin_memory=True,
+     )
+     if NUM_WORKERS > 0:
+-        loader_opts.update(prefetch_factor=2, persistent_workers=True, pin_memory=True)
++        loader_opts.update(prefetch_factor=2, persistent_workers=True, pin_memory=True,
++                           worker_init_fn=_seed_worker)
++    data_gen = torch.Generator()   # [v2] reproducible sampling / worker seeds
++    data_gen.manual_seed(SEED)
+
+     # Class-balanced sampling for training (helps rare fake/tampered)
+     train_labels = [item["label"] for item in train_dataset.items]
+@@ -2957,11 +3131,13 @@
+                                      dtype=torch.double)
+     train_sampler = WeightedRandomSampler(sample_weights,
+                                           num_samples=len(sample_weights),
+-                                          replacement=True)
++                                          replacement=True,
++                                          generator=data_gen)
+
+     train_loader = DataLoader(train_dataset,
+                               sampler=train_sampler,
+                               shuffle=False,
++                              generator=data_gen,
+                               **loader_opts)
+
+     test_loader = DataLoader(test_dataset,
+@@ -2977,6 +3153,7 @@
+     # ------------------------------------------
+     # TRAIN
+     # ------------------------------------------
++    train_logs = None
+     if DO_TRAIN and not RUN_EVAL_ONLY:
+         print(f"[train] starting training for {NUM_EPOCHS} epochs")
+         train_logs = train_3class(model,
+@@ -2991,7 +3168,11 @@
+                                   channels_last=USE_CHANNELS_LAST,
+                                   save_best=True,
+                                   best_metric=BEST_METRIC,
+-                                  freeze_warmup_epochs=FREEZE_WARMUP_EPOCHS)
++                                  freeze_warmup_epochs=FREEZE_WARMUP_EPOCHS,
++                                  lr_decoder=LR_DECODER,
++                                  w_bound=W_BOUND,
++                                  ds_weight=DS_WEIGHT,
++                                  freeze_backbone=FREEZE_BACKBONE)
+
+     # ------------------------------------------
+     # EVALUATE — TRAIN
+@@ -3115,10 +3296,11 @@
+
+         plot_iou_hist(test_results["ious"], outdir / "test_iou_hist.png")
+
++    seg_conf = seg_ious = seg_stats = None
+     if test_results is not None:
+         print("[eval] computing segmentation confusion/IoU (may take a few minutes)...")
+         try:
+-            seg_conf, seg_ious = compute_segmentation_confusion_and_iou(
++            seg_conf, seg_ious, seg_stats = compute_segmentation_confusion_and_iou(
+                 model,
+                 test_loader,
+                 device,
+@@ -3156,6 +3338,80 @@
+     # AREA BUCKET METRICS
+     # ------------------------------------------
+     AREA_THR = 1.0 / 16.0
++
++    # ------------------------------------------
++    # [v2] SAVE TEST METRICS + RUN CONFIG AS JSON
++    # ------------------------------------------
++    if test_results is not None:
++        from sklearn.metrics import (precision_recall_fscore_support, roc_auc_score,
++                                     average_precision_score, balanced_accuracy_score)
++        names = ["pristine", "tampered", "fake"]
++        yt = np.asarray(test_results["y_true"])
++        pr = np.asarray(test_results["probs_raw"])
++        yp = pr.argmax(1)
++        p_c, r_c, f_c, n_c = precision_recall_fscore_support(
++            yt, yp, labels=[0, 1, 2], zero_division=0)
++        per_class = {}
++        for k, nm in enumerate(names):
++            y_bin = (yt == k).astype(int)
++            try:
++                ap_k = float(average_precision_score(y_bin, pr[:, k]))
++                auc_k = float(roc_auc_score(y_bin, pr[:, k]))
++            except Exception:
++                ap_k = auc_k = float("nan")
++            per_class[nm] = {
++                "precision": float(p_c[k]), "recall": float(r_c[k]), "f1": float(f_c[k]),
++                "ap": ap_k, "auc": auc_k, "support": int(n_c[k]),
++            }
++
++        def _mean(v):
++            return float(np.mean(v)) if v is not None and len(v) > 0 else float("nan")
++
++        metrics = {
++            "run_tag": RUN_TAG,
++            "variant": VARIANT,
++            "seed": SEED,
++            "checkpoint": DINOV3_CKPT,
++            "config": {
++                "edge_gate": ABL_EDGE_GATE, "boundary_loss": ABL_BOUNDARY,
++                "deep_supervision": ABL_DEEP_SUP, "freeze_backbone": FREEZE_BACKBONE,
++                "mask_aug": MASK_AUG, "legacy_token_slice": LEGACY_TOKEN_SLICE,
++                "lr_backbone": LR, "lr_decoder": LR_DECODER, "lambda_seg": LAMBDA_SEG,
++                "w_bound": W_BOUND, "ds_weight": DS_WEIGHT, "img_size": IMG_SIZE,
++                "batch_size": BATCH_SIZE, "epochs": NUM_EPOCHS, "val_split": VAL_SPLIT,
++                "val_seed": VAL_SEED, "best_metric": BEST_METRIC,
++                "freeze_warmup_epochs": FREEZE_WARMUP_EPOCHS, "tta": USE_TTA,
++                "heavy_tta": HEAVY_TTA, "trained_in_this_run": bool(train_logs is not None),
++            },
++            "n_test": int(len(yt)),
++            "accuracy": float((yp == yt).mean()),
++            "macro_f1": float(np.mean(f_c)),
++            "balanced_accuracy": float(balanced_accuracy_score(yt, yp)),
++            "per_class": per_class,
++            "confusion_matrix_rows_true_cols_pred": np.asarray(test_results["cm_raw"]).tolist(),
++            "localization_tampered": {
++                "n_images": int(len(test_results["ious"])),
++                "mean_iou": _mean(test_results["ious"]),
++                "mean_iou_second_pass": _mean(seg_ious),
++                "mean_dice": _mean(seg_stats["dice"]) if seg_stats else float("nan"),
++                "mean_mcc": _mean(seg_stats["mcc"]) if seg_stats else float("nan"),
++            },
++            "pixel_confusion_full_test_set": (
++                {"tn": int(seg_conf[0, 0]), "fp": int(seg_conf[0, 1]),
++                 "fn": int(seg_conf[1, 0]), "tp": int(seg_conf[1, 1])}
++                if seg_conf is not None else None),
++            "area_buckets": bucket_metrics_by_area(test_results, area_thr=AREA_THR),
++            "parameters": param_counts,
++            "ms_per_test_image": float(test_results.get("ms_per_image", float("nan"))),
++            "train_sec_per_epoch": (_mean(train_logs["epoch_sec"]) if train_logs else float("nan")),
++            "best_epoch": (train_logs.get("best_epoch") if train_logs else None),
++            "torch_version": torch.__version__,
++            "transformers_version": transformers.__version__,
++            "gpu": (torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"),
++        }
++        with open(outdir / "test_metrics.json", "w", encoding="utf-8") as f:
++            json.dump(metrics, f, indent=2)
++        print(f"[save] wrote {outdir / 'test_metrics.json'}")
+     if train_results is not None:
+         print_area_bucket_metrics("TRAIN", bucket_metrics_by_area(train_results, area_thr=AREA_THR))
+     if val_loader is not None and val_results is not None:
