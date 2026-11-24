@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 """
-[baseline] SimLBR-style detector (Dhakal et al., "SimLBR: Learning to Detect Fake Images by
-Learning to Detect Real Images", arXiv:2602.20412, CVPR 2026) trained on the May et al.
-training split and scored on the same test set and cross-dataset sets as our model.
+[baseline] SimLBR (Dhakal et al., "SimLBR: Learning to Detect Fake Images by Learning to Detect
+Real Images", arXiv:2602.20412, CVPR 2026) trained on the May et al. training split and scored on
+the same test set and cross-dataset sets as our model.
 
-This is a RE-IMPLEMENTATION from the paper text (the authors' code was not available when
-this was written). What the paper states, and is followed here:
-  - frozen DINOv3 feature extractor, embeddings pre-computed once
-  - Latent Blending Regularization: emb = a*emb(real) + (1-a)*emb(fake), a ~ U(0.5, 0.8),
-    the blend is labelled fake; un-blended real embeddings are labelled real (their Sec. 12:
-    "whenever a fake image is encountered, we sample a real image to form a pair")
-  - two-layer MLP with ReLU, binary cross-entropy
-  - Adam, lr 1e-4, weight decay 1e-2, batch size 500, at most 10 epochs
-What the paper does NOT state, and was chosen here (all recorded in the output json):
-  - backbone variant: facebook/dinov3-vitl16-pretrain-sat493m (the same backbone as our model)
-  - embedding: pooler_output (CLS token after the final layer norm)
-  - input: RGB, cv2.INTER_AREA resize to 384x384 (same as our model), then the backbone's own
-    mean/std normalisation
-  - MLP hidden width 1024, no dropout, no embedding normalisation
-  - epoch chosen by balanced accuracy on OUR validation split (same VAL_SEED / VAL_SPLIT as the
-    main script; un-blended real vs manipulated); never a test split
-  - decision threshold 0.5, no test-time augmentation
+Settings follow the authors' released code (github.com/mvrl/SimLBR, commit ac90f86, 2026-10-28):
+  - frozen DINOv3 ViT-L/16, one CLS embedding per image (x_norm_clstoken == HF pooler_output)
+  - input: RGB, 256x256 antialiased resize, mean (0.430,0.411,0.296) / std (0.213,0.156,0.143)
+  - head (--hidden_layers 2, --dropout 0.3): 1024-512-256-1 with ReLU and dropout
+  - LBR: every fake anchor is paired with a random real image of the training set and replaced by
+    a*emb(real) + (1-a)*emb(fake), a ~ U(0.5, 0.8), label fake; reals are used un-blended;
+    validation and test always use un-blended images
+  - BCE, Adam lr 1e-4, weight decay 1e-2; checkpoint = best validation accuracy; threshold 0.5
+Differences from the authors' setup (all recorded in the output json):
+  - embeddings are pre-computed in fp32 with the Hugging Face weights
+    facebook/dinov3-vitl16-pretrain-sat493m (their code loads dinov3_vitl16 through torch.hub
+    with a weights key and runs the backbone in 16-mixed precision)
+  - batch size 500 and 10 epochs as in the paper (their release script: 200 and 5); --batch-size /
+    --epochs change this
+  - validation = OUR source validation split (same VAL_SEED / VAL_SPLIT as the main script); the
+    authors validate on other generators of their benchmark. Never a test split here.
+  - seeds 42 43 44 (their code fixes seed 56)
 Binary task: real = pristine; manipulated = tampered + fake (same two-class scoring as
 eval_cross_dataset.py). Detection only -- this baseline produces no masks.
 
---no-lbr trains the identical head on un-blended fakes (control: same features, no LBR).
+--no-lbr trains the identical head on un-blended fakes (the authors' "baseline detector").
 
 Usage:
   python simlbr_baseline.py                       # seeds 42 43 44, LBR  -> simlbr_metrics.json
@@ -39,10 +39,34 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from sklearn.metrics import roc_auc_score, balanced_accuracy_score
-from transformers import AutoModel, AutoImageProcessor
+from transformers import AutoModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from eval_cross_dataset import read_rgb, build_fmow, build_rsfake_from_csv, build_uw  # noqa: E402
+from eval_cross_dataset import build_fmow, build_rsfake_from_csv, build_uw  # noqa: E402
+import cv2
+from torchvision.transforms import v2
+
+RESIZE = 256
+MEAN, STD = (0.430, 0.411, 0.296), (0.213, 0.156, 0.143)
+
+
+def read_rgb_native(path: Path) -> np.ndarray:
+    """uint8 RGB at native resolution (same TIFF / 16-bit / >3-band handling as eval_cross_dataset.read_rgb)."""
+    img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+    if img is None:
+        from PIL import Image
+        img = np.array(Image.open(path).convert("RGB"))[:, :, ::-1]
+    if img.ndim == 2:
+        img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+    if img.shape[2] > 3:
+        img = img[:, :, :3]
+    if img.dtype != np.uint8:
+        img = img.astype(np.float32)
+        mx = float(img.max())
+        if mx > 255.0:
+            img = img / 65535.0 * 255.0 if mx > 4095 else img / mx * 255.0
+        img = np.clip(img, 0, 255).astype(np.uint8)
+    return np.ascontiguousarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
 DATA = Path(os.environ.get("DATA", str(Path.home() / "data")))
 TRAIN_ROOT = Path(os.environ.get("TRAIN_ROOT", str(DATA / "overhead/train_jpg/train")))
@@ -86,29 +110,29 @@ def val_ids():
 
 
 class ImgList(Dataset):
-    def __init__(self, items, mean, std):
-        self.items, self.mean, self.std = items, np.array(mean, np.float32), np.array(std, np.float32)
+    def __init__(self, items):
+        self.items = items
+        # identical to simlbr.utils.make_dinov3_transform()
+        self.tf = v2.Compose([v2.ToImage(), v2.Resize((RESIZE, RESIZE), antialias=True),
+                              v2.ToDtype(torch.float32, scale=True), v2.Normalize(mean=MEAN, std=STD)])
 
     def __len__(self):
         return len(self.items)
 
     def __getitem__(self, i):
-        img = read_rgb(Path(self.items[i]["img"])).astype(np.float32) / 255.0
-        img = (img - self.mean) / self.std
-        return torch.from_numpy(img).permute(2, 0, 1).contiguous()
+        return self.tf(read_rgb_native(Path(self.items[i]["img"])))
 
 
 @torch.no_grad()
-def embed(name: str, items, cache_dir: Path, batch=32, workers=8):
+def embed(name: str, items, cache_dir: Path, batch=64, workers=12):
     """Frozen-backbone embeddings, cached on disk (keyed by dataset name and item count)."""
     cache_dir.mkdir(parents=True, exist_ok=True)
     f = cache_dir / f"{name}_n{len(items)}.npy"
     if f.exists():
         return np.load(f)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    proc = AutoImageProcessor.from_pretrained(BACKBONE)
     model = AutoModel.from_pretrained(BACKBONE).to(device).eval()
-    dl = DataLoader(ImgList(items, proc.image_mean, proc.image_std), batch_size=batch, shuffle=False,
+    dl = DataLoader(ImgList(items), batch_size=batch, shuffle=False,
                     num_workers=workers, pin_memory=True)
     out = []
     for x in tqdm(dl, desc=f"[embed] {name}"):
@@ -147,13 +171,16 @@ def summarise(y, p, groups):
     return out
 
 
-def train_head(Xr, Xf, Xval, yval, seed, lbr=True, hidden=1024, epochs=10, bs=500, lr=1e-4, wd=1e-2,
+def train_head(Xr, Xf, Xval, yval, seed, lbr=True, epochs=10, bs=500, lr=1e-4, wd=1e-2, dropout=0.3,
                a_lo=0.5, a_hi=0.8):
     """Returns (best_state_dict, info). Xr / Xf: train embeddings of real / manipulated images."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     torch.manual_seed(seed)
     g = torch.Generator().manual_seed(seed)
-    head = nn.Sequential(nn.Linear(Xr.shape[1], hidden), nn.ReLU(), nn.Linear(hidden, 1)).to(device)
+    d = Xr.shape[1]   # simlbr.model._build_classifier with hidden_layers=2
+    head = nn.Sequential(nn.Linear(d, d // 2), nn.ReLU(), nn.Dropout(dropout),
+                         nn.Linear(d // 2, d // 4), nn.ReLU(), nn.Dropout(dropout),
+                         nn.Linear(d // 4, 1)).to(device)
     opt = torch.optim.Adam(head.parameters(), lr=lr, weight_decay=wd)
     lossf = nn.BCEWithLogitsLoss()
     Xr_t, Xf_t = torch.from_numpy(Xr), torch.from_numpy(Xf)
@@ -186,13 +213,14 @@ def train_head(Xr, Xf, Xval, yval, seed, lbr=True, hidden=1024, epochs=10, bs=50
         head.eval()
         with torch.no_grad():
             pv = torch.sigmoid(head(Xv).squeeze(1)).cpu().numpy()
-        bacc = float(balanced_accuracy_score(yval, (pv > 0.5).astype(int)))
-        hist.append({"epoch": ep + 1, "train_loss": tot / len(X), "val_balanced_acc": bacc,
+        bacc = float(((pv > 0.5).astype(int) == yval).mean())   # val_acc, as monitored by the authors
+        hist.append({"epoch": ep + 1, "train_loss": tot / len(X), "val_acc": bacc,
                      "val_auc": float(roc_auc_score(yval, pv))})
         if bacc > best:
             best, best_state = bacc, {k: v.detach().clone() for k, v in head.state_dict().items()}
     head.load_state_dict(best_state)
-    return head, {"best_val_balanced_acc": best, "best_epoch": int(np.argmax([h["val_balanced_acc"] for h in hist]) + 1),
+    head.eval()
+    return head, {"best_val_acc": best, "best_epoch": int(np.argmax([h["val_acc"] for h in hist]) + 1),
                   "history": hist}
 
 
@@ -201,9 +229,10 @@ def main():
     ap.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
     ap.add_argument("--no-lbr", action="store_true")
     ap.add_argument("--per-gen", type=int, default=500)
-    ap.add_argument("--cache", default=str(DATA / "features" / "dinov3_sat493m_pooler_384"))
+    ap.add_argument("--cache", default=str(DATA / "features" / "dinov3_sat493m_cls_256_official"))
     ap.add_argument("--out", default=None)
-    ap.add_argument("--epochs", type=int, default=10, help="paper: at most 10; larger = disclosed deviation")
+    ap.add_argument("--epochs", type=int, default=10, help="paper: at most 10; release script: 5")
+    ap.add_argument("--batch-size", type=int, default=500, help="paper: 500; release script: 200")
     args = ap.parse_args()
     here = Path(__file__).resolve().parent
     out = Path(args.out) if args.out else here / ("simlbr_nolbr_metrics.json" if args.no_lbr else "simlbr_metrics.json")
@@ -242,7 +271,7 @@ def main():
     runs = []
     for seed in args.seeds:
         t0 = time.perf_counter()
-        head, info = train_head(Xr, Xf, Xval, yval, seed, lbr=not args.no_lbr, epochs=args.epochs)
+        head, info = train_head(Xr, Xf, Xval, yval, seed, lbr=not args.no_lbr, epochs=args.epochs, bs=args.batch_size)
         info["train_sec"] = time.perf_counter() - t0
         res = {"seed": seed, "selection": info, "n_head_parameters": sum(p.numel() for p in head.parameters())}
         for name, (items, X) in evalsets.items():
@@ -250,7 +279,7 @@ def main():
                 p = torch.sigmoid(head(torch.from_numpy(X).to(device)).squeeze(1)).cpu().numpy()
             res[name] = summarise([i["label"] for i in items], p, [i["group"] for i in items])
         runs.append(res)
-        print(f"[seed {seed}] best epoch {info['best_epoch']} val bal-acc {info['best_val_balanced_acc']:.4f} | " +
+        print(f"[seed {seed}] best epoch {info['best_epoch']} val acc {info['best_val_acc']:.4f} | " +
               " | ".join(f"{n}: acc {res[n].get('accuracy_thr0.5', float('nan')):.4f} auc {res[n].get('auc_real_vs_manipulated', float('nan')):.4f}"
                          for n in evalsets))
 
@@ -265,13 +294,14 @@ def main():
                 agg[name][k] = {"mean": float(np.mean(v)), "std": float(np.std(v, ddof=1)) if len(v) > 1 else None,
                                 "n_seeds": len(v)}
     result = {
-        "method": "SimLBR-style re-implementation" + (" WITHOUT latent blending (control)" if args.no_lbr else ""),
-        "reference": "Dhakal et al., arXiv:2602.20412 (CVPR 2026); re-implemented from the paper text, not the authors' code",
-        "config": {"backbone": BACKBONE, "embedding": "pooler_output (CLS after final norm), backbone frozen",
-                   "input": "RGB, cv2.INTER_AREA 384x384, /255, backbone mean/std", "head": "Linear(1024,1024)-ReLU-Linear(1024,1)",
+        "method": "SimLBR" + (" without latent blending (authors' baseline detector)" if args.no_lbr else ""),
+        "reference": "Dhakal et al., arXiv:2602.20412 (CVPR 2026); settings from github.com/mvrl/SimLBR commit ac90f86",
+        "config": {"backbone": BACKBONE, "embedding": "CLS after final norm (pooler_output), backbone frozen, fp32",
+                   "input": "RGB, 256x256 antialiased resize, mean (0.430,0.411,0.296) std (0.213,0.156,0.143)",
+                   "head": "1024-512-256-1, ReLU, dropout 0.3",
                    "lbr": not args.no_lbr, "alpha": "U(0.5, 0.8), blend = a*real + (1-a)*fake, labelled fake",
-                   "optimizer": "Adam lr 1e-4 wd 1e-2", "batch_size": 500, "max_epochs": args.epochs,
-                   "epoch_selection": "best balanced accuracy on the source validation split (un-blended)",
+                   "optimizer": "Adam lr 1e-4 wd 1e-2", "batch_size": args.batch_size, "max_epochs": args.epochs,
+                   "epoch_selection": "best accuracy on the source validation split (un-blended)",
                    "threshold": 0.5, "tta": False, "val_split": VAL_SPLIT, "val_seed": VAL_SEED,
                    "train_real": int(len(Xr)), "train_manipulated": int(len(Xf)), "val_n": int(len(yval)),
                    "labels": "real = pristine; manipulated = tampered + fake"},
