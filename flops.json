@@ -1,0 +1,39 @@
+{
+  "input": "1x3x384x384",
+  "convention": "gflops: 2 per multiply-add (torch FlopCounterMode + sdpa handler); gmacs = gflops/2; uncounted ops = 0",
+  "web_ckpt": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+  "results": {
+    "full / frozen (DINOv3-sat ViT-L, edge gate)": {
+      "gflops": 1162.378622976,
+      "gmacs": 581.189311488,
+      "params_M": 309.428485
+    },
+    "plain (DINOv3-sat ViT-L, no edge gate)": {
+      "gflops": 1162.302461952,
+      "gmacs": 581.151230976,
+      "params_M": 309.427973
+    },
+    "web (DINOv3 web ViT-L)": {
+      "gflops": 1162.378622976,
+      "gmacs": 581.189311488,
+      "params_M": 309.428485
+    },
+    "resnet50": {
+      "gflops": 834.582761472,
+      "gmacs": 417.291380736,
+      "params_M": 29.809989
+    },
+    "radio (C-RADIOv4-SO400M)": {
+      "gflops": 1293.391959552,
+      "gmacs": 646.695979776,
+      "params_M": 437.572725
+    }
+  },
+  "full_breakdown_gflops": {
+    "DINOv3ViTSegFormer3C": 1162.378622976,
+    "DINOv3ViTSegFormer3C.encoder": 351.81821952,
+    "Global": 1162.378622976,
+    "DINOv3ViTSegFormer3C.decoder": 810.560397312,
+    "DINOv3ViTSegFormer3C.cls_head": 6.144e-06
+  }
+}

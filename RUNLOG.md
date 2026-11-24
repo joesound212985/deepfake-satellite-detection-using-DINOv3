@@ -116,3 +116,7 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 - Change: model forward/backward in bfloat16 (AMP_DTYPE, default bf16; fp16 restores the old behaviour, fp32 disables AMP); losses, softmax and sigmoid computed in float32; no GradScaler for bf16, with an explicit skip of any step whose gradient norm is non-finite; training raises as soon as the weights are non-finite or an epoch had no usable batch; amp_dtype recorded in test_metrics.json.
 - Resume: RNG state tensors are moved back to the CPU before restoring (was failing with "RNG state must be a torch.ByteTensor" after the weights had already been loaded); a failed resume now raises (RESUME=0 to start fresh). The resume path has still not been exercised end to end.
 - Model, losses, learning rates, schedule, augmentation and data are unchanged.
+| 2026-11-24T00:59:46-06:00 | `SEED=42 EVAL_SPLITS=val,test RUN_TAG=full_s42 python dinov3_forensics_train_v2.py` | full_s42 | started |
+| 2026-11-24T00:59:48-06:00 | `./run_extra_seeds.sh` | extra_seeds | re-queued behind the seed-42 rows |
+| 2026-11-24T09:06:57-06:00 | `CUDA_VISIBLE_DEVICES="" python count_flops.py` | flops | wrote flops.json (CPU, batch 1, 384x384, single view). torch FlopCounterMode counts 2 per multiply-add; gmacs = gflops/2 |
+| 2026-11-24T09:06:57-06:00 | `pip install einops open_clip_torch` | env | C-RADIO remote code needs both; they were missing on this machine and radio_s42 would have failed at import. torch/timm/transformers versions unchanged |
