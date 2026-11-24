@@ -154,6 +154,19 @@ def remap_state_dict_keys(sd: Dict[str, torch.Tensor], model: nn.Module) -> Dict
     return out
 
 
+# [fix-amp] Mixed-precision dtype for the model forward/backward pass.
+# fp16 (the original setting) overflows in the backward pass of the first ViT-L blocks once the
+# backbone is unfrozen: every overflow makes GradScaler skip the step and halve its scale, the scale
+# never recovers (512 -> 32 within one epoch, 7e-40 by epoch 19 of full_s42) and the weights end up
+# NaN. bfloat16 has the exponent range of float32, so nothing overflows and no GradScaler is needed.
+# AMP_DTYPE=fp16 restores the old behaviour; AMP_DTYPE=fp32 turns mixed precision off.
+_AMP_NAME = os.environ.get("AMP_DTYPE", "bf16").lower()
+if _AMP_NAME not in ("bf16", "fp16", "fp32"):
+    raise ValueError(f"AMP_DTYPE must be bf16, fp16 or fp32, got {_AMP_NAME}")
+AMP_DTYPE = torch.bfloat16 if _AMP_NAME == "bf16" else torch.float16
+AMP_OFF = (_AMP_NAME == "fp32")
+
+
 def make_grad_scaler(device: torch.device, use_amp: bool):
     """
     Create a GradScaler with best-available API across torch versions.
@@ -1215,11 +1228,14 @@ def evaluate_epoch_metrics(model: nn.Module,
             mask = batch["mask"].to(device)
             has_mask = batch["has_mask"].to(device).view(-1)
 
-            amp_enabled = use_amp and (x.device.type == "cuda")
+            amp_enabled = use_amp and (x.device.type == "cuda") and not AMP_OFF
             with torch.amp.autocast(device_type="cuda" if x.device.type == "cuda" else "cpu",
-                                    dtype=torch.float16,
+                                    dtype=AMP_DTYPE,
                                     enabled=amp_enabled):
                 cls_logits, seg_main, seg_ds_mid = model(x)
+            # [fix-amp] losses and metrics are computed in float32
+            cls_logits, seg_main, seg_ds_mid = cls_logits.float(), seg_main.float(), seg_ds_mid.float()
+            with torch.amp.autocast(device_type="cuda" if x.device.type == "cuda" else "cpu", enabled=False):
                 loss_cls = cls_loss_fn(cls_logits, y)
 
                 tampered_mask = (y == 1) & (has_mask > 0.5)
@@ -1334,17 +1350,18 @@ def tta_predict_3class_and_seg(model: nn.Module,
     - optional heavier TTA with rotations for test-time robustness
     """
     device_type = x.device.type
-    amp_enabled = use_amp and device_type == "cuda"
+    amp_enabled = use_amp and device_type == "cuda" and not AMP_OFF
 
     def forward(inp: torch.Tensor):
         if channels_last:
             inp = inp.to(memory_format=torch.channels_last)
         with torch.amp.autocast(device_type=device_type,
-                                dtype=torch.float16,
+                                dtype=AMP_DTYPE,
                                 enabled=amp_enabled):
             cls_logits, seg_main, seg_ds_mid = model(inp)
-            cls_out = torch.softmax(cls_logits, dim=1)
-            seg_out = torch.sigmoid(seg_main)
+        # [fix-amp] probabilities in float32 (bfloat16 cannot be converted to numpy)
+        cls_out = torch.softmax(cls_logits.float(), dim=1)
+        seg_out = torch.sigmoid(seg_main.float())
         return cls_out.detach(), seg_out.detach()
 
     transforms = [
@@ -1490,7 +1507,7 @@ def train_3class(model: nn.Module,
         opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     print(f"[train] lr backbone={lr:g}, lr decoder/head={lr_decoder:g}, "
           f"w_bound={w_bound}, ds_weight={ds_weight}, freeze_backbone={freeze_backbone}")
-    scaler = make_grad_scaler(device, use_amp)
+    scaler = make_grad_scaler(device, use_amp and (not AMP_OFF) and AMP_DTYPE is torch.float16)  # [fix-amp]
 
     cls_weights = torch.tensor([1.0, 1.3, 1.8], device=device)
     cls_loss_fn = BalancedFocalLoss(
@@ -1529,16 +1546,18 @@ def train_3class(model: nn.Module,
             start_epoch = int(rs["epoch"])
             if "rng" in rs:
                 random.setstate(rs["rng"]["python"]); np.random.set_state(rs["rng"]["numpy"])
-                torch.set_rng_state(rs["rng"]["torch"])
+                torch.set_rng_state(rs["rng"]["torch"].cpu())   # [fix-resume] map_location moved it to the GPU
                 if torch.cuda.is_available() and rs["rng"].get("cuda") is not None:
-                    torch.cuda.set_rng_state_all(rs["rng"]["cuda"])
+                    torch.cuda.set_rng_state_all([t.cpu() for t in rs["rng"]["cuda"]])
             if start_epoch >= freeze_warmup_epochs and not freeze_backbone:
                 set_encoder_trainable(model, True); unfroze = True
             print(f"[resume] continuing from {resume_path} at epoch {start_epoch+1}/{epochs} "
                   f"(best {best_metric}={best_score:.4f} @ epoch {best_epoch})", flush=True)
         except Exception as e:
-            print(f"[resume] could not load {resume_path} ({e}); starting from scratch", flush=True)
-            start_epoch = 0
+            # [fix-resume] the model/optimizer may already be partly overwritten here, so "starting from
+            # scratch" would silently mix states. Stop and let the user decide.
+            raise RuntimeError(f"[resume] could not load {resume_path} ({e}). Move that file away or set "
+                               f"RESUME=0 to start this run from scratch.") from e
 
     for epoch in range(start_epoch, epochs):
         # Unfreeze encoder after warmup epochs
@@ -1550,6 +1569,7 @@ def train_3class(model: nn.Module,
         t_epoch = time.perf_counter()
         loop = tqdm(loader, desc=f"[train] epoch {epoch+1}/{epochs}")
         amp_backoffs = 0  # [diag] GradScaler back-off events in this epoch
+        skipped_steps = 0  # [fix-amp] optimizer steps skipped for non-finite gradients
 
         total_loss = 0.0
         total_cls = 0.0
@@ -1570,14 +1590,17 @@ def train_3class(model: nn.Module,
 
             opt.zero_grad(set_to_none=True)
 
-            amp_enabled = use_amp and (x.device.type == "cuda")
+            amp_enabled = use_amp and (x.device.type == "cuda") and not AMP_OFF
             try:
                 with torch.amp.autocast(
                     device_type="cuda" if x.device.type == "cuda" else "cpu",
-                    dtype=torch.float16,
+                    dtype=AMP_DTYPE,
                     enabled=amp_enabled,
                 ):
                     cls_logits, seg_main, seg_ds_mid = model(x)
+                # [fix-amp] losses are computed in float32
+                cls_logits, seg_main, seg_ds_mid = cls_logits.float(), seg_main.float(), seg_ds_mid.float()
+                with torch.amp.autocast(device_type="cuda" if x.device.type == "cuda" else "cpu", enabled=False):
 
                     # guard model outputs
                     if (not torch.isfinite(cls_logits).all()
@@ -1648,13 +1671,19 @@ def train_3class(model: nn.Module,
             scaler.scale(total_loss_batch).backward()
             # Grad clipping to prevent NaNs with large backbone
             scaler.unscale_(opt)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.3)
+            _gnorm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=0.3)
             _scale_before = scaler.get_scale() if amp_enabled else 1.0
+            if not scaler.is_enabled() and not torch.isfinite(_gnorm):
+                # [fix-amp] without GradScaler nothing else would stop a non-finite update
+                skipped_steps += 1
+                print(f"\n[train] non-finite gradient norm; step skipped ({skipped_steps} this epoch)")
+                opt.zero_grad(set_to_none=True)
+                continue
             scaler.step(opt)
             scaler.update()
             # [diag] GradScaler lowers its scale only when the gradients of this step were
             # non-finite (the optimizer step is then skipped). Report every such event.
-            if amp_enabled and scaler.get_scale() < _scale_before:
+            if amp_enabled and scaler.is_enabled() and scaler.get_scale() < _scale_before:
                 amp_backoffs += 1
                 if amp_backoffs <= 20 or amp_backoffs % 50 == 0:
                     _bad = [n for n, p_ in model.named_parameters()
@@ -1692,6 +1721,10 @@ def train_3class(model: nn.Module,
         logs["seg_loss"].append(total_seg / n_batches)
         logs["acc"].append(total_correct / max(total_samples, 1))
         logs["iou"].append(iou_sum / max(iou_count, 1))
+        # [fix-amp] stop at once if the model has diverged, instead of skipping every batch until the last epoch
+        if total_samples == 0 or any(not torch.isfinite(p_).all() for p_ in model.parameters()):
+            raise RuntimeError(f"training diverged in epoch {epoch+1}: no batch was usable or the weights are "
+                               f"non-finite. Best checkpoint so far: epoch {best_epoch} ({best_path}).")
         logs["epoch_sec"].append(time.perf_counter() - t_epoch)
 
         if eval_loader is not None:
@@ -1721,7 +1754,7 @@ def train_3class(model: nn.Module,
               f"train_iou={logs['iou'][-1]:.4f} val_loss={logs['test_loss'][-1]:.4f} val_acc={logs['test_acc'][-1]:.4f} "
               f"val_f1={_vf1[-1]:.4f} val_iou={logs['test_iou'][-1]:.4f} monitor={monitor_value:.4f} "
               f"best={max(best_score, monitor_value):.4f} sec={logs['epoch_sec'][-1]:.0f} "
-              f"amp_scale={scaler.get_scale():.3e} amp_backoffs={amp_backoffs}", flush=True)
+              f"amp={_AMP_NAME} amp_scale={scaler.get_scale():.3e} amp_backoffs={amp_backoffs} skipped_steps={skipped_steps}", flush=True)
         if outdir is not None:
             try:
                 with open(Path(outdir) / "train_logs.json", "w", encoding="utf-8") as _f:
@@ -3581,7 +3614,7 @@ def main():
                 "w_bound": W_BOUND, "ds_weight": DS_WEIGHT, "img_size": IMG_SIZE,
                 "batch_size": BATCH_SIZE, "epochs": NUM_EPOCHS, "val_split": VAL_SPLIT,
                 "val_seed": VAL_SEED, "best_metric": BEST_METRIC,
-                "freeze_warmup_epochs": FREEZE_WARMUP_EPOCHS, "tta": USE_TTA,
+                "freeze_warmup_epochs": FREEZE_WARMUP_EPOCHS, "tta": USE_TTA, "amp_dtype": _AMP_NAME,
                 "heavy_tta": HEAVY_TTA, "trained_in_this_run": bool(train_logs is not None),
             },
             "n_test": int(len(yt)),
