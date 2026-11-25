@@ -1,0 +1,9 @@
+/home/adminuser/grsl/simlbr_baseline.py:218: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  tot += float(loss) * len(idx)
+[data] train real=4462 manipulated=4538 | val n=1000 (real=502)
+[data] subset csv /home/adminuser/data/rsfake/subset_seed42_n500.csv: 10000 rows, 10000 files present
+[seed 42] best epoch 10 val acc 0.7720 | overhead_test: acc 0.6438 auc 0.7428 | cross_fmow: acc 0.4750 auc 0.5494 | cross_rsfake: acc 0.6208 auc 0.6701 | cross_uw: acc 0.5133 auc 0.6277 | cross_dmaer: acc 0.7851 auc 0.8647 | cross_dmaer_allreals: acc 0.6685 auc 0.8105
+[seed 43] best epoch 10 val acc 0.7730 | overhead_test: acc 0.6578 auc 0.7425 | cross_fmow: acc 0.4667 auc 0.5497 | cross_rsfake: acc 0.6380 auc 0.6863 | cross_uw: acc 0.5543 auc 0.6375 | cross_dmaer: acc 0.8072 auc 0.8770 | cross_dmaer_allreals: acc 0.6980 auc 0.8228
+[seed 44] best epoch 10 val acc 0.7710 | overhead_test: acc 0.6387 auc 0.7445 | cross_fmow: acc 0.4917 auc 0.5706 | cross_rsfake: acc 0.6263 auc 0.6772 | cross_uw: acc 0.5193 auc 0.6090 | cross_dmaer: acc 0.7885 auc 0.8649 | cross_dmaer_allreals: acc 0.6700 auc 0.8046
+[save] simlbr_nolbr_dmaer_metrics.json
