@@ -1,0 +1,33 @@
+[save] /home/adminuser/grsl/fewshot_metrics.json
+
+rsfake: held-out n=5000
+  zero-shot full_s42  AUC=0.586 acc=0.538
+  zero-shot web_s42   AUC=0.668 acc=0.540
+  probe full_s42  k4: AUC=0.792 acc=0.695 | k16: AUC=0.910 acc=0.822 | k64: AUC=0.965 acc=0.898 | k256: AUC=0.985 acc=0.931 | pool: AUC=0.997 acc=0.975
+  probe web_s42   k4: AUC=0.710 acc=0.640 | k16: AUC=0.822 acc=0.734 | k64: AUC=0.895 acc=0.812 | k256: AUC=0.941 acc=0.866 | pool: AUC=0.986 acc=0.941
+  probe sat_orig  k4: AUC=0.885 acc=0.797 | k16: AUC=0.936 acc=0.858 | k64: AUC=0.958 acc=0.883 | k256: AUC=0.979 acc=0.923 | pool: AUC=0.996 acc=0.969
+  probe web_orig  k4: AUC=0.695 acc=0.633 | k16: AUC=0.810 acc=0.732 | k64: AUC=0.900 acc=0.819 | k256: AUC=0.948 acc=0.875 | pool: AUC=0.986 acc=0.941
+
+uw: held-out n=4032
+  zero-shot full_s42  AUC=0.491 acc=0.498
+  zero-shot web_s42   AUC=0.517 acc=0.492
+  probe full_s42  k4: AUC=0.860 acc=0.726 | k16: AUC=0.965 acc=0.874 | k64: AUC=0.994 acc=0.968 | k256: AUC=1.000 acc=0.996 | pool: AUC=1.000 acc=1.000
+  probe web_s42   k4: AUC=0.835 acc=0.702 | k16: AUC=0.951 acc=0.845 | k64: AUC=0.995 acc=0.957 | k256: AUC=1.000 acc=0.990 | pool: AUC=1.000 acc=0.997
+  probe sat_orig  k4: AUC=0.933 acc=0.810 | k16: AUC=0.982 acc=0.928 | k64: AUC=0.996 acc=0.967 | k256: AUC=0.999 acc=0.988 | pool: AUC=1.000 acc=0.996
+  probe web_orig  k4: AUC=0.934 acc=0.811 | k16: AUC=0.980 acc=0.912 | k64: AUC=0.995 acc=0.966 | k256: AUC=1.000 acc=0.992 | pool: AUC=1.000 acc=0.997
+
+dmaer: held-out n=747
+  zero-shot full_s42  AUC=0.760 acc=0.402
+  zero-shot web_s42   AUC=0.732 acc=0.443
+  probe full_s42  k4: AUC=0.864 acc=0.714 | k16: AUC=0.947 acc=0.841 | k64: AUC=0.974 acc=0.912 | pool: AUC=0.994 acc=0.968
+  probe web_s42   k4: AUC=0.885 acc=0.716 | k16: AUC=0.952 acc=0.851 | k64: AUC=0.973 acc=0.930 | pool: AUC=0.992 acc=0.961
+  probe sat_orig  k4: AUC=0.885 acc=0.799 | k16: AUC=0.958 acc=0.893 | k64: AUC=0.981 acc=0.926 | pool: AUC=0.997 acc=0.964
+  probe web_orig  k4: AUC=0.808 acc=0.714 | k16: AUC=0.959 acc=0.885 | k64: AUC=0.992 acc=0.954 | pool: AUC=0.999 acc=0.983
+
+fmow: held-out n=60
+  zero-shot full_s42  AUC=0.518 acc=0.500
+  zero-shot web_s42   AUC=0.406 acc=0.500
+  probe full_s42  k4: AUC=0.562 acc=0.525 | k16: AUC=0.600 acc=0.580 | pool: AUC=0.584 acc=0.567
+  probe web_s42   k4: AUC=0.477 acc=0.487 | k16: AUC=0.474 acc=0.477 | pool: AUC=0.361 acc=0.400
+  probe sat_orig  k4: AUC=0.485 acc=0.473 | k16: AUC=0.442 acc=0.452 | pool: AUC=0.390 acc=0.383
+  probe web_orig  k4: AUC=0.466 acc=0.457 | k16: AUC=0.482 acc=0.488 | pool: AUC=0.397 acc=0.450

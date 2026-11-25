@@ -211,3 +211,13 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-25T13:59:24-06:00 |  | overhead_web | exit=0, overhead_web_metrics.json written |
 | 2026-11-25T13:59:25-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_jpeg90_metrics.json --degrade jpeg:90` | robust_web_jpeg90 | started |
 | 2026-11-25T14:02:45-06:00 | `hf download geodf/gdd --repo-type dataset --include 'test/*' '*.csv' README.md --local-dir ~/data/gdd` | gdd | GDD (Arndt et al., arXiv 2611.31487, ORNL; licence CC BY 4.0 on the dataset card; gated: auto). Joe approved adding it as a fifth external test set. Test splits + CSVs only (no training on it). |
+| 2026-11-25T14:09:32-06:00 |  | robust_web_jpeg90 | exit=0, robust_web_jpeg90_metrics.json written |
+| 2026-11-25T14:09:32-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_jpeg70_metrics.json --degrade jpeg:70` | robust_web_jpeg70 | started |
+| 2026-11-25T14:19:16-06:00 |  | gdd | downloaded: 8250 files, 7.8G |
+| 2026-11-25T14:19:16-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split indomain --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt --out cross_gdd_indomain_metrics.json` | cross_gdd_indomain | started |
+| 2026-11-25T14:19:36-06:00 |  | robust_web_jpeg70 | exit=0, robust_web_jpeg70_metrics.json written |
+| 2026-11-25T14:19:36-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_jpeg50_metrics.json --degrade jpeg:50` | robust_web_jpeg50 | started |
+| 2026-11-25T14:26:25-06:00 |  | cross_gdd_indomain | exit=0, cross_gdd_indomain_metrics.json written |
+| 2026-11-25T14:26:25-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split indomain --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out cross_web_gdd_indomain_metrics.json` | cross_web_gdd_indomain | started |
+| 2026-11-25T14:27:12-06:00 |  | fewshot extract | exit=0 |
+| 2026-11-25T14:27:42-06:00 | `python fewshot_adapt.py analyse` | fewshot | exit=0 (fewshot_metrics.json) |
