@@ -1,7 +1,8 @@
 #!/bin/bash
 # Added 2026-11-25 at Joe's request: web-pretrained DINOv3 was the best seed-42 row.
 # Waits for the seed-42 queue and the full/plain extra seeds, then
-#   1. trains web seeds 43 and 44 (same settings as web_s42),
+#   1. trains web seeds 43 and 44 if still missing (since the 2026-11-25 reorder they normally run
+#      earlier, in run_extra_seeds_v2.sh, and are skipped here),
 #   2. scores the web_s42 checkpoint zero-shot on the three external sets
 #      (same subsets as the full_s42 cross-dataset evaluation),
 #   3. re-scores the remaining full / plain / web checkpoints on the test set (per-image predictions)

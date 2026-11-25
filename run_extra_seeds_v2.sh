@@ -7,7 +7,7 @@
 #   4. extra analyses: test set two-class scoring, JPEG / down-scaling robustness, qualitative figure,
 #      analysis_extras.json,
 #   5. SimLBR with the authors' code; resnetlr_s42 (ResNet-50 with backbone LR 1e-4),
-#   6. trains seeds 43 and 44 for full + plain.
+#   6. trains seeds 43 and 44: web first, then full, then plain.
 # Existing outputs are skipped, never overwritten. Kill this script to cancel.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
@@ -92,4 +92,8 @@ if [ ! -f "$RL/test_metrics.json" ]; then
   [ -f "$RL/test_metrics.json" ] && log "" "resnetlr_s42" "exit=$rc, test_metrics.json written" || log "" "resnetlr_s42" "exit=$rc, NO test_metrics.json (see logs/resnetlr_s42.log)"
 fi
 
-SKIP_SETUP=1 SEEDS="43 44" ROWS="full plain" ./run_everything.sh > logs/run_extra_seeds.out 2>&1
+# Order chosen 2026-11-25 so the most important rows finish first (same runs, same settings, only
+# the order differs): web (best seed-42 row), then full, then plain. Each call skips finished rows.
+for row in web full plain; do
+  SKIP_SETUP=1 SEEDS="43 44" ROWS="$row" ./run_everything.sh >> logs/run_extra_seeds.out 2>&1
+done
