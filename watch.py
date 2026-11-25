@@ -99,18 +99,33 @@ def cpu_temp():
     return None
 
 
+def job_name(stem):
+    m = re.match(r"robust_(full|web)_(jpeg|scale)([\d.]+)$", stem)
+    if m: return f"Robustness: {m.group(1)} model, {'JPEG quality' if m.group(2) == 'jpeg' else 'down-scale'} {m.group(3)}"
+    m = re.match(r"cross_(web_|frozen_|allreals_|web_allreals_)?(\w+)$", stem)
+    if m: return f"Outside data: {(m.group(1) or 'full_').rstrip('_')} model on {m.group(2)}"
+    m = re.match(r"overhead_(\w+)$", stem)
+    if m: return f"Test-set re-score: {m.group(1)}"
+    m = re.match(r"simlbr_official_(\w+)$", stem)
+    if m: return f"SimLBR, authors' code ({m.group(1)})"
+    return {"fewshot_extract": "Few-shot: feature extraction", "fewshot_analyse": "Few-shot: fitting probes",
+            "analyze_extras": "Extra analysis", "make_qualitative": "Qualitative figure",
+            "simlbr_dmaer": "SimLBR re-run with DM-AER", "simlbr_nolbr_dmaer": "SimLBR (no blending) with DM-AER"}.get(stem, stem)
+
+
 def side_jobs():
-    """Non-training jobs running here right now (evaluations, SimLBR, few-shot): log name + last progress."""
+    """Non-training jobs running here right now (evaluations, SimLBR, few-shot): (name, fraction or None, time left)."""
     out = []
     try:
         for lg in sorted((GRSL / "logs").glob("*.log"), key=lambda f: -f.stat().st_mtime)[:6]:
-            if time.time() - lg.stat().st_mtime > 90: continue
+            if time.time() - lg.stat().st_mtime > 60: continue
             with open(lg, "rb") as f:
                 f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 3000)); txt = f.read().decode(errors="ignore").replace("\r", "\n")
             if "[train] epoch" in txt: continue          # a training row, shown in the table
             m = None
             for m in re.finditer(r"(\d+)%\|[^|]*\|\s*(\d+)/(\d+) \[([^\]<]*)<([^,\]]*)", txt): pass
-            out.append(f"{lg.stem}" + (f" {m.group(1)}% (left {m.group(5)})" if m else " running"))
+            if m and m.group(1) == "100": continue
+            out.append((job_name(lg.stem), int(m.group(1)) / 100 if m else None, m.group(5) if m else ""))
     except Exception:
         pass
     return out
@@ -256,7 +271,7 @@ def sensors(g, cpu, extra=""):
 
 def row_table(rows, col):
     tb = Table(box=None, show_header=False, padding=(0, 1), expand=True)
-    tb.add_column(width=1); tb.add_column(width=26, no_wrap=True); tb.add_column(width=BAR_W, no_wrap=True)
+    tb.add_column(width=1); tb.add_column(width=38, no_wrap=True, overflow="ellipsis"); tb.add_column(width=BAR_W, no_wrap=True)
     tb.add_column(width=4, justify="right"); tb.add_column(ratio=1, no_wrap=True, overflow="ellipsis")
     for st, label, frac, detail, sub in rows:
         if st == "done":
@@ -264,6 +279,8 @@ def row_table(rows, col):
         elif st == "run":
             tb.add_row(Text("▶", style=f"bold {col}"), Text(label, style=f"bold {col}"), gauge(frac, BAR_W, col), f"{frac*100:.0f}%", Text(detail, style="bold white"))
             if sub: tb.add_row("", "", Text(""), "", Text(sub, style="white"))
+        elif st == "eval":
+            tb.add_row(Text("◆", style="bold yellow"), Text(label, style="bold yellow"), gauge(frac, BAR_W, "yellow"), f"{frac*100:.0f}%", Text(detail, style="yellow"))
         elif st == "stop":
             tb.add_row(Text("✖", style="bold red"), Text(label, style="red"), gauge(0, BAR_W, col), "", Text(detail, style="red"))
         elif st == "unk":
@@ -314,13 +331,16 @@ def render():
 
     # ---- this machine
     sj = side_jobs(); st = Text()
+    for name, frac, left in sj:      # evaluation jobs get their own live rows, right under the finished ones
+        k = max([i for i, r in enumerate(loc) if r[0] in ("done", "run")] + [-1]) + 1
+        loc.insert(k, ("eval", name, frac or 0, (f"evaluation job, {left} left" if left else "evaluation job, running"), ""))
     if cur:
         st.append(" ● TRAINING ", style="bold black on green"); st.append(f"  {cur}", style="bold green")
-        if sj: st.append("    also running: " + ", ".join(sj), style="yellow")
+        if sj: st.append(f"    + {len(sj)} evaluation job(s), rows marked ◆", style="yellow")
     elif sj:
-        st.append(" ● EVALUATING ", style="bold black on yellow"); st.append("  not training right now.  ", style="yellow")
-        st.append(", ".join(sj), style="bold yellow")
-        if nxt: st.append(f"    next training row: {nxt}", style="dim")
+        st.append(" ● EVALUATING ", style="bold black on yellow")
+        st.append(f"  {sj[0][0]}", style="bold yellow"); st.append("   (no training row right now; rows marked ◆ are live)", style="yellow")
+        if nxt: st.append(f"   next training: {nxt}", style="dim")
     elif driver_alive:
         st.append(" ● BETWEEN JOBS ", style="bold black on yellow")
     else:
