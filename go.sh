@@ -1,5 +1,6 @@
 #!/bin/bash
-# Short launcher: makes sure the whole queue is running in the background, then shows progress.
+# Short launcher: makes sure the whole queue is running in the background (this workstation and the
+# laptop), then shows live progress and temperatures for both machines.
 # Safe to run any time: finished rows and existing result files are skipped, never overwritten.
 #   stage 1  run_everything.sh        six seed-42 rows + cross-dataset eval of full_s42 + table.csv
 #   stage 2  run_extra_seeds_v2.sh    DM-AER + web_s42 cross-dataset eval, SimLBR with DM-AER, robustness /
@@ -23,4 +24,9 @@ else
   [ -n "$NORM_HERE" ] && nohup ./run_norm_check.sh >> logs/run_norm_check.nohup 2>&1 &
   echo "queue started"; sleep 2
 fi
-python watch.py
+# second machine: start its share (run_laptop.sh) if it is reachable and idle; GRSL_LAPTOP="" skips this
+LAPTOP=${GRSL_LAPTOP-joe@100.72.70.64}
+if [ -n "$LAPTOP" ]; then
+  ssh -n -o BatchMode=yes -o ConnectTimeout=4 "$LAPTOP" 'pgrep -f "run_lapto[p]|dinov3_forensics_train_v[2]|train_nor[m]" >/dev/null && echo "laptop queue already running" || { cd ~/grsl && mkdir -p logs && (setsid nohup ./run_laptop.sh > logs/run_laptop.nohup 2>&1 < /dev/null &) ; echo "laptop queue started"; }' 2>/dev/null || echo "laptop not reachable"
+fi
+python watch.py   # live dashboard: sensors of both machines, every row, laptop training read over ssh

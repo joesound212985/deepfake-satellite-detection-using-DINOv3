@@ -9,14 +9,14 @@ GRSL = HOME / "grsl"
 RES = HOME / "results_dinov3"
 SAT = RES/"vit/dinov3-vitl16-pretrain-sat493m"
 WEBD = RES/"vit/dinov3-vitl16-pretrain-lvd1689m"
-LAPTOP = {"plain_s43", "plain_s44", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
+LAPTOP = {"radio_s42", "plain_s43", "plain_s44", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
 ROWS = [  # tag, results dir, label, est. hours (measured on this machine where a run has finished) -- in queue order
     ("full_s42",   SAT/"full_s42",    "Full model (DINOv3-SAT)",   8.8),
     ("plain_s42",  SAT/"plain_s42",   "Plain decoder",             8.3),
     ("frozen_s42", SAT/"frozen_s42",  "Frozen backbone",           4.8),
     ("web_s42",    WEBD/"web_s42",    "Web-pretrained DINOv3",     8.8),
     ("resnet_s42", RES/"resnet/resnet50/resnet_s42",       "ResNet-50 baseline",  3.0),
-    ("radio_s42",  RES/"radio/C-RADIOv4-SO400M/radio_s42", "C-RADIOv4 baseline", 13.0),
+    ("radio_s42",  RES/"radio/C-RADIOv4-SO400M/radio_s42", "C-RADIOv4 baseline [laptop]", 13.0),
     ("resnetlr_s42", RES/"resnet/resnet50/resnetlr_s42",   "ResNet-50, LR 1e-4",  3.2),
     ("web_s43",    WEBD/"web_s43",    "Web DINOv3, seed 43",       8.8),
     ("web_s44",    WEBD/"web_s44",    "Web DINOv3, seed 44",       8.8),
@@ -36,6 +36,66 @@ QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check"
 BAR_W = 28
 
 
+LAPTOP_HOST = os.environ.get("GRSL_LAPTOP", "joe@100.72.70.64")   # GRSL_LAPTOP="" disables the laptop block
+REMOTE = r'''
+import json, glob, os, re, subprocess
+H = os.path.expanduser("~")
+o = {"done": {}, "tag": None, "log": ""}
+def sh(c):
+    try: return subprocess.check_output(c, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
+    except Exception: return ""
+o["gpu"] = sh("nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw --format=csv,noheader,nounits")
+t = [int(open(f).read()) // 1000 for f in glob.glob("/sys/class/hwmon/hwmon*/temp*_input")
+     if open(os.path.dirname(f) + "/name").read().strip() == "coretemp"]
+o["cpu"] = max(t) if t else None
+o["turbo_off"] = sh("cat /sys/devices/system/cpu/intel_pstate/no_turbo")
+o["profile"] = sh("powerprofilesctl get")
+o["load"] = sh("cut -d' ' -f1 /proc/loadavg")
+o["driver"] = bool(sh("pgrep -f 'run_lapto[p]|run_everythin[g]|run_norm_chec[k]'"))
+for pid in sh("pgrep -f 'dinov3_forensics_train_v[2].py|train_nor[m].py'").split():
+    try:
+        for kv in open(f"/proc/{pid}/environ", "rb").read().split(b"\0"):
+            if kv.startswith(b"RUN_TAG="): o["tag"] = kv[8:].decode()
+    except Exception: pass
+if o["tag"]:
+    try:
+        with open(f"{H}/grsl/logs/{o['tag']}.log", "rb") as f:
+            f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 60000)); o["log"] = f.read().decode(errors="ignore")
+    except Exception: pass
+for f in glob.glob(f"{H}/results_dinov3/*/*/*/test_metrics.json"):
+    try:
+        m = json.load(open(f)); L = m["localization_tampered"]
+        o["done"][os.path.basename(os.path.dirname(f))] = [m["accuracy"], m["macro_f1"], L["mean_iou"], L["mean_dice"], m["train_sec_per_epoch"]]
+    except Exception: pass
+print(json.dumps(o))
+'''
+_lap = {"t": 0.0, "data": None}
+
+
+def laptop(every=15):
+    """One ssh call every `every` seconds: sensors, running tag + log tail, finished rows. None if unreachable."""
+    if not LAPTOP_HOST: return None
+    if time.time() - _lap["t"] < every: return _lap["data"]
+    _lap["t"] = time.time()
+    try:
+        out = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=4", LAPTOP_HOST, "python3 -"],
+                             input=REMOTE, capture_output=True, text=True, timeout=12).stdout
+        _lap["data"] = json.loads(out)
+    except Exception:
+        _lap["data"] = None
+    return _lap["data"]
+
+
+def cpu_temp():
+    try:
+        for h in (Path("/sys/class/hwmon")).glob("hwmon*"):
+            if (h / "name").read_text().strip() in ("k10temp", "coretemp"):
+                return max(int(f.read_text()) // 1000 for f in h.glob("temp*_input"))
+    except Exception:
+        pass
+    return None
+
+
 def bar(frac, w=BAR_W):
     frac = max(0.0, min(1.0, frac)); n = int(round(frac * w))
     return "█" * n + "░" * (w - n)
@@ -48,9 +108,9 @@ def fmt_td(sec):
 
 def gpu():
     try:
-        o = subprocess.check_output(["nvidia-smi", "--query-gpu=memory.used,memory.total,utilization.gpu,temperature.gpu",
+        o = subprocess.check_output(["nvidia-smi", "--query-gpu=memory.used,memory.total,utilization.gpu,temperature.gpu,power.draw",
                                      "--format=csv,noheader,nounits"], text=True).strip().split(", ")
-        return f"GPU {int(o[0])/1024:.1f}/{int(o[1])/1024:.0f} GB  util {o[2]}%  {o[3]}°C"
+        return f"GPU {int(o[0])/1024:.1f}/{int(o[1])/1024:.0f} GB  util {o[2]}%  {o[3]}°C  {float(o[4]):.0f} W"
     except Exception:
         return "GPU n/a"
 
@@ -71,10 +131,13 @@ def active_rows():
 def parse_log(logf: Path):
     """Return dict(epoch, epochs, it, its, it_s, phase, last_val, eval_frac)."""
     d = {"epoch": 0, "epochs": 50, "it": 0, "its": 3000, "it_s": None, "phase": "starting", "val": None, "eval_frac": None}
-    try:
-        txt = logf.read_bytes()[-60000:].decode(errors="ignore").replace("\r", "\n")
-    except Exception:
-        return d
+    if isinstance(logf, str):
+        txt = logf.replace("\r", "\n")
+    else:
+        try:
+            txt = logf.read_bytes()[-60000:].decode(errors="ignore").replace("\r", "\n")
+        except Exception:
+            return d
     m = None
     for m in re.finditer(r"\[train\] epoch (\d+)/(\d+):\s+\d+%\|[^|]*\|\s*(\d+)/(\d+) \[[^\]]*?,\s*([\d.]+)(it/s|s/it)", txt): pass
     if m:
@@ -108,53 +171,95 @@ def running_tag():
     return None
 
 
+def progress(d, hrs):
+    """(fraction done, seconds remaining, text) for a running row from a parsed log."""
+    ep_frac = (d["epoch"] - 1 + d["it"] / max(d["its"], 1)) / max(d["epochs"], 1) if d["phase"] == "train" else d["epoch"] / max(d["epochs"], 1)
+    if d["phase"] == "final test eval": ep_frac = 0.98
+    ep_frac = max(0.0, min(0.99, ep_frac))
+    sec_ep = d["val"]["sec"] + 60 if d["val"] else (d["its"] / d["it_s"] + 60 if d["it_s"] else hrs * 3600 / 50)
+    remaining = (1 - ep_frac) * d["epochs"] * sec_ep
+    if d["phase"] == "train":
+        sub = f"epoch {d['epoch']}/{d['epochs']}  it {d['it']}/{d['its']}  {d['it_s'] or 0:.1f} it/s"
+    elif d["phase"] == "eval":
+        sub = f"epoch {d['epoch']}/{d['epochs']}  validating {d['eval_frac']*100:.0f}%"
+    else:
+        sub = f"epoch {d['epoch']}/{d['epochs']}  {d['phase']}"
+    return ep_frac, remaining, sub
+
+
+def val_line(d):
+    v = d["val"]
+    return f"  {'':<31} last epoch {v['ep']}: val_acc={v['acc']:.4f} val_f1={v['f1']:.4f} val_iou={v['iou']:.4f} best_f1={v['best']:.4f} ({v['sec']}s/epoch)"
+
+
 def main():
     while True:
         cur = running_tag()
+        lap = laptop()
         driver_alive = subprocess.call(["pgrep", "-f", QUEUE_PAT], stdout=subprocess.DEVNULL) == 0
         lines = []
-        lines.append(f"GRSL experiment queue   {datetime.now():%a %H:%M:%S}   {gpu()}   driver: {'RUNNING' if driver_alive else 'not running'}")
+        ct = cpu_temp()
+        lines.append(f"GRSL experiment queue   {datetime.now():%a %H:%M:%S}")
+        lines.append(f"  WORKSTATION  {gpu()}   CPU {ct if ct is not None else '--'}°C   queue: {'RUNNING' if driver_alive else 'not running'}")
+        if LAPTOP_HOST:
+            if lap:
+                try:
+                    g = lap["gpu"].split(", ")
+                    gs = f"GPU {int(g[0])/1024:.1f}/{int(g[1])/1024:.0f} GB  util {g[2]}%  {g[3]}°C  {float(g[4]):.0f} W"
+                except Exception:
+                    gs = "GPU n/a"
+                lines.append(f"  LAPTOP       {gs}   CPU {lap.get('cpu', '--')}°C   queue: {'RUNNING' if lap.get('driver') else 'not running'}"
+                             f"   power: {lap.get('profile') or '?'}{', turbo off' if lap.get('turbo_off') == '1' else ''}   load {lap.get('load', '?')}")
+            else:
+                lines.append("  LAPTOP       not reachable (asleep, off, or Tailscale down)")
         lines.append("─" * 118)
         total_done = total_left = 0.0; done_runs = 0; n_rows = 0
+        lap_left = 0.0; lap_rows = lap_done = 0
         for tag, out, label, hrs in ROWS:
-            n_rows += 1
             logf = GRSL / "logs" / f"{tag}.log"
+            if tag in LAPTOP:      # runs on the second machine; live state comes over ssh
+                lap_rows += 1
+                if (out / "test_metrics.json").exists():
+                    m = json.load(open(out / "test_metrics.json")); lap_done += 1
+                    lines.append(f"✔ {label:<31} {bar(1.0)} 100%  acc={m['accuracy']:.4f} F1={m['macro_f1']:.4f} IoU={m['localization_tampered']['mean_iou']:.4f} "
+                                 f"Dice={m['localization_tampered']['mean_dice']:.3f}  copied back")
+                elif lap and tag in lap["done"]:
+                    a = lap["done"][tag]; lap_done += 1
+                    lines.append(f"✔ {label:<31} {bar(1.0)} 100%  acc={a[0]:.4f} F1={a[1]:.4f} IoU={a[2]:.4f} Dice={a[3]:.3f}  done on laptop, not copied back yet")
+                elif lap and lap.get("tag") == tag:
+                    d = parse_log(lap["log"]); frac, rem, sub = progress(d, hrs); lap_left += rem / 3600
+                    lines.append(f"▶ {label:<31} {bar(frac)} {frac*100:3.0f}%  {sub}   ETA {fmt_td(rem)}")
+                    if d["val"]: lines.append(val_line(d))
+                elif lap:
+                    lap_left += hrs
+                    lines.append(f"· {label:<31} {bar(0)}   queued on the laptop")
+                else:
+                    lines.append(f"? {label:<31} {bar(0)}   laptop not reachable")
+                continue
+            n_rows += 1
             if (out / "test_metrics.json").exists():
                 m = json.load(open(out / "test_metrics.json"))
                 done_runs += 1; total_done += hrs
                 lines.append(f"✔ {label:<31} {bar(1.0)} 100%  acc={m['accuracy']:.4f} F1={m['macro_f1']:.4f} IoU={m['localization_tampered']['mean_iou']:.4f} "
                              f"Dice={m['localization_tampered']['mean_dice']:.3f}  {m['train_sec_per_epoch']:.0f}s/ep")
             elif tag == cur:
-                d = parse_log(logf)
-                ep_frac = (d["epoch"] - 1 + d["it"] / max(d["its"], 1)) / max(d["epochs"], 1) if d["phase"] == "train" else d["epoch"] / max(d["epochs"], 1)
-                if d["phase"] == "final test eval": ep_frac = 0.98
-                ep_frac = max(0.0, min(0.99, ep_frac))
-                sec_ep = d["val"]["sec"] + 60 if d["val"] else (d["its"] / d["it_s"] + 60 if d["it_s"] else hrs * 3600 / 50)
-                remaining = (1 - ep_frac) * d["epochs"] * sec_ep
+                d = parse_log(logf); ep_frac, remaining, sub = progress(d, hrs)
                 total_done += hrs * ep_frac; total_left += remaining / 3600
-                if d["phase"] == "train":
-                    sub = f"epoch {d['epoch']}/{d['epochs']}  it {d['it']}/{d['its']}  {d['it_s'] or 0:.1f} it/s"
-                elif d["phase"] == "eval":
-                    sub = f"epoch {d['epoch']}/{d['epochs']}  validating {d['eval_frac']*100:.0f}%"
-                else:
-                    sub = f"epoch {d['epoch']}/{d['epochs']}  {d['phase']}"
                 lines.append(f"▶ {label:<31} {bar(ep_frac)} {ep_frac*100:3.0f}%  {sub}   ETA {fmt_td(remaining)}")
-                if d["val"]:
-                    v = d["val"]
-                    lines.append(f"  {'':<31} last epoch {v['ep']}: val_acc={v['acc']:.4f} val_f1={v['f1']:.4f} val_iou={v['iou']:.4f} best_f1={v['best']:.4f} ({v['sec']}s/epoch)")
-            elif logf.exists() and not driver_alive and tag not in LAPTOP:
+                if d["val"]: lines.append(val_line(d))
+            elif logf.exists() and not driver_alive:
                 total_left += hrs
                 lines.append(f"✖ {label:<31} {bar(0)}   stopped / incomplete (relaunch to resume)")
-            elif tag in LAPTOP:
-                n_rows -= 1
-                lines.append(f"→ {label:<31} {bar(0)}   runs on the laptop; shown here once copied back")
             else:
                 total_left += hrs
                 lines.append(f"· {label:<31} {bar(0)}   queued (~{hrs:g} h)")
         lines.append("─" * 118)
         tot = total_done + total_left
-        lines.append(f"QUEUE  {bar(total_done / tot if tot else 0, 40)} {100*total_done/tot if tot else 0:3.0f}%   {done_runs}/{n_rows} runs done   "
-                     f"ETA all training ≈ {fmt_td(total_left*3600)}  (finish ≈ {(datetime.now()+timedelta(hours=total_left)):%a %H:%M})")
+        lines.append(f"WORKSTATION  {bar(total_done / tot if tot else 0, 34)} {100*total_done/tot if tot else 0:3.0f}%   {done_runs}/{n_rows} runs done   "
+                     f"ETA training ≈ {fmt_td(total_left*3600)}  (finish ≈ {(datetime.now()+timedelta(hours=total_left)):%a %H:%M})")
+        if LAPTOP_HOST and lap:
+            lines.append(f"LAPTOP       {lap_done}/{lap_rows} runs done   ETA ≈ {fmt_td(lap_left*3600)}  (finish ≈ {(datetime.now()+timedelta(hours=lap_left)):%a %H:%M}; "
+                         f"queued rows use workstation hours, a rough guess)")
         lines.append("")
         for title, group in (("Cross-dataset, full_s42 (after radio):", CROSS), ("Cross-dataset, web_s42:", CROSS_WEB)):
             lines.append(title)
