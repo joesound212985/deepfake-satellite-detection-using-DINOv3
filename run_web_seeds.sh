@@ -8,7 +8,7 @@
 # Kill this script to cancel. Never overwrites: existing outputs are skipped.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
-while pgrep -f "run_everything.sh|run_extra_seeds.sh" >/dev/null; do sleep 120; done
+while pgrep -f "run_everything.sh|run_extra_seeds" >/dev/null; do sleep 120; done
 log() { echo "| $(date -Is) | $1 | $2 | $3 |" >> RUNLOG.md; }
 
 SKIP_SETUP=1 SEEDS="43 44" ROWS="web" ./run_everything.sh > logs/run_web_seeds.out 2>&1

@@ -265,7 +265,11 @@ def main():
     if uw.exists():
         it = build_uw(uw)
         evalsets["cross_uw"] = (it, embed("uw", it, cache))
-    skipped = [n for n in ("cross_fmow", "cross_rsfake", "cross_uw") if n not in evalsets]
+    dmaer = DATA / "dm_aer/DM-AER-DeepFake-V1-sample"
+    if dmaer.exists():
+        it = build_uw(dmaer)
+        evalsets["cross_dmaer"] = (it, embed("dmaer_sample", it, cache))
+    skipped = [n for n in ("cross_fmow", "cross_rsfake", "cross_uw", "cross_dmaer") if n not in evalsets]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     runs = []

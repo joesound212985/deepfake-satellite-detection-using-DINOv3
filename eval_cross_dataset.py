@@ -13,6 +13,8 @@ Datasets:
   fmow    geodf/fmow-fake-small   (train/ + val/, real/ and fake/{simple-splice,object-splice,inpaint})
   rsfake  TZHSW/RSFAKE            (official test split, fixed-seed per-generator subset)
   uw      UW Fake Satellite Imagery (figshare 12197655; whole-image labels)
+  dmaer   DM-AER-DeepFake-V1 official sample (validation/FAKE StyleGAN2, validation/REAL Million-AID;
+          whole-image labels, same folder-name rule as uw)
 
 Usage:
   python eval_cross_dataset.py --dataset fmow   --root ~/data/fmow-fake-small --ckpt <best_checkpoint.pt>
@@ -256,7 +258,7 @@ def summarise(recs):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw"])
+    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer"])
     ap.add_argument("--root", required=True)
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--dinov3", default=os.environ.get("DINOV3_CKPT", "facebook/dinov3-vitl16-pretrain-sat493m"))
