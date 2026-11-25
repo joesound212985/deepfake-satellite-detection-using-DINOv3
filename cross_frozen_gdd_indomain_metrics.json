@@ -1,0 +1,122 @@
+{
+  "dataset": "gdd",
+  "root": "/home/adminuser/data/gdd",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": "indomain",
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 1500,
+    "n_real": 750,
+    "n_manipulated": 750,
+    "auc_real_vs_manipulated": 0.5151288888888889,
+    "accuracy_thr0.5": 0.5766666666666667,
+    "accuracy_argmax": 0.5773333333333334,
+    "detection_rate_manipulated_thr0.5": 0.31733333333333336,
+    "false_alarm_rate_real_thr0.5": 0.164,
+    "predicted_class_counts": {
+      "pristine": 1234,
+      "tampered": 27,
+      "fake": 239
+    }
+  },
+  "per_group": {
+    "gen/diffusionsat": {
+      "n_images": 150,
+      "n_real": 0,
+      "n_manipulated": 150,
+      "detection_rate_manipulated_thr0.5": 0.22,
+      "predicted_class_counts": {
+        "pristine": 137,
+        "tampered": 2,
+        "fake": 11
+      }
+    },
+    "gen/flux2dev": {
+      "n_images": 150,
+      "n_real": 0,
+      "n_manipulated": 150,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 150,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "gen/flux2kleinbase4b": {
+      "n_images": 150,
+      "n_real": 0,
+      "n_manipulated": 150,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 150,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "gen/neds": {
+      "n_images": 150,
+      "n_real": 0,
+      "n_manipulated": 150,
+      "detection_rate_manipulated_thr0.5": 0.9066666666666666,
+      "predicted_class_counts": {
+        "pristine": 22,
+        "tampered": 2,
+        "fake": 126
+      }
+    },
+    "gen/r3gan": {
+      "n_images": 150,
+      "n_real": 0,
+      "n_manipulated": 150,
+      "detection_rate_manipulated_thr0.5": 0.46,
+      "predicted_class_counts": {
+        "pristine": 100,
+        "tampered": 5,
+        "fake": 45
+      }
+    },
+    "real/fmow": {
+      "n_images": 250,
+      "n_real": 250,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.052,
+      "predicted_class_counts": {
+        "pristine": 247,
+        "tampered": 0,
+        "fake": 3
+      }
+    },
+    "real/millionaid": {
+      "n_images": 250,
+      "n_real": 250,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.168,
+      "predicted_class_counts": {
+        "pristine": 219,
+        "tampered": 12,
+        "fake": 19
+      }
+    },
+    "real/xbd": {
+      "n_images": 250,
+      "n_real": 250,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.272,
+      "predicted_class_counts": {
+        "pristine": 209,
+        "tampered": 6,
+        "fake": 35
+      }
+    }
+  },
+  "wall_sec": 274.35191023000516,
+  "torch_version": "2.14.1+cu126"
+}

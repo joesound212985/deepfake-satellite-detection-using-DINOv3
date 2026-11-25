@@ -375,7 +375,9 @@ def render():
         tb = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
         tb.add_column("zero-shot on outside data (AUC / accuracy)")
         for h in ("full_s42", "web_s42", "frozen_s42"): tb.add_column(h, justify="center")
-        for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)")):
+        for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
+                           ("gdd_indomain", "GDD in-domain"), ("gdd_crossgenerator", "GDD cross-generator"),
+                           ("gdd_crossdomain", "GDD cross-domain"), ("gdd_localization", "GDD tamper set")):
             cells = []
             for pre in ("cross_", "cross_web_", "cross_frozen_"):
                 f = GRSL / f"{pre}{key}_metrics.json"
@@ -385,6 +387,34 @@ def render():
                 else:
                     cells.append(Text("pending", style="dim"))
             tb.add_row(label, *cells)
+        extra = []
+        try:      # few-shot: AUC on the held-out half, linear probe on frozen CLS features
+            fs = json.load(open(GRSL / "fewshot_metrics.json"))["datasets"]
+            ft = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
+            ft.add_column("few-shot AUC, full_s42 features (labelled images per class)")
+            for h in ("zero-shot", "4", "16", "64", "256", "whole pool"): ft.add_column(h, justify="center")
+            col = lambda a: "green" if a >= 0.8 else ("yellow" if a >= 0.65 else "red")
+            for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)")):
+                d = fs[key]; e = d["extractors"]["full_s42"]; z = (d.get("zero_shot") or {}).get("full_s42", {}).get("auc")
+                cells = [Text(f"{z:.3f}", style=col(z)) if isinstance(z, float) else Text("-", style="dim")]
+                for k in ("k4", "k16", "k64", "k256"):
+                    v = e.get(k); a = v["auc"]["mean"] if isinstance(v, dict) else None
+                    cells.append(Text(f"{a:.3f}", style=col(a)) if a is not None else Text("-", style="dim"))
+                a = e["whole_pool"]["auc"]; cells.append(Text(f"{a:.3f}", style=col(a)))
+                ft.add_row(label, *cells)
+            extra.append(ft)
+        except Exception:
+            pass
+        try:      # authors' SimLBR code trained on our data, mean of 3 seeds
+            for bb in ("sat", "web"):
+                f = GRSL / f"simlbr_official_{bb}_metrics.json"
+                if not f.exists(): continue
+                m = json.load(open(f))["variants"]["lbr"]["mean_std_over_seeds"]
+                extra.append(Text("SimLBR official (" + bb + ") AUC:  " + "   ".join(
+                    f"{n} {m[k]['auc_real_vs_manipulated']['mean']:.3f}" for k, n in (("overhead_test", "own test"), ("cross_fmow", "fmow"),
+                    ("cross_rsfake", "rsfake"), ("cross_uw", "uw"), ("cross_dmaer", "dmaer")) if k in m)))
+        except Exception:
+            pass
         nrob = len(list(GRSL.glob("robust_*_metrics.json"))); nov = len(list(GRSL.glob("overhead_*_metrics.json")))
         nf = len(list((HOME / "data/features/fewshot_cls384").glob("*/*.npy")))
         yes = lambda b: "[green]✔[/]" if b else "[dim]·[/]"
@@ -394,7 +424,7 @@ def render():
             f"significance re-scores {len(list(GRSL.glob('overhead_*_s4?_metrics.json')))}/7   "
             f"few-shot features {nf}/16   few-shot results {yes((GRSL / 'fewshot_metrics.json').exists())}   "
             f"analysis {yes((GRSL / 'analysis_extras.json').exists())}   table.csv {yes((GRSL / 'table.csv').exists())}")
-        panels.append(Panel(Group(tb, ex), title="[bold] RESULTS SO FAR [/]", border_style="grey50", padding=(0, 1)))
+        panels.append(Panel(Group(tb, *extra, ex), title="[bold] RESULTS SO FAR [/]", border_style="grey50", padding=(0, 1)))
     try:
         last = [l for l in (GRSL / "RUNLOG.md").read_text().splitlines() if l.startswith("|")][-1]
         log = Text("last log entry: " + last[2:150], style="dim", no_wrap=True, overflow="ellipsis")

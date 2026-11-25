@@ -221,3 +221,37 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-25T14:26:25-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split indomain --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out cross_web_gdd_indomain_metrics.json` | cross_web_gdd_indomain | started |
 | 2026-11-25T14:27:12-06:00 |  | fewshot extract | exit=0 |
 | 2026-11-25T14:27:42-06:00 | `python fewshot_adapt.py analyse` | fewshot | exit=0 (fewshot_metrics.json) |
+| 2026-11-25T14:31:32-06:00 |  | cross_web_gdd_indomain | exit=0, cross_web_gdd_indomain_metrics.json written |
+| 2026-11-25T14:31:32-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split indomain --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt --out cross_frozen_gdd_indomain_metrics.json` | cross_frozen_gdd_indomain | started |
+| 2026-11-25T14:31:58-06:00 |  | robust_web_jpeg50 | exit=0, robust_web_jpeg50_metrics.json written |
+| 2026-11-25T14:31:58-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_jpeg30_metrics.json --degrade jpeg:30` | robust_web_jpeg30 | started |
+| 2026-11-25T14:36:12-06:00 |  | cross_frozen_gdd_indomain | exit=0, cross_frozen_gdd_indomain_metrics.json written |
+| 2026-11-25T14:36:12-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossgenerator --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt --out cross_gdd_crossgenerator_metrics.json` | cross_gdd_crossgenerator | started |
+| 2026-11-25T14:41:53-06:00 |  | robust_web_jpeg30 | exit=0, robust_web_jpeg30_metrics.json written |
+| 2026-11-25T14:41:53-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_scale0.75_metrics.json --degrade scale:0.75` | robust_web_scale0.75 | started |
+| 2026-11-25T14:42:25-06:00 |  | cross_gdd_crossgenerator | exit=0, cross_gdd_crossgenerator_metrics.json written |
+| 2026-11-25T14:42:25-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossgenerator --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out cross_web_gdd_crossgenerator_metrics.json` | cross_web_gdd_crossgenerator | started |
+| 2026-11-25T14:48:51-06:00 |  | cross_web_gdd_crossgenerator | exit=0, cross_web_gdd_crossgenerator_metrics.json written |
+| 2026-11-25T14:48:51-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossgenerator --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt --out cross_frozen_gdd_crossgenerator_metrics.json` | cross_frozen_gdd_crossgenerator | started |
+| 2026-11-25T14:51:36-06:00 |  | robust_web_scale0.75 | exit=0, robust_web_scale0.75_metrics.json written |
+| 2026-11-25T14:51:36-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out robust_web_scale0.5_metrics.json --degrade scale:0.5` | robust_web_scale0.5 | started |
+| 2026-11-25T14:55:06-06:00 |  | cross_frozen_gdd_crossgenerator | exit=0, cross_frozen_gdd_crossgenerator_metrics.json written |
+| 2026-11-25T14:55:06-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossdomain --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt --out cross_gdd_crossdomain_metrics.json` | cross_gdd_crossdomain | started |
+| 2026-11-25T15:01:31-06:00 |  | cross_gdd_crossdomain | exit=0, cross_gdd_crossdomain_metrics.json written |
+| 2026-11-25T15:01:31-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossdomain --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out cross_web_gdd_crossdomain_metrics.json` | cross_web_gdd_crossdomain | started |
+| 2026-11-25T15:01:32-06:00 |  | robust_web_scale0.5 | exit=0, robust_web_scale0.5_metrics.json written |
+| 2026-11-25T15:01:41-06:00 | `python make_qualitative.py` | qualitative | exit=0 |
+| 2026-11-25T15:01:41-06:00 | `python simlbr_official.py --backbone sat` | simlbr_official_sat | started |
+| 2026-11-25T15:05:56-06:00 |  | cross_web_gdd_crossdomain | exit=0, cross_web_gdd_crossdomain_metrics.json written |
+| 2026-11-25T15:05:56-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split crossdomain --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt --out cross_frozen_gdd_crossdomain_metrics.json` | cross_frozen_gdd_crossdomain | started |
+| 2026-11-25T15:10:38-06:00 |  | cross_frozen_gdd_crossdomain | exit=0, cross_frozen_gdd_crossdomain_metrics.json written |
+| 2026-11-25T15:11:01-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split localization --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt --out cross_gdd_localization_metrics.json` | cross_gdd_localization | started |
+| 2026-11-25T15:13:28-06:00 |  | cross_gdd_localization | exit=0, cross_gdd_localization_metrics.json written |
+| 2026-11-25T15:13:28-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split localization --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt --out cross_web_gdd_localization_metrics.json` | cross_web_gdd_localization | started |
+| 2026-11-25T15:15:35-06:00 |  | cross_web_gdd_localization | exit=0, cross_web_gdd_localization_metrics.json written |
+| 2026-11-25T15:15:35-06:00 | `python eval_cross_dataset.py --dataset gdd --gdd-split localization --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt --out cross_frozen_gdd_localization_metrics.json` | cross_frozen_gdd_localization | started |
+| 2026-11-25T15:17:47-06:00 |  | cross_frozen_gdd_localization | exit=0, cross_frozen_gdd_localization_metrics.json written |
+| 2026-11-25T16:06:04-06:00 |  | simlbr_official_sat | exit=0 |
+| 2026-11-25T16:06:04-06:00 | `python simlbr_official.py --backbone web` | simlbr_official_web | started |
+| 2026-11-25T17:02:30-06:00 | laptop: logind drop-in /etc/systemd/logind.conf.d/90-lid-ignore.conf (HandleLidSwitch*=ignore), reloaded logind | laptop-setup | lid close no longer suspends |
+| 2026-11-25T17:04:30-06:00 | watch.py: results panel now shows GDD zero-shot rows, few-shot AUC table, official SimLBR line | dashboard | ok |

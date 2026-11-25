@@ -1,0 +1,175 @@
+{
+  "dataset": "gdd",
+  "root": "/home/adminuser/data/gdd",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": "localization",
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 1000,
+    "n_real": 500,
+    "n_manipulated": 500,
+    "auc_real_vs_manipulated": 0.56804,
+    "accuracy_thr0.5": 0.524,
+    "accuracy_argmax": 0.524,
+    "detection_rate_manipulated_thr0.5": 0.06,
+    "false_alarm_rate_real_thr0.5": 0.012,
+    "localization": {
+      "n_images_with_mask": 500,
+      "mean_iou": 0.10364343998964165,
+      "mean_dice": 0.12890553369052146,
+      "mean_mcc": 0.107518929630759
+    },
+    "predicted_class_counts": {
+      "pristine": 966,
+      "tampered": 28,
+      "fake": 6
+    }
+  },
+  "per_group": {
+    "manip/fully-regenerated": {
+      "n_images": 84,
+      "n_real": 0,
+      "n_manipulated": 84,
+      "detection_rate_manipulated_thr0.5": 0.21428571428571427,
+      "localization": {
+        "n_images_with_mask": 84,
+        "mean_iou": 0.2593039795299556,
+        "mean_dice": 0.32117224415578643,
+        "mean_mcc": 0.2610200317270961
+      },
+      "predicted_class_counts": {
+        "pristine": 67,
+        "tampered": 15,
+        "fake": 2
+      }
+    },
+    "manip/inpaint-splice": {
+      "n_images": 84,
+      "n_real": 0,
+      "n_manipulated": 84,
+      "detection_rate_manipulated_thr0.5": 0.09523809523809523,
+      "localization": {
+        "n_images_with_mask": 84,
+        "mean_iou": 0.2027285911439996,
+        "mean_dice": 0.24502954157678505,
+        "mean_mcc": 0.2356777657350385
+      },
+      "predicted_class_counts": {
+        "pristine": 76,
+        "tampered": 8,
+        "fake": 0
+      }
+    },
+    "manip/object-copy-move": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.024096385542168676,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.004448951589766595,
+        "mean_dice": 0.00793688623790265,
+        "mean_mcc": -0.004961070424397954
+      },
+      "predicted_class_counts": {
+        "pristine": 81,
+        "tampered": 0,
+        "fake": 2
+      }
+    },
+    "manip/object-splice": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.024096385542168676,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.043173578767756585,
+        "mean_dice": 0.05585030458938348,
+        "mean_mcc": 0.04470328682648408
+      },
+      "predicted_class_counts": {
+        "pristine": 81,
+        "tampered": 1,
+        "fake": 1
+      }
+    },
+    "manip/simple-copy-move": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.0028964610177253415,
+        "mean_dice": 0.005136965626839218,
+        "mean_mcc": -0.020883762655149633
+      },
+      "predicted_class_counts": {
+        "pristine": 83,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "manip/simple-splice": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.10623985269955379,
+        "mean_dice": 0.13459170913291946,
+        "mean_mcc": 0.12616383334415016
+      },
+      "predicted_class_counts": {
+        "pristine": 83,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "real/fmow": {
+      "n_images": 167,
+      "n_real": 167,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 167,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "real/millionaid": {
+      "n_images": 170,
+      "n_real": 170,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.029411764705882353,
+      "predicted_class_counts": {
+        "pristine": 166,
+        "tampered": 3,
+        "fake": 1
+      }
+    },
+    "real/xbd": {
+      "n_images": 163,
+      "n_real": 163,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.006134969325153374,
+      "predicted_class_counts": {
+        "pristine": 162,
+        "tampered": 1,
+        "fake": 0
+      }
+    }
+  },
+  "wall_sec": 143.63247599700117,
+  "torch_version": "2.14.1+cu126"
+}

@@ -1,0 +1,1302 @@
+{
+  "method": "SimLBR, authors' released code (github.com/mvrl/SimLBR) trained on our data",
+  "official_commit": "ac90f86",
+  "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "config": {
+    "batch_size": 200,
+    "max_epochs": 5,
+    "lr": 0.0001,
+    "wt_decay": 0.01,
+    "hidden_layers": 2,
+    "activation": "relu",
+    "dropout": 0.3,
+    "lbrdist": [
+      0.5,
+      0.8
+    ],
+    "precision": "16-mixed",
+    "resize": 256,
+    "normalisation": "official make_dinov3_transform (0.430,0.411,0.296)/(0.213,0.156,0.143)",
+    "model_selection": "official ModelCheckpoint, best val_acc on our validation split (overhead_val)"
+  },
+  "runtime_patches": [
+    "backbone weights loaded from Hugging Face instead of DINO_V3_KEY (same CLS token)",
+    "our subset names appended to AIGCDataset.all_models",
+    "data exposed in AIGC folder layout via symlinks; TIFF and DM-AER crops written as PNG"
+  ],
+  "labels": "real = pristine; manipulated = tampered + fake",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "torch_version": "2.14.1+cu126",
+  "variants": {
+    "lbr": {
+      "mean_std_over_seeds": {
+        "overhead_val": {
+          "accuracy_thr0.5": {
+            "mean": 0.7243333333333334,
+            "std": 0.005507570547286107,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.7948887182194916,
+            "std": 0.004798988327069653,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.5609103078982597,
+            "std": 0.0050534367036618255,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.11354581673306774,
+            "std": 0.013944223107569724,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.8299685517946879,
+            "std": 0.001346859405049757,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6696120301882426,
+            "std": 0.003952848611766308,
+            "n_seeds": 3
+          }
+        },
+        "overhead_test": {
+          "accuracy_thr0.5": {
+            "mean": 0.622010582010582,
+            "std": 0.002113754958247401,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.7096203328664163,
+            "std": 0.001747694995280463,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.7943868212324589,
+            "std": 0.012018130325559631,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.5649680123538495,
+            "std": 0.016929146298654062,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.7282856901486715,
+            "std": 0.0014888445308278797,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6862090428670248,
+            "std": 0.00232385001034932,
+            "n_seeds": 3
+          }
+        },
+        "cross_fmow": {
+          "accuracy_thr0.5": {
+            "mean": 0.5138888888888888,
+            "std": 0.012729376930432905,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.5903240740740742,
+            "std": 0.0052783869044204885,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.22777777777777777,
+            "std": 0.03469443332443554,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.19999999999999998,
+            "std": 0.03333333333333334,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.5376571416854858,
+            "std": 0.0038244876828903655,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.31817429264386493,
+            "std": 0.035179750227384794,
+            "n_seeds": 3
+          }
+        },
+        "cross_rsfake": {
+          "accuracy_thr0.5": {
+            "mean": 0.6381333333333333,
+            "std": 0.004300387579432007,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.6784083799999999,
+            "std": 0.005882939847151244,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.6798000000000001,
+            "std": 0.018340119955987184,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.4035333333333333,
+            "std": 0.02336350430336453,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.6443700591723124,
+            "std": 0.005770744999741495,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6525501807530721,
+            "std": 0.005475366847274121,
+            "n_seeds": 3
+          }
+        },
+        "cross_uw": {
+          "accuracy_thr0.5": {
+            "mean": 0.5472883597883599,
+            "std": 0.019237357758720288,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.5751507266438597,
+            "std": 0.03201061645530225,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.7506613756613757,
+            "std": 0.01694210449222385,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.6560846560846562,
+            "std": 0.04253767468966909,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.5380648573239645,
+            "std": 0.02605398412161865,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6238541205724081,
+            "std": 0.011197100301905178,
+            "n_seeds": 3
+          }
+        },
+        "cross_dmaer": {
+          "accuracy_thr0.5": {
+            "mean": 0.7969656403391343,
+            "std": 0.012599560824181644,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.8266238191632928,
+            "std": 0.01529733640659203,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.9330000000000002,
+            "std": 0.014999999999999958,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.4784075573549258,
+            "std": 0.021645094375634867,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.8649967511494955,
+            "std": 0.010187291006915795,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.8601501782735189,
+            "std": 0.009136941557607723,
+            "n_seeds": 3
+          }
+        }
+      },
+      "runs": [
+        {
+          "run": "lbr_s42",
+          "seed": 42,
+          "lbr": true,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.730.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.7300000190734863,
+                "real_accuracy": 0.9023904800415039,
+                "fake_accuracy": 0.5562248826026917,
+                "ap": 0.8284143209457397,
+                "f1": 0.6723300814628601
+              },
+              "accuracy_thr0.5": 0.73,
+              "detection_rate_manipulated_thr0.5": 0.5562248995983936,
+              "false_alarm_rate_real_thr0.5": 0.09760956175298804,
+              "auc_real_vs_manipulated": 0.7900366405862493,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9322033898305084,
+                "pristine": 0.09760956175298804,
+                "tampered": 0.21755725190839695
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6196825504302979,
+                "real_accuracy": 0.41561877727508545,
+                "fake_accuracy": 0.807809591293335,
+                "ap": 0.7282982468605042,
+                "f1": 0.6885075569152832
+              },
+              "accuracy_thr0.5": 0.6196825396825397,
+              "detection_rate_manipulated_thr0.5": 0.8078096400244051,
+              "false_alarm_rate_real_thr0.5": 0.5843812045003309,
+              "auc_real_vs_manipulated": 0.7082105640596172,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9813581890812251,
+                "pristine": 0.5843812045003309,
+                "tampered": 0.661036036036036
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.5166666507720947,
+                "real_accuracy": 0.7666667103767395,
+                "fake_accuracy": 0.2666666805744171,
+                "ap": 0.5419293642044067,
+                "f1": 0.35555556416511536
+              },
+              "accuracy_thr0.5": 0.5166666666666667,
+              "detection_rate_manipulated_thr0.5": 0.26666666666666666,
+              "false_alarm_rate_real_thr0.5": 0.23333333333333334,
+              "auc_real_vs_manipulated": 0.5925,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.35,
+                "object-splice": 0.25,
+                "real": 0.23333333333333334,
+                "simple-splice": 0.2
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.6338000297546387,
+                "real_accuracy": 0.589199960231781,
+                "fake_accuracy": 0.6783999800682068,
+                "ap": 0.6378636360168457,
+                "f1": 0.6494351625442505
+              },
+              "accuracy_thr0.5": 0.6338,
+              "detection_rate_manipulated_thr0.5": 0.6784,
+              "false_alarm_rate_real_thr0.5": 0.4108,
+              "auc_real_vs_manipulated": 0.67173156,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.458,
+                "generated_SDFRS": 0.92,
+                "generated_crsdiff": 0.838,
+                "generated_diffusion_sat": 0.098,
+                "generated_diffusion_sat_256": 0.808,
+                "generated_geosynth": 0.558,
+                "generated_geosynth_canny": 0.684,
+                "generated_geosynth_sam": 0.788,
+                "generated_mapsat": 0.822,
+                "generated_rsinpaint": 0.81,
+                "real_fmow": 0.4108
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.5285218358039856,
+                "real_accuracy": 0.2953869104385376,
+                "fake_accuracy": 0.7616567611694336,
+                "ap": 0.5229933261871338,
+                "f1": 0.6176589131355286
+              },
+              "accuracy_thr0.5": 0.5285218253968254,
+              "detection_rate_manipulated_thr0.5": 0.761656746031746,
+              "false_alarm_rate_real_thr0.5": 0.7046130952380952,
+              "auc_real_vs_manipulated": 0.557841675081491,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.5505952380952381,
+                "authentic/Seattle": 0.9474206349206349,
+                "authentic/Tacoma": 0.660218253968254,
+                "fake/Beijing_style": 0.7579365079365079,
+                "fake/Seattle_style": 0.7653769841269841
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.7824631929397583,
+                "real_accuracy": 0.5080971717834473,
+                "fake_accuracy": 0.9180000424385071,
+                "ap": 0.8533700108528137,
+                "f1": 0.8496066927909851
+              },
+              "accuracy_thr0.5": 0.7824631860776439,
+              "detection_rate_manipulated_thr0.5": 0.918,
+              "false_alarm_rate_real_thr0.5": 0.49190283400809715,
+              "auc_real_vs_manipulated": 0.8093643724696356,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.918,
+                "validation/REAL": 0.49190283400809715
+              }
+            }
+          }
+        },
+        {
+          "run": "lbr_s43",
+          "seed": 43,
+          "lbr": true,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.719.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.718999981880188,
+                "real_accuracy": 0.8764940500259399,
+                "fake_accuracy": 0.5602409243583679,
+                "ap": 0.8306976556777954,
+                "f1": 0.6650774478912354
+              },
+              "accuracy_thr0.5": 0.719,
+              "detection_rate_manipulated_thr0.5": 0.5602409638554217,
+              "false_alarm_rate_real_thr0.5": 0.12350597609561753,
+              "auc_real_vs_manipulated": 0.7949967199475192,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9279661016949152,
+                "pristine": 0.12350597609561753,
+                "tampered": 0.22900763358778625
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6238095164299011,
+                "real_accuracy": 0.4427531361579895,
+                "fake_accuracy": 0.7907260060310364,
+                "ap": 0.7267906069755554,
+                "f1": 0.6862589120864868
+              },
+              "accuracy_thr0.5": 0.6238095238095238,
+              "detection_rate_manipulated_thr0.5": 0.7907260524710189,
+              "false_alarm_rate_real_thr0.5": 0.557246856386499,
+              "auc_real_vs_manipulated": 0.7090746766946803,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9760319573901465,
+                "pristine": 0.557246856386499,
+                "tampered": 0.634009009009009
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.5,
+                "real_accuracy": 0.8000000715255737,
+                "fake_accuracy": 0.20000001788139343,
+                "ap": 0.5364894270896912,
+                "f1": 0.2857142984867096
+              },
+              "accuracy_thr0.5": 0.5,
+              "detection_rate_manipulated_thr0.5": 0.2,
+              "false_alarm_rate_real_thr0.5": 0.2,
+              "auc_real_vs_manipulated": 0.5941666666666667,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.3,
+                "object-splice": 0.1,
+                "real": 0.2,
+                "simple-splice": 0.2
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.6381999850273132,
+                "real_accuracy": 0.5776000022888184,
+                "fake_accuracy": 0.6987999677658081,
+                "ap": 0.6463777422904968,
+                "f1": 0.6588723659515381
+              },
+              "accuracy_thr0.5": 0.6382,
+              "detection_rate_manipulated_thr0.5": 0.6988,
+              "false_alarm_rate_real_thr0.5": 0.4224,
+              "auc_real_vs_manipulated": 0.68283032,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.57,
+                "generated_SDFRS": 0.87,
+                "generated_crsdiff": 0.908,
+                "generated_diffusion_sat": 0.154,
+                "generated_diffusion_sat_256": 0.79,
+                "generated_geosynth": 0.542,
+                "generated_geosynth_canny": 0.722,
+                "generated_geosynth_sam": 0.766,
+                "generated_mapsat": 0.87,
+                "generated_rsinpaint": 0.796,
+                "real_fmow": 0.4224
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.5669642686843872,
+                "real_accuracy": 0.374752014875412,
+                "fake_accuracy": 0.7591766119003296,
+                "ap": 0.5681493878364563,
+                "f1": 0.6367797255516052
+              },
+              "accuracy_thr0.5": 0.5669642857142857,
+              "detection_rate_manipulated_thr0.5": 0.7591765873015873,
+              "false_alarm_rate_real_thr0.5": 0.6252480158730159,
+              "auc_real_vs_manipulated": 0.612089119140133,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.4791666666666667,
+                "authentic/Seattle": 0.8234126984126984,
+                "authentic/Tacoma": 0.5992063492063492,
+                "fake/Beijing_style": 0.7589285714285714,
+                "fake/Seattle_style": 0.7594246031746031
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.8032128810882568,
+                "real_accuracy": 0.5101214647293091,
+                "fake_accuracy": 0.9480000734329224,
+                "ap": 0.8692625164985657,
+                "f1": 0.8657534122467041
+              },
+              "accuracy_thr0.5": 0.8032128514056225,
+              "detection_rate_manipulated_thr0.5": 0.948,
+              "false_alarm_rate_real_thr0.5": 0.4898785425101215,
+              "auc_real_vs_manipulated": 0.831998987854251,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.948,
+                "validation/REAL": 0.4898785425101215
+              }
+            }
+          }
+        },
+        {
+          "run": "lbr_s44",
+          "seed": 44,
+          "lbr": true,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.724.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.7239999771118164,
+                "real_accuracy": 0.8804781436920166,
+                "fake_accuracy": 0.5662650465965271,
+                "ap": 0.8307936787605286,
+                "f1": 0.6714285612106323
+              },
+              "accuracy_thr0.5": 0.724,
+              "detection_rate_manipulated_thr0.5": 0.5662650602409639,
+              "false_alarm_rate_real_thr0.5": 0.11952191235059761,
+              "auc_real_vs_manipulated": 0.7996327941247059,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9364406779661016,
+                "pristine": 0.11952191235059761,
+                "tampered": 0.23282442748091603
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6225396990776062,
+                "real_accuracy": 0.4467240273952484,
+                "fake_accuracy": 0.7846247553825378,
+                "ap": 0.7297682166099548,
+                "f1": 0.6838606595993042
+              },
+              "accuracy_thr0.5": 0.6225396825396825,
+              "detection_rate_manipulated_thr0.5": 0.7846247712019524,
+              "false_alarm_rate_real_thr0.5": 0.5532759761747187,
+              "auc_real_vs_manipulated": 0.7115757578449515,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9747003994673769,
+                "pristine": 0.5532759761747187,
+                "tampered": 0.6238738738738738
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.5249999761581421,
+                "real_accuracy": 0.8333333730697632,
+                "fake_accuracy": 0.21666668355464935,
+                "ap": 0.5345526337623596,
+                "f1": 0.3132530152797699
+              },
+              "accuracy_thr0.5": 0.525,
+              "detection_rate_manipulated_thr0.5": 0.21666666666666667,
+              "false_alarm_rate_real_thr0.5": 0.16666666666666666,
+              "auc_real_vs_manipulated": 0.5843055555555555,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.2,
+                "object-splice": 0.15,
+                "real": 0.16666666666666666,
+                "simple-splice": 0.3
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.6424000263214111,
+                "real_accuracy": 0.6225999593734741,
+                "fake_accuracy": 0.6621999740600586,
+                "ap": 0.6488687992095947,
+                "f1": 0.6493430137634277
+              },
+              "accuracy_thr0.5": 0.6424,
+              "detection_rate_manipulated_thr0.5": 0.6622,
+              "false_alarm_rate_real_thr0.5": 0.3774,
+              "auc_real_vs_manipulated": 0.68066326,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.476,
+                "generated_SDFRS": 0.862,
+                "generated_crsdiff": 0.85,
+                "generated_diffusion_sat": 0.132,
+                "generated_diffusion_sat_256": 0.798,
+                "generated_geosynth": 0.486,
+                "generated_geosynth_canny": 0.696,
+                "generated_geosynth_sam": 0.726,
+                "generated_mapsat": 0.784,
+                "generated_rsinpaint": 0.812,
+                "real_fmow": 0.3774
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.5463789701461792,
+                "real_accuracy": 0.361607164144516,
+                "fake_accuracy": 0.7311508655548096,
+                "ap": 0.5230518579483032,
+                "f1": 0.6171237230300903
+              },
+              "accuracy_thr0.5": 0.5463789682539683,
+              "detection_rate_manipulated_thr0.5": 0.7311507936507936,
+              "false_alarm_rate_real_thr0.5": 0.6383928571428571,
+              "auc_real_vs_manipulated": 0.5555213857099552,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.4156746031746032,
+                "authentic/Seattle": 0.8194444444444444,
+                "authentic/Tacoma": 0.6592261904761905,
+                "fake/Beijing_style": 0.7395833333333334,
+                "fake/Seattle_style": 0.722718253968254
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.805220901966095,
+                "real_accuracy": 0.5465587377548218,
+                "fake_accuracy": 0.9330000281333923,
+                "ap": 0.8723577260971069,
+                "f1": 0.8650904297828674
+              },
+              "accuracy_thr0.5": 0.8052208835341366,
+              "detection_rate_manipulated_thr0.5": 0.933,
+              "false_alarm_rate_real_thr0.5": 0.4534412955465587,
+              "auc_real_vs_manipulated": 0.838508097165992,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.933,
+                "validation/REAL": 0.4534412955465587
+              }
+            }
+          }
+        }
+      ]
+    },
+    "nolbr": {
+      "mean_std_over_seeds": {
+        "overhead_val": {
+          "accuracy_thr0.5": {
+            "mean": 0.769,
+            "std": 0.004358898943540678,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.8393940969722182,
+            "std": 0.0011039566712837672,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.6713520749665328,
+            "std": 0.012103842918356884,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.1341301460823373,
+            "std": 0.008050700964795585,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.8708935578664144,
+            "std": 0.0006574251744648564,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.743203361829122,
+            "std": 0.006567287303791913,
+            "n_seeds": 3
+          }
+        },
+        "overhead_test": {
+          "accuracy_thr0.5": {
+            "mean": 0.6452910052910052,
+            "std": 0.0027736174438267023,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.7413546001951387,
+            "std": 0.001952763184485032,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.8124872889973561,
+            "std": 0.0056361222129554306,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.5360688285903374,
+            "std": 0.009336026459077355,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.7603469491004944,
+            "std": 0.0028712373584174073,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.7044597864151001,
+            "std": 0.0019101866334033327,
+            "n_seeds": 3
+          }
+        },
+        "cross_fmow": {
+          "accuracy_thr0.5": {
+            "mean": 0.4749999999999999,
+            "std": 0.014433756729740625,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.5630555555555555,
+            "std": 0.0064833000094354125,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.17222222222222225,
+            "std": 0.03849001794597506,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.22222222222222224,
+            "std": 0.00962250448649376,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.5072691043217977,
+            "std": 0.003744547832300045,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.24595831831296286,
+            "std": 0.045806030289061044,
+            "n_seeds": 3
+          }
+        },
+        "cross_rsfake": {
+          "accuracy_thr0.5": {
+            "mean": 0.6181666666666668,
+            "std": 0.011809459485231868,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.6656949066666668,
+            "std": 0.013046664974472703,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.7096666666666667,
+            "std": 0.0031643851430148756,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.47333333333333333,
+            "std": 0.02333438092886402,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.6432509620984396,
+            "std": 0.012506394679025043,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6502231558163961,
+            "std": 0.007242320193353932,
+            "n_seeds": 3
+          }
+        },
+        "cross_uw": {
+          "accuracy_thr0.5": {
+            "mean": 0.5344742063492064,
+            "std": 0.008807182988375333,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.6212775474773242,
+            "std": 0.00724360257868437,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.7703373015873015,
+            "std": 0.00150862165930013,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.7013888888888888,
+            "std": 0.01911975582560322,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.5940181811650594,
+            "std": 0.0036291425597829723,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.6233413616816202,
+            "std": 0.003964465033915573,
+            "n_seeds": 3
+          }
+        },
+        "cross_dmaer": {
+          "accuracy_thr0.5": {
+            "mean": 0.7931726907630523,
+            "std": 0.005796689449695046,
+            "n_seeds": 3
+          },
+          "auc_real_vs_manipulated": {
+            "mean": 0.8617236842105264,
+            "std": 0.005010797504791209,
+            "n_seeds": 3
+          },
+          "detection_rate_manipulated_thr0.5": {
+            "mean": 0.9579999999999999,
+            "std": 0.0010000000000000009,
+            "n_seeds": 3
+          },
+          "false_alarm_rate_real_thr0.5": {
+            "mean": 0.5404858299595142,
+            "std": 0.01581022201600541,
+            "n_seeds": 3
+          },
+          "official_ap": {
+            "mean": 0.9020149906476339,
+            "std": 0.004535844801057403,
+            "n_seeds": 3
+          },
+          "official_f1": {
+            "mean": 0.8611307342847189,
+            "std": 0.0034541454144665544,
+            "n_seeds": 3
+          }
+        }
+      },
+      "runs": [
+        {
+          "run": "nolbr_s42",
+          "seed": 42,
+          "lbr": false,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.766.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.765999972820282,
+                "real_accuracy": 0.8585657477378845,
+                "fake_accuracy": 0.672690749168396,
+                "ap": 0.8701686859130859,
+                "f1": 0.741150438785553
+              },
+              "accuracy_thr0.5": 0.766,
+              "detection_rate_manipulated_thr0.5": 0.6726907630522089,
+              "false_alarm_rate_real_thr0.5": 0.14143426294820718,
+              "auc_real_vs_manipulated": 0.8381194099105586,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9745762711864406,
+                "pristine": 0.14143426294820718,
+                "tampered": 0.40076335877862596
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6422222256660461,
+                "real_accuracy": 0.4540039598941803,
+                "fake_accuracy": 0.8157413005828857,
+                "ap": 0.7570427656173706,
+                "f1": 0.7034990787506104
+              },
+              "accuracy_thr0.5": 0.6422222222222222,
+              "detection_rate_manipulated_thr0.5": 0.8157413056741916,
+              "false_alarm_rate_real_thr0.5": 0.5459960291197882,
+              "auc_real_vs_manipulated": 0.7391134931187965,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9840213049267643,
+                "pristine": 0.5459960291197882,
+                "tampered": 0.6734234234234234
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.49166667461395264,
+                "real_accuracy": 0.7666667103767395,
+                "fake_accuracy": 0.21666668355464935,
+                "ap": 0.503028392791748,
+                "f1": 0.29885056614875793
+              },
+              "accuracy_thr0.5": 0.49166666666666664,
+              "detection_rate_manipulated_thr0.5": 0.21666666666666667,
+              "false_alarm_rate_real_thr0.5": 0.23333333333333334,
+              "auc_real_vs_manipulated": 0.5556944444444445,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.35,
+                "object-splice": 0.1,
+                "real": 0.23333333333333334,
+                "simple-splice": 0.2
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.605400025844574,
+                "real_accuracy": 0.5004000067710876,
+                "fake_accuracy": 0.7103999853134155,
+                "ap": 0.6305407285690308,
+                "f1": 0.6428959369659424
+              },
+              "accuracy_thr0.5": 0.6054,
+              "detection_rate_manipulated_thr0.5": 0.7104,
+              "false_alarm_rate_real_thr0.5": 0.4996,
+              "auc_real_vs_manipulated": 0.65181518,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.552,
+                "generated_SDFRS": 0.972,
+                "generated_crsdiff": 0.9,
+                "generated_diffusion_sat": 0.302,
+                "generated_diffusion_sat_256": 0.868,
+                "generated_geosynth": 0.412,
+                "generated_geosynth_canny": 0.748,
+                "generated_geosynth_sam": 0.65,
+                "generated_mapsat": 0.838,
+                "generated_rsinpaint": 0.862,
+                "real_fmow": 0.4996
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.5243055820465088,
+                "real_accuracy": 0.2765377163887024,
+                "fake_accuracy": 0.7720734477043152,
+                "ap": 0.5918993949890137,
+                "f1": 0.6187636852264404
+              },
+              "accuracy_thr0.5": 0.5243055555555556,
+              "detection_rate_manipulated_thr0.5": 0.7720734126984127,
+              "false_alarm_rate_real_thr0.5": 0.7234623015873016,
+              "auc_real_vs_manipulated": 0.6251958230485481,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.37003968253968256,
+                "authentic/Seattle": 0.9275793650793651,
+                "authentic/Tacoma": 0.7981150793650794,
+                "fake/Beijing_style": 0.7624007936507936,
+                "fake/Seattle_style": 0.7817460317460317
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.7864792346954346,
+                "real_accuracy": 0.4412955641746521,
+                "fake_accuracy": 0.9570000171661377,
+                "ap": 0.8969136476516724,
+                "f1": 0.8571428656578064
+              },
+              "accuracy_thr0.5": 0.786479250334672,
+              "detection_rate_manipulated_thr0.5": 0.957,
+              "false_alarm_rate_real_thr0.5": 0.5587044534412956,
+              "auc_real_vs_manipulated": 0.8563097165991903,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.957,
+                "validation/REAL": 0.5587044534412956
+              }
+            }
+          }
+        },
+        {
+          "run": "nolbr_s43",
+          "seed": 43,
+          "lbr": false,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.774.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.7739999890327454,
+                "real_accuracy": 0.8645418882369995,
+                "fake_accuracy": 0.6827309131622314,
+                "ap": 0.8714512586593628,
+                "f1": 0.7505518794059753
+              },
+              "accuracy_thr0.5": 0.774,
+              "detection_rate_manipulated_thr0.5": 0.6827309236947792,
+              "false_alarm_rate_real_thr0.5": 0.13545816733067728,
+              "auc_real_vs_manipulated": 0.8400214403430455,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9745762711864406,
+                "pristine": 0.13545816733067728,
+                "tampered": 0.4198473282442748
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6476190686225891,
+                "real_accuracy": 0.4652547836303711,
+                "fake_accuracy": 0.8157413005828857,
+                "ap": 0.7617628574371338,
+                "f1": 0.7066596150398254
+              },
+              "accuracy_thr0.5": 0.6476190476190476,
+              "detection_rate_manipulated_thr0.5": 0.8157413056741916,
+              "false_alarm_rate_real_thr0.5": 0.5347452018530774,
+              "auc_real_vs_manipulated": 0.7426904752579114,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9866844207723036,
+                "pristine": 0.5347452018530774,
+                "tampered": 0.6711711711711712
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.46666666865348816,
+                "real_accuracy": 0.7833333611488342,
+                "fake_accuracy": 0.15000000596046448,
+                "ap": 0.508658766746521,
+                "f1": 0.2195121943950653
+              },
+              "accuracy_thr0.5": 0.4666666666666667,
+              "detection_rate_manipulated_thr0.5": 0.15,
+              "false_alarm_rate_real_thr0.5": 0.21666666666666667,
+              "auc_real_vs_manipulated": 0.5655555555555556,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.2,
+                "object-splice": 0.05,
+                "real": 0.21666666666666667,
+                "simple-splice": 0.2
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.6287000179290771,
+                "real_accuracy": 0.5449999570846558,
+                "fake_accuracy": 0.712399959564209,
+                "ap": 0.6555430293083191,
+                "f1": 0.6573774814605713
+              },
+              "accuracy_thr0.5": 0.6287,
+              "detection_rate_manipulated_thr0.5": 0.7124,
+              "false_alarm_rate_real_thr0.5": 0.455,
+              "auc_real_vs_manipulated": 0.67770728,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.59,
+                "generated_SDFRS": 0.974,
+                "generated_crsdiff": 0.898,
+                "generated_diffusion_sat": 0.236,
+                "generated_diffusion_sat_256": 0.858,
+                "generated_geosynth": 0.436,
+                "generated_geosynth_canny": 0.744,
+                "generated_geosynth_sam": 0.672,
+                "generated_mapsat": 0.844,
+                "generated_rsinpaint": 0.872,
+                "real_fmow": 0.455
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.539434552192688,
+                "real_accuracy": 0.3092758059501648,
+                "fake_accuracy": 0.7695932984352112,
+                "ap": 0.5982086658477783,
+                "f1": 0.6256048679351807
+              },
+              "accuracy_thr0.5": 0.5394345238095238,
+              "detection_rate_manipulated_thr0.5": 0.769593253968254,
+              "false_alarm_rate_real_thr0.5": 0.6907242063492064,
+              "auc_real_vs_manipulated": 0.6257180280966553,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.3482142857142857,
+                "authentic/Seattle": 0.875,
+                "authentic/Tacoma": 0.7698412698412699,
+                "fake/Beijing_style": 0.7579365079365079,
+                "fake/Seattle_style": 0.78125
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.79651939868927,
+                "real_accuracy": 0.4676113426685333,
+                "fake_accuracy": 0.9590000510215759,
+                "ap": 0.9055933356285095,
+                "f1": 0.8631862998008728
+              },
+              "accuracy_thr0.5": 0.7965194109772423,
+              "detection_rate_manipulated_thr0.5": 0.959,
+              "false_alarm_rate_real_thr0.5": 0.5323886639676113,
+              "auc_real_vs_manipulated": 0.8661983805668018,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.959,
+                "validation/REAL": 0.5323886639676113
+              }
+            }
+          }
+        },
+        {
+          "run": "nolbr_s44",
+          "seed": 44,
+          "lbr": false,
+          "backbone_repo": "facebook/dinov3-vitl16-pretrain-sat493m",
+          "selected_checkpoint": "epoch=04-step=225-val_acc=0.767.ckpt",
+          "subsets": {
+            "overhead_val": {
+              "n_images": 1000,
+              "n_real": 502,
+              "n_manipulated": 498,
+              "official": {
+                "accuracy": 0.7670000195503235,
+                "real_accuracy": 0.8745020031929016,
+                "fake_accuracy": 0.6586345434188843,
+                "ap": 0.8710607290267944,
+                "f1": 0.7379077672958374
+              },
+              "accuracy_thr0.5": 0.767,
+              "detection_rate_manipulated_thr0.5": 0.6586345381526104,
+              "false_alarm_rate_real_thr0.5": 0.1254980079681275,
+              "auc_real_vs_manipulated": 0.8400414406630505,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9745762711864406,
+                "pristine": 0.1254980079681275,
+                "tampered": 0.37404580152671757
+              }
+            },
+            "overhead_test": {
+              "n_images": 3150,
+              "n_real": 1511,
+              "n_manipulated": 1639,
+              "official": {
+                "accuracy": 0.6460317373275757,
+                "real_accuracy": 0.47253474593162537,
+                "fake_accuracy": 0.8059792518615723,
+                "ap": 0.7622352242469788,
+                "f1": 0.7032206654548645
+              },
+              "accuracy_thr0.5": 0.6460317460317461,
+              "detection_rate_manipulated_thr0.5": 0.8059792556436852,
+              "false_alarm_rate_real_thr0.5": 0.5274652547981469,
+              "auc_real_vs_manipulated": 0.7422598322087082,
+              "per_group_flagged_rate_thr0.5": {
+                "fake": 0.9826897470039947,
+                "pristine": 0.5274652547981469,
+                "tampered": 0.6565315315315315
+              }
+            },
+            "cross_fmow": {
+              "n_images": 120,
+              "n_real": 60,
+              "n_manipulated": 60,
+              "official": {
+                "accuracy": 0.46666666865348816,
+                "real_accuracy": 0.7833333611488342,
+                "fake_accuracy": 0.15000000596046448,
+                "ap": 0.510120153427124,
+                "f1": 0.2195121943950653
+              },
+              "accuracy_thr0.5": 0.4666666666666667,
+              "detection_rate_manipulated_thr0.5": 0.15,
+              "false_alarm_rate_real_thr0.5": 0.21666666666666667,
+              "auc_real_vs_manipulated": 0.5679166666666666,
+              "per_group_flagged_rate_thr0.5": {
+                "inpaint": 0.2,
+                "object-splice": 0.05,
+                "real": 0.21666666666666667,
+                "simple-splice": 0.2
+              }
+            },
+            "cross_rsfake": {
+              "n_images": 10000,
+              "n_real": 5000,
+              "n_manipulated": 5000,
+              "official": {
+                "accuracy": 0.6204000115394592,
+                "real_accuracy": 0.5345999598503113,
+                "fake_accuracy": 0.7062000036239624,
+                "ap": 0.6436691284179688,
+                "f1": 0.6503960490226746
+              },
+              "accuracy_thr0.5": 0.6204,
+              "detection_rate_manipulated_thr0.5": 0.7062,
+              "false_alarm_rate_real_thr0.5": 0.4654,
+              "auc_real_vs_manipulated": 0.66756226,
+              "per_group_flagged_rate_thr0.5": {
+                "generated_RSSD_768": 0.594,
+                "generated_SDFRS": 0.974,
+                "generated_crsdiff": 0.87,
+                "generated_diffusion_sat": 0.294,
+                "generated_diffusion_sat_256": 0.856,
+                "generated_geosynth": 0.41,
+                "generated_geosynth_canny": 0.726,
+                "generated_geosynth_sam": 0.638,
+                "generated_mapsat": 0.842,
+                "generated_rsinpaint": 0.858,
+                "real_fmow": 0.4654
+              }
+            },
+            "cross_uw": {
+              "n_images": 8064,
+              "n_real": 4032,
+              "n_manipulated": 4032,
+              "official": {
+                "accuracy": 0.5396825671195984,
+                "real_accuracy": 0.310019850730896,
+                "fake_accuracy": 0.7693452835083008,
+                "ap": 0.5919464826583862,
+                "f1": 0.6256555318832397
+              },
+              "accuracy_thr0.5": 0.5396825396825397,
+              "detection_rate_manipulated_thr0.5": 0.7693452380952381,
+              "false_alarm_rate_real_thr0.5": 0.6899801587301587,
+              "auc_real_vs_manipulated": 0.6129187912867693,
+              "per_group_flagged_rate_thr0.5": {
+                "authentic/Beijing": 0.2916666666666667,
+                "authentic/Seattle": 0.9077380952380952,
+                "authentic/Tacoma": 0.7802579365079365,
+                "fake/Beijing_style": 0.753968253968254,
+                "fake/Seattle_style": 0.7847222222222222
+              }
+            },
+            "cross_dmaer": {
+              "n_images": 1494,
+              "n_real": 494,
+              "n_manipulated": 1000,
+              "official": {
+                "accuracy": 0.79651939868927,
+                "real_accuracy": 0.46963563561439514,
+                "fake_accuracy": 0.9580000638961792,
+                "ap": 0.9035379886627197,
+                "f1": 0.8630630373954773
+              },
+              "accuracy_thr0.5": 0.7965194109772423,
+              "detection_rate_manipulated_thr0.5": 0.958,
+              "false_alarm_rate_real_thr0.5": 0.5303643724696356,
+              "auc_real_vs_manipulated": 0.8626629554655871,
+              "per_group_flagged_rate_thr0.5": {
+                "validation/FAKE": 0.958,
+                "validation/REAL": 0.5303643724696356
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

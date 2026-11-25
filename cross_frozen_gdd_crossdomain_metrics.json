@@ -1,0 +1,100 @@
+{
+  "dataset": "gdd",
+  "root": "/home/adminuser/data/gdd",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/frozen_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": "crossdomain",
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 2000,
+    "n_real": 1000,
+    "n_manipulated": 1000,
+    "auc_real_vs_manipulated": 0.5502659999999999,
+    "accuracy_thr0.5": 0.5365,
+    "accuracy_argmax": 0.524,
+    "detection_rate_manipulated_thr0.5": 0.224,
+    "false_alarm_rate_real_thr0.5": 0.151,
+    "predicted_class_counts": {
+      "pristine": 1754,
+      "tampered": 84,
+      "fake": 162
+    }
+  },
+  "per_group": {
+    "gen/geosynth": {
+      "n_images": 334,
+      "n_real": 0,
+      "n_manipulated": 334,
+      "detection_rate_manipulated_thr0.5": 0.24550898203592814,
+      "predicted_class_counts": {
+        "pristine": 287,
+        "tampered": 13,
+        "fake": 34
+      }
+    },
+    "gen/rspaint": {
+      "n_images": 333,
+      "n_real": 0,
+      "n_manipulated": 333,
+      "detection_rate_manipulated_thr0.5": 0.4084084084084084,
+      "predicted_class_counts": {
+        "pristine": 236,
+        "tampered": 47,
+        "fake": 50
+      }
+    },
+    "gen/sd35medium": {
+      "n_images": 333,
+      "n_real": 0,
+      "n_manipulated": 333,
+      "detection_rate_manipulated_thr0.5": 0.018018018018018018,
+      "predicted_class_counts": {
+        "pristine": 330,
+        "tampered": 3,
+        "fake": 0
+      }
+    },
+    "real/dota": {
+      "n_images": 333,
+      "n_real": 333,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.06306306306306306,
+      "predicted_class_counts": {
+        "pristine": 314,
+        "tampered": 1,
+        "fake": 18
+      }
+    },
+    "real/inria": {
+      "n_images": 334,
+      "n_real": 334,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.09580838323353294,
+      "predicted_class_counts": {
+        "pristine": 315,
+        "tampered": 1,
+        "fake": 18
+      }
+    },
+    "real/orbitalnet": {
+      "n_images": 333,
+      "n_real": 333,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.29429429429429427,
+      "predicted_class_counts": {
+        "pristine": 272,
+        "tampered": 19,
+        "fake": 42
+      }
+    }
+  },
+  "wall_sec": 277.04304539601435,
+  "torch_version": "2.14.1+cu126"
+}
