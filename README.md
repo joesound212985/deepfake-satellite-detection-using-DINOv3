@@ -45,7 +45,7 @@ selected on a validation split of the training set, never on the test set.
 | `web` | DINOv3 pretrained on web images instead of satellite images |
 | `resnet` | ResNet-50 backbone |
 | `radio` | C-RADIOv4 backbone |
-| SimLBR | Re-implementation of latent blending regularization following the official code (`simlbr_baseline.py`); binary real-vs-manipulated |
+| SimLBR | Trained on our data with the authors' released code (`simlbr_official.py`, github.com/mvrl/SimLBR at commit ac90f86); binary real-vs-manipulated. `simlbr_baseline.py` is our earlier re-implementation, kept as a cross-check |
 
 The `full` checkpoint is also scored zero-shot on three external sets:
 fmow-fake-small, a 10,000-image subset of RSFAKE-1M, the UW Fake Satellite set and the
@@ -72,7 +72,8 @@ Run automatically on the seed-42 checkpoints of the satellite- and web-pretraine
 | `go.sh`, `watch.py` | Start the whole queue (if not running) and show a live dashboard |
 | `run_everything.sh`, `run_extra_seeds_v2.sh`, `run_web_seeds.sh` | The three queue stages: seed-42 rows; extra cross-dataset evaluations and seeds 43/44; web-backbone seeds |
 | `eval_cross_dataset.py`, `prepare_rsfake_subset.py` | Zero-shot cross-dataset evaluation |
-| `simlbr_baseline.py`, `simlbr_metrics.json`, `simlbr_nolbr_metrics.json` | SimLBR baseline and its results |
+| `simlbr_official.py` | Runs the authors' SimLBR code (cloned separately, not redistributed here) on our data; see the file header for the three run-time adaptations |
+| `simlbr_baseline.py`, `simlbr_metrics.json`, `simlbr_nolbr_metrics.json` | Our own SimLBR re-implementation and its results (cross-check) |
 | `count_flops.py`, `flops.json` | FLOP count per variant |
 | `analyze_extras.py` | Post-hoc analyses from saved per-image files: two-class test scores next to SimLBR, per-generator RSFAKE results, robustness table, bootstrap 95% intervals |
 | `make_qualitative.py` | Qualitative figure; examples picked by a fixed rule, not by hand |

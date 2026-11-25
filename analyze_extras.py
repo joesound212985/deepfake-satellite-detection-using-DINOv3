@@ -87,6 +87,17 @@ for name in ("simlbr_dmaer_metrics.json", "simlbr_nolbr_dmaer_metrics.json"):
         res["two_class_test"]["simlbr" + ("_nolbr" if "nolbr" in name else "")] = dict(
             json.load(open(f))["mean_std_over_seeds"]["overhead_test"], source=f.name)
 
+for bb in ("sat", "web"):      # SimLBR trained with the authors' released code (simlbr_official.py)
+    f = G / f"simlbr_official_{bb}_metrics.json"
+    if f.exists():
+        d = json.load(open(f))
+        for variant, v in d["variants"].items():
+            res["two_class_test"][f"simlbr_official_{bb}_{variant}"] = dict(v["mean_std_over_seeds"]["overhead_test"], source=f.name)
+        res.setdefault("simlbr_official_cross", {})[bb] = {
+            variant: {k: m for k, m in v["mean_std_over_seeds"].items() if k.startswith("cross_")} for variant, v in d["variants"].items()}
+    else:
+        missing.append(f.name)
+
 # 2 + 4 ------------------------------------------------------------------ external sets
 res["cross_dataset"] = {}; res["rsfake_per_generator"] = {}
 for m, (pre, _) in MODELS.items():

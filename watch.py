@@ -167,7 +167,7 @@ def main():
                         lines.append(f"  · {label:<22} pending")
         nrob = len(list(GRSL.glob("robust_*_metrics.json"))); nov = len(list(GRSL.glob("overhead_*_metrics.json")))
         lines.append(f"Extras (after cross-dataset): test set two-class {nov}/2   robustness {nrob}/12   "
-                     f"figure {'✔' if (GRSL / 'qualitative.png').exists() else '·'}   analysis_extras.json {'✔' if (GRSL / 'analysis_extras.json').exists() else '·'}")
+                     f"figure {'✔' if (GRSL / 'qualitative.png').exists() else '·'}   SimLBR official {len(list(GRSL.glob('simlbr_official_*_metrics.json')))}/2   analysis_extras.json {'✔' if (GRSL / 'analysis_extras.json').exists() else '·'}")
         tcsv = GRSL / "table.csv"
         lines.append(f"\ntable.csv: {'written ' + datetime.fromtimestamp(tcsv.stat().st_mtime).strftime('%H:%M') if tcsv.exists() else 'pending'}")
         try:

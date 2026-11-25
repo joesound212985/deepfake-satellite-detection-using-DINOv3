@@ -68,6 +68,13 @@ done
 if [ ! -f qualitative.png ] && [ -f overhead_full_metrics.per_image.json ]; then
   python make_qualitative.py > logs/make_qualitative.log 2>&1; log "\`python make_qualitative.py\`" "qualitative" "exit=$?"
 fi
+# ---- SimLBR with the authors' released code (github.com/mvrl/SimLBR @ ac90f86), both backbones, 3 seeds, LBR + no-LBR
+for bb in sat web; do
+  if [ ! -f simlbr_official_${bb}_metrics.json ]; then
+    log "\`python simlbr_official.py --backbone $bb\`" "simlbr_official_$bb" "started"
+    python simlbr_official.py --backbone $bb > logs/simlbr_official_$bb.log 2>&1; log "" "simlbr_official_$bb" "exit=$?"
+  fi
+done
 python analyze_extras.py > logs/analyze_extras.log 2>&1; log "\`python analyze_extras.py\`" "analysis_extras" "exit=$? (analysis_extras.json)"
 
 SKIP_SETUP=1 SEEDS="43 44" ROWS="full plain" ./run_everything.sh > logs/run_extra_seeds.out 2>&1
