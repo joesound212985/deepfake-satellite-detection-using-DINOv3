@@ -11,6 +11,11 @@
 #                                     results are copied back into ~/results_dinov3 afterwards
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl; mkdir -p logs
+if [ -f .laptop ]; then   # this machine is the laptop: only its own share, never the workstation queue
+  pgrep -f "run_lapto[p]|dinov3_forensics_train_v[2]|train_nor[m]" >/dev/null && echo "laptop queue already running" \
+    || { (setsid nohup ./run_laptop.sh > logs/run_laptop.nohup 2>&1 < /dev/null &); echo "laptop queue started"; }
+  exec python watch.py
+fi
 if pgrep -f "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check" >/dev/null; then echo "queue already running"
 else
   pgrep -f setup_data.sh >/dev/null && export SKIP_SETUP=1   # dataset download still running

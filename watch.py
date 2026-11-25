@@ -32,11 +32,14 @@ CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset")
          ("cross_dmaer", "DM-AER (size-matched)")]
 CROSS_WEB = [("cross_web_fmow", "fmow-fake-small"), ("cross_web_rsfake", "RSFAKE-1M subset"), ("cross_web_uw", "UW fake satellite"),
              ("cross_web_dmaer", "DM-AER (size-matched)")]
-QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check"
+QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check|run_laptop|run_fewshot|run_frozen_cross"
+ROLE = os.environ.get("GRSL_ROLE") or ("laptop" if (GRSL / ".laptop").exists() else "workstation")
+if ROLE == "laptop":      # dashboard started on the laptop itself: show only its own rows, read locally
+    ROWS = [r for r in ROWS if r[0] in LAPTOP]; LAPTOP = set()
 BAR_W = 28
 
 
-LAPTOP_HOST = os.environ.get("GRSL_LAPTOP", "joe@100.72.70.64")   # GRSL_LAPTOP="" disables the laptop block
+LAPTOP_HOST = "" if ROLE == "laptop" else os.environ.get("GRSL_LAPTOP", "joe@100.72.70.64")   # GRSL_LAPTOP="" disables the laptop block
 REMOTE = r'''
 import json, glob, os, re, subprocess
 H = os.path.expanduser("~")
@@ -94,6 +97,23 @@ def cpu_temp():
     except Exception:
         pass
     return None
+
+
+def side_jobs():
+    """Non-training jobs running here right now (evaluations, SimLBR, few-shot): log name + last progress."""
+    out = []
+    try:
+        for lg in sorted((GRSL / "logs").glob("*.log"), key=lambda f: -f.stat().st_mtime)[:6]:
+            if time.time() - lg.stat().st_mtime > 90: continue
+            with open(lg, "rb") as f:
+                f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 3000)); txt = f.read().decode(errors="ignore").replace("\r", "\n")
+            if "[train] epoch" in txt: continue          # a training row, shown in the table
+            m = None
+            for m in re.finditer(r"(\d+)%\|[^|]*\|\s*(\d+)/(\d+) \[([^\]<]*)<([^,\]]*)", txt): pass
+            out.append(f"{lg.stem}" + (f" {m.group(1)}% (left {m.group(5)})" if m else " running"))
+    except Exception:
+        pass
+    return out
 
 
 def bar(frac, w=BAR_W):
@@ -200,7 +220,7 @@ def main():
         lines = []
         ct = cpu_temp()
         lines.append(f"GRSL experiment queue   {datetime.now():%a %H:%M:%S}")
-        lines.append(f"  WORKSTATION  {gpu()}   CPU {ct if ct is not None else '--'}°C   queue: {'RUNNING' if driver_alive else 'not running'}")
+        lines.append(f"  {'LAPTOP     ' if ROLE == 'laptop' else 'WORKSTATION'}  {gpu()}   CPU {ct if ct is not None else '--'}°C   queue: {'RUNNING' if driver_alive else 'not running'}")
         if LAPTOP_HOST:
             if lap:
                 try:
@@ -212,6 +232,13 @@ def main():
                              f"   power: {lap.get('profile') or '?'}{', turbo off' if lap.get('turbo_off') == '1' else ''}   load {lap.get('load', '?')}")
             else:
                 lines.append("  LAPTOP       not reachable (asleep, off, or Tailscale down)")
+        sj = side_jobs()
+        me = "LAPTOP" if ROLE == "laptop" else "WORKSTATION"
+        if cur: lines.append(f"  {me} now: training {cur} (row marked ▶ below)" + (";  also: " + ",  ".join(sj) if sj else ""))
+        elif sj: lines.append(f"  {me} now: no training row at the moment; running evaluation jobs:  " + ",  ".join(sj))
+        else: lines.append(f"  {me} now: idle" if not driver_alive else f"  {me} now: between jobs")
+        if LAPTOP_HOST and lap:
+            lines.append(f"  LAPTOP now: " + (f"training {lap['tag']} (row marked ▶ below)" if lap.get("tag") else "no training process"))
         lines.append("─" * 118)
         total_done = total_left = 0.0; done_runs = 0; n_rows = 0
         lap_left = 0.0; lap_rows = lap_done = 0
