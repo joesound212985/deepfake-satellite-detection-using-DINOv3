@@ -6,6 +6,7 @@
 # Run after setup_env.sh and setup_data.sh. Finished rows are skipped, nothing is overwritten.
 # Afterwards copy the run folders back to the workstation's ~/results_dinov3.
 # These runs come from a different GPU: use their accuracy numbers, not their timing columns.
+source ~/Desktop/.venv/bin/activate
 cd "$(dirname "$0")"; mkdir -p logs
 echo "| $(date -Is) | \`./run_laptop.sh\` on $(hostname) ($(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1)) | laptop queue | started |" >> RUNLOG.md
 # radio_s42 ran out of GPU memory on the workstation's 16 GB card (2026-11-25); same settings here.

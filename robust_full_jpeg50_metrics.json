@@ -1,0 +1,107 @@
+{
+  "dataset": "overhead",
+  "root": "/home/adminuser/data/overhead/test_jpg/test",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": "jpeg:50",
+  "edge_gate": true,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 3150,
+    "n_real": 1511,
+    "n_manipulated": 1639,
+    "auc_real_vs_manipulated": 0.9605962619456505,
+    "accuracy_thr0.5": 0.8942857142857142,
+    "accuracy_argmax": 0.8961904761904762,
+    "detection_rate_manipulated_thr0.5": 0.8541793776693105,
+    "false_alarm_rate_real_thr0.5": 0.062210456651224356,
+    "localization": {
+      "n_images_with_mask": 888,
+      "mean_iou": 0.6475934318725117,
+      "mean_dice": 0.7418563706332922,
+      "mean_mcc": 0.720924181834203
+    },
+    "three_class": {
+      "accuracy": 0.8844444444444445,
+      "macro_f1": 0.8810580990776202,
+      "balanced_accuracy": 0.874396096260436,
+      "tampered_recall": 0.7207207207207207,
+      "confusion_matrix_rows_true_cols_pred": [
+        [
+          1426,
+          59,
+          26
+        ],
+        [
+          218,
+          640,
+          30
+        ],
+        [
+          24,
+          7,
+          720
+        ]
+      ]
+    },
+    "two_class_from_argmax": {
+      "accuracy": 0.8961904761904762,
+      "f1_manipulated": 0.8952258891380968,
+      "precision_manipulated": 0.9426450742240216,
+      "recall_manipulated": 0.8523489932885906
+    },
+    "predicted_class_counts": {
+      "pristine": 1668,
+      "tampered": 706,
+      "fake": 776
+    }
+  },
+  "per_group": {
+    "fake": {
+      "n_images": 751,
+      "n_real": 0,
+      "n_manipulated": 751,
+      "detection_rate_manipulated_thr0.5": 0.9693741677762983,
+      "predicted_class_counts": {
+        "pristine": 24,
+        "tampered": 7,
+        "fake": 720
+      }
+    },
+    "pristine": {
+      "n_images": 1511,
+      "n_real": 1511,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.062210456651224356,
+      "predicted_class_counts": {
+        "pristine": 1426,
+        "tampered": 59,
+        "fake": 26
+      }
+    },
+    "tampered": {
+      "n_images": 888,
+      "n_real": 0,
+      "n_manipulated": 888,
+      "detection_rate_manipulated_thr0.5": 0.7567567567567568,
+      "localization": {
+        "n_images_with_mask": 888,
+        "mean_iou": 0.6475934318725117,
+        "mean_dice": 0.7418563706332922,
+        "mean_mcc": 0.720924181834203
+      },
+      "predicted_class_counts": {
+        "pristine": 218,
+        "tampered": 640,
+        "fake": 30
+      }
+    }
+  },
+  "wall_sec": 500.39422435400775,
+  "torch_version": "2.14.1+cu126"
+}

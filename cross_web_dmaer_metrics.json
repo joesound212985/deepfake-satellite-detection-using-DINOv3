@@ -1,0 +1,55 @@
+{
+  "dataset": "dmaer",
+  "root": "/home/adminuser/data/dm_aer/DM-AER-DeepFake-V1-sample",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": true,
+  "dmaer_note": "reals with shorter side >= 512 only; every image centre-cropped to 512x512 before the 384 resize",
+  "degrade": null,
+  "edge_gate": true,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 1494,
+    "n_real": 494,
+    "n_manipulated": 1000,
+    "auc_real_vs_manipulated": 0.7380627530364373,
+    "accuracy_thr0.5": 0.44912985274431055,
+    "accuracy_argmax": 0.4484605087014726,
+    "detection_rate_manipulated_thr0.5": 0.184,
+    "false_alarm_rate_real_thr0.5": 0.01417004048582996,
+    "predicted_class_counts": {
+      "pristine": 1304,
+      "tampered": 54,
+      "fake": 136
+    }
+  },
+  "per_group": {
+    "validation/FAKE": {
+      "n_images": 1000,
+      "n_real": 0,
+      "n_manipulated": 1000,
+      "detection_rate_manipulated_thr0.5": 0.184,
+      "predicted_class_counts": {
+        "pristine": 817,
+        "tampered": 48,
+        "fake": 135
+      }
+    },
+    "validation/REAL": {
+      "n_images": 494,
+      "n_real": 494,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.01417004048582996,
+      "predicted_class_counts": {
+        "pristine": 487,
+        "tampered": 6,
+        "fake": 1
+      }
+    }
+  },
+  "wall_sec": 290.63801634698757,
+  "torch_version": "2.14.1+cu126"
+}
