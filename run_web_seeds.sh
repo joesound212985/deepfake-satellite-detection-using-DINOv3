@@ -4,7 +4,9 @@
 #   1. trains web seeds 43 and 44 (same settings as web_s42),
 #   2. scores the web_s42 checkpoint zero-shot on the three external sets
 #      (same subsets as the full_s42 cross-dataset evaluation),
-#   3. rebuilds table.csv.
+#   3. re-scores the remaining full / plain / web checkpoints on the test set (per-image predictions)
+#      and runs the McNemar significance tests (analyze_extras.py),
+#   4. rebuilds table.csv.
 # Kill this script to cancel. Never overwrites: existing outputs are skipped.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
@@ -30,4 +32,25 @@ if [ -f "$CK" ]; then
   xeval rsfake --root "$D/rsfake" --subset-csv "$D/rsfake/subset_seed42_n500.csv" --per-gen 500
   xeval uw --root "$D/uw_fake_sat/anti-deepfake/anti-deepfake-data and code/data"
 fi
+# ---- significance tests need per-image test predictions for every full / plain / web seed.
+# full_s42 and web_s42 are done in run_extra_seeds_v2.sh; the other seven checkpoints are re-scored here.
+SATREPO=facebook/dinov3-vitl16-pretrain-sat493m
+R=$HOME/results_dinov3/vit
+oeval() {  # oeval <outstem> <dinov3 repo> <ckpt> <extra args...>
+  local stem=$1 repo=$2 ck=$3; shift 3
+  local out=${stem}_metrics.json
+  [ -f "$out" ] && return
+  [ -f "$ck" ] || { log "" "$stem" "SKIPPED: checkpoint missing"; return; }
+  log "\`python eval_cross_dataset.py --dataset overhead --dinov3 $repo --ckpt $ck --out $out $*\`" "$stem" "started"
+  python eval_cross_dataset.py --dataset overhead --root "$D/overhead/test_jpg/test" --dinov3 $repo --ckpt "$ck" --out "$out" "$@" > logs/$stem.log 2>&1
+  local rc=$?
+  [ -f "$out" ] && log "" "$stem" "exit=$rc, $out written" || log "" "$stem" "exit=$rc, FAILED (logs/$stem.log)"
+}
+oeval overhead_plain_s42 $SATREPO $R/dinov3-vitl16-pretrain-sat493m/plain_s42/best_checkpoint.pt --no-edge-gate
+for S in 43 44; do
+  oeval overhead_full_s$S  $SATREPO $R/dinov3-vitl16-pretrain-sat493m/full_s$S/best_checkpoint.pt
+  oeval overhead_plain_s$S $SATREPO $R/dinov3-vitl16-pretrain-sat493m/plain_s$S/best_checkpoint.pt --no-edge-gate
+  oeval overhead_web_s$S   $WEBREPO $R/dinov3-vitl16-pretrain-lvd1689m/web_s$S/best_checkpoint.pt
+done
+python analyze_extras.py > logs/analyze_extras.log 2>&1; log "\`python analyze_extras.py\`" "analysis_extras" "exit=$? (significance tests added)"
 python aggregate_runs.py --csv table.csv > logs/aggregate.log 2>&1 && log "\`python aggregate_runs.py --csv table.csv\`" "aggregate" "table.csv rebuilt with web seeds"

@@ -366,6 +366,8 @@ def main():
     ap.add_argument("--legacy-token-slice", action="store_true")
     ap.add_argument("--dmaer-matched", action="store_true",
                     help="dmaer: reals with shorter side >= 512 only, every image centre-cropped to 512x512")
+    ap.add_argument("--no-edge-gate", action="store_true",
+                    help="checkpoint was trained with ABL_EDGE_GATE=0 (the plain row)")
     ap.add_argument("--degrade", default="",
                     help="robustness perturbation before the 384 resize: jpeg:Q or scale:S (see degrade_bgr)")
     ap.add_argument("--limit", type=int, default=0, help="debug: evaluate only a seeded random subset of this size")
@@ -397,7 +399,7 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = DINOv3ViTSegFormer3C(dinov3_ckpt=args.dinov3, embed_dim=256, num_classes=3,
-                                 use_edge_gate=True, legacy_token_slice=args.legacy_token_slice).to(device)
+                                 use_edge_gate=not args.no_edge_gate, legacy_token_slice=args.legacy_token_slice).to(device)
     state = torch.load(args.ckpt, map_location=device)
     sd = state["model"] if isinstance(state, dict) and "model" in state else state
     sd = remap_state_dict_keys(sd, model)
@@ -439,7 +441,7 @@ def main():
         "dmaer_matched": (args.dmaer_matched if args.dataset == "dmaer" else None),
         "dmaer_note": ("reals with shorter side >= 512 only; every image centre-cropped to 512x512 before the 384 resize"
                        if args.dataset == "dmaer" and args.dmaer_matched else None),
-        "degrade": args.degrade or None,
+        "degrade": args.degrade or None, "edge_gate": not args.no_edge_gate,
         "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
         "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
         "overall": summarise(recs),

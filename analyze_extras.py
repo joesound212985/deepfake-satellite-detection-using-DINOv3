@@ -7,6 +7,7 @@ Writes analysis_extras.json. Sections are skipped (and listed under "missing") i
   2. rsfake_per_generator detection rate and AUC (each generator's fakes vs all reals)
   3. robustness           test-set scores after JPEG re-compression / down-scaling
   4. bootstrap_ci         95% percentile intervals (1000 resamples of images, seed 42) for AUC / accuracy
+  5. significance         exact McNemar test between rows (web vs full, full vs plain, web vs plain), per seed
   0. consistency          the clean re-evaluation must reproduce test_metrics.json of the same checkpoint
 """
 import json
@@ -139,7 +140,45 @@ for m in MODELS:
                       "mean_iou_tampered": o.get("localization", {}).get("mean_iou")}
     res["robustness"][m] = rows
 
+# 5 ---------------------------------------------------------------------- significance between rows
+# Exact McNemar test on three-class correctness of the same 3150 test images, model A vs model B,
+# for each seed (seed s of A is paired with seed s of B). b = A right & B wrong, c = A wrong & B right.
+from scipy.stats import binomtest
+
+
+def per_image_file(row, seed):
+    if seed == 42 and row in ("full", "web"):
+        return f"overhead_{row}_metrics.per_image.json"
+    return f"overhead_{row}_s{seed}_metrics.per_image.json"
+
+
+res["significance"] = {"test": "exact McNemar (two-sided binomial on discordant images), three-class correctness, per seed",
+                       "note": "3 comparisons x up to 3 seeds; p-values are not corrected for multiple comparisons", "pairs": {}}
+correct = {}
+for row in ("full", "plain", "web"):
+    for seed in (42, 43, 44):
+        f = G / per_image_file(row, seed)
+        if f.exists():
+            recs = json.load(open(f))
+            correct[(row, seed)] = {r["id"]: int(r["pred_class"] == r["cls3"]) for r in recs}
+        else:
+            missing.append(f.name)
+for A, Bm in (("web", "full"), ("full", "plain"), ("web", "plain")):
+    out = {}
+    for seed in (42, 43, 44):
+        if (A, seed) in correct and (Bm, seed) in correct:
+            ca, cb = correct[(A, seed)], correct[(Bm, seed)]
+            ids = sorted(set(ca) & set(cb))
+            b_ = sum(ca[i] == 1 and cb[i] == 0 for i in ids); c_ = sum(ca[i] == 0 and cb[i] == 1 for i in ids)
+            out[f"seed{seed}"] = {"n_images": len(ids), f"acc_{A}": float(np.mean([ca[i] for i in ids])), f"acc_{Bm}": float(np.mean([cb[i] for i in ids])),
+                                  f"only_{A}_correct": b_, f"only_{Bm}_correct": c_,
+                                  "p_value": float(binomtest(b_, b_ + c_, 0.5).pvalue) if b_ + c_ else 1.0}
+    if out:
+        d = [v[f"acc_{A}"] - v[f"acc_{Bm}"] for v in out.values()]
+        out["accuracy_difference"] = {"mean": float(np.mean(d)), "std": float(np.std(d, ddof=1)) if len(d) > 1 else None, "n_seeds": len(d)}
+        res["significance"]["pairs"][f"{A}_vs_{Bm}"] = out
+
 res["missing_inputs"] = sorted(set(missing))
 (G / "analysis_extras.json").write_text(json.dumps(res, indent=2))
-print(json.dumps({k: v for k, v in res.items() if k in ("consistency", "two_class_test", "robustness", "missing_inputs")}, indent=1)[:6000])
+print(json.dumps({k: v for k, v in res.items() if k in ("consistency", "two_class_test", "significance", "missing_inputs")}, indent=1)[:6000])
 print("[save] analysis_extras.json")

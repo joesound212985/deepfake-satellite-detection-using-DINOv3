@@ -60,6 +60,7 @@ Run automatically on the seed-42 checkpoints of the satellite- and web-pretraine
 - the test set re-scored as real-vs-manipulated, for a like-for-like comparison with SimLBR;
 - robustness to JPEG re-compression (quality 90/70/50/30) and down-scaling (0.75, 0.5);
 - per-generator detection on RSFAKE-1M and bootstrap 95% intervals on all external sets;
+- exact McNemar tests between the full, plain and web rows on the same test images, per seed;
 - a qualitative figure (`qualitative.png`);
 - an input-normalisation check (`fullnorm`, `webnorm`), reported separately from the main rows.
 
