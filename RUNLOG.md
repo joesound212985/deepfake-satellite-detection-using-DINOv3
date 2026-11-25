@@ -122,3 +122,10 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-24T09:06:57-06:00 | `pip install einops open_clip_torch` | env | C-RADIO remote code needs both; they were missing on this machine and radio_s42 would have failed at import. torch/timm/transformers versions unchanged |
 | 2026-11-24T09:48:18-06:00 |  | full_s42 | exit=0, test_metrics.json written |
 | 2026-11-24T09:48:18-06:00 | `SEED=42 ABL_EDGE_GATE=0 ABL_BOUNDARY=0 ABL_DEEP_SUP=0 EVAL_SPLITS=val,test RUN_TAG=plain_s42 python dinov3_forensics_train_v2.py` | plain_s42 | started |
+| 2026-11-24T18:08:02-06:00 |  | plain_s42 | exit=0, test_metrics.json written |
+| 2026-11-24T18:08:02-06:00 | `SEED=42 FREEZE_BACKBONE=1 EVAL_SPLITS=val,test RUN_TAG=frozen_s42 python dinov3_forensics_train_v2.py` | frozen_s42 | started |
+| 2026-11-24T22:57:37-06:00 |  | frozen_s42 | exit=0, test_metrics.json written |
+| 2026-11-24T22:57:37-06:00 | `SEED=42 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=web_s42 python dinov3_forensics_train_v2.py` | web_s42 | started |
+| 2026-11-25T07:46:57-06:00 |  | web_s42 | exit=0, test_metrics.json written |
+| 2026-11-25T07:46:57-06:00 | `SEED=42 BACKBONE=resnet50 EVAL_SPLITS=val,test RUN_TAG=resnet_s42 python dinov3_forensics_train_v2.py` | resnet_s42 | started |
+| 2026-11-25T07:51:12-06:00 | `./run_web_seeds.sh` | web_seeds | queued behind extra seeds: web_s43, web_s44, cross-dataset eval of web_s42 (Joe's request after web_s42 scored best) |
