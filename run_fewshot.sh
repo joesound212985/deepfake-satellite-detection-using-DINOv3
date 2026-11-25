@@ -5,7 +5,7 @@
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
 log() { echo "| $(date -Is) | $1 | $2 | $3 |" >> RUNLOG.md; }
-while pgrep -f "run_frozen_cross.sh" >/dev/null; do sleep 30; done
+while pgrep -f "^/bin/bash ./run_frozen_cross" >/dev/null; do sleep 30; done
 for d in fmow rsfake uw dmaer; do
   while [ ! -f cross_web_${d}_metrics.per_image.json ] && pgrep -f "run_extra_seeds|run_everything.sh" >/dev/null; do sleep 30; done
 done
