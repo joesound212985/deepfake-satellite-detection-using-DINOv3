@@ -293,6 +293,27 @@ def build_dmaer(root: Path, matched: bool):
 # ----------------------------------------------------------------------------
 # metrics
 # ----------------------------------------------------------------------------
+def build_gdd(root: Path, split: str):
+    """GDD (Arndt et al., arXiv 2611.31487). The split CSVs are the authoritative benchmark definition:
+    test_{indomain,crossgenerator,crossdomain}_detection.csv with columns generator, image_filepath, label
+    (real / fake), manipulation_type, mask_filepath, source_dataset. Masks are used for manipulated images only."""
+    import csv
+    items = []
+    with open(root / f"test_{split}_detection.csv", newline="") as f:
+        for r in csv.DictReader(f):
+            fake = r["label"].strip().lower() == "fake"
+            gen = (r.get("generator") or "").strip(); man = (r.get("manipulation_type") or "").strip()
+            src = (r.get("source_dataset") or "").strip()
+            grp = (f"manip/{man}" if man else f"gen/{gen}") if fake else f"real/{src}"
+            mp = (r.get("mask_filepath") or "").strip()
+            items.append({"img": root / r["image_filepath"].strip(), "mask": (root / mp) if (fake and man and mp) else None,
+                          "label": int(fake), "group": grp, "id": r["image_filepath"].strip()})
+    missing = [str(i["img"]) for i in items if not i["img"].exists()]
+    if missing:
+        sys.exit(f"gdd/{split}: {len(missing)} of {len(items)} images missing, e.g. {missing[0]}")
+    return items
+
+
 def pix_stats(pred: np.ndarray, gt: np.ndarray):
     tp = float(np.sum((pred == 1) & (gt == 1)))
     fp = float(np.sum((pred == 1) & (gt == 0)))
@@ -352,7 +373,8 @@ def summarise(recs):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer", "overhead"])
+    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer", "overhead", "gdd"])
+    ap.add_argument("--gdd-split", default="indomain", choices=["indomain", "crossgenerator", "crossdomain"])
     ap.add_argument("--root", required=True)
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--dinov3", default=os.environ.get("DINOV3_CKPT", "facebook/dinov3-vitl16-pretrain-sat493m"))
@@ -386,6 +408,8 @@ def main():
         items = build_dmaer(root, args.dmaer_matched)
     elif args.dataset == "overhead":
         items = build_overhead(root)
+    elif args.dataset == "gdd":
+        items = build_gdd(root, args.gdd_split)
     else:
         items = build_uw(root)
     print(f"[data] {args.dataset}: {len(items)} images; groups:",
@@ -442,6 +466,7 @@ def main():
         "dmaer_note": ("reals with shorter side >= 512 only; every image centre-cropped to 512x512 before the 384 resize"
                        if args.dataset == "dmaer" and args.dmaer_matched else None),
         "degrade": args.degrade or None, "edge_gate": not args.no_edge_gate,
+        "gdd_split": (args.gdd_split if args.dataset == "gdd" else None),
         "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
         "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
         "overall": summarise(recs),
