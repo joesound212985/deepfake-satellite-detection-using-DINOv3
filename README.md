@@ -79,6 +79,7 @@ Run automatically on the seed-42 checkpoints of the satellite- and web-pretraine
 | `count_flops.py`, `flops.json` | FLOP count per variant |
 | `analyze_extras.py` | Post-hoc analyses from saved per-image files: two-class test scores next to SimLBR, per-generator RSFAKE results, robustness table, bootstrap 95% intervals |
 | `make_qualitative.py` | Qualitative figure; examples picked by a fixed rule, not by hand |
+| `run_laptop.sh` | Share of the queue run on a second machine: `fullnorm`, `webnorm`, then `plain` seeds 43/44 |
 | `train_norm.py`, `run_norm_check.sh` | Side experiment: same training with each backbone's own input normalisation (`fullnorm`, `webnorm` rows) |
 | `aggregate_runs.py` | Builds the results table from `test_metrics.json` files |
 | `setup_env.sh`, `setup_data.sh` | Environment and dataset setup |

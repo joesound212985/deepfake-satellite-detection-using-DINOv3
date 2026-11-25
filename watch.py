@@ -9,6 +9,7 @@ GRSL = HOME / "grsl"
 RES = HOME / "results_dinov3"
 SAT = RES/"vit/dinov3-vitl16-pretrain-sat493m"
 WEBD = RES/"vit/dinov3-vitl16-pretrain-lvd1689m"
+LAPTOP = {"plain_s43", "plain_s44", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
 ROWS = [  # tag, results dir, label, est. hours (measured on this machine where a run has finished) -- in queue order
     ("full_s42",   SAT/"full_s42",    "Full model (DINOv3-SAT)",   8.8),
     ("plain_s42",  SAT/"plain_s42",   "Plain decoder",             8.3),
@@ -21,10 +22,10 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("web_s44",    WEBD/"web_s44",    "Web DINOv3, seed 44",       8.8),
     ("full_s43",   SAT/"full_s43",    "Full model, seed 43",       8.8),
     ("full_s44",   SAT/"full_s44",    "Full model, seed 44",       8.8),
-    ("plain_s43",  SAT/"plain_s43",   "Plain decoder, seed 43",    8.3),
-    ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),
-    ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side)",  8.8),
-    ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side)",  8.8),
+    ("plain_s43",  SAT/"plain_s43",   "Plain decoder, seed 43 [laptop]",    8.3),
+    ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44 [laptop]",    8.3),
+    ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side) [laptop]",  8.8),
+    ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side) [laptop]",  8.8),
 ]
 # (metrics file stem, log stem, label)
 CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"),
@@ -121,7 +122,7 @@ def main():
             if (out / "test_metrics.json").exists():
                 m = json.load(open(out / "test_metrics.json"))
                 done_runs += 1; total_done += hrs
-                lines.append(f"✔ {label:<24} {bar(1.0)} 100%  acc={m['accuracy']:.4f} F1={m['macro_f1']:.4f} IoU={m['localization_tampered']['mean_iou']:.4f} "
+                lines.append(f"✔ {label:<31} {bar(1.0)} 100%  acc={m['accuracy']:.4f} F1={m['macro_f1']:.4f} IoU={m['localization_tampered']['mean_iou']:.4f} "
                              f"Dice={m['localization_tampered']['mean_dice']:.3f}  {m['train_sec_per_epoch']:.0f}s/ep")
             elif tag == cur:
                 d = parse_log(logf)
@@ -137,16 +138,19 @@ def main():
                     sub = f"epoch {d['epoch']}/{d['epochs']}  validating {d['eval_frac']*100:.0f}%"
                 else:
                     sub = f"epoch {d['epoch']}/{d['epochs']}  {d['phase']}"
-                lines.append(f"▶ {label:<24} {bar(ep_frac)} {ep_frac*100:3.0f}%  {sub}   ETA {fmt_td(remaining)}")
+                lines.append(f"▶ {label:<31} {bar(ep_frac)} {ep_frac*100:3.0f}%  {sub}   ETA {fmt_td(remaining)}")
                 if d["val"]:
                     v = d["val"]
-                    lines.append(f"  {'':<24} last epoch {v['ep']}: val_acc={v['acc']:.4f} val_f1={v['f1']:.4f} val_iou={v['iou']:.4f} best_f1={v['best']:.4f} ({v['sec']}s/epoch)")
-            elif logf.exists() and not driver_alive:
+                    lines.append(f"  {'':<31} last epoch {v['ep']}: val_acc={v['acc']:.4f} val_f1={v['f1']:.4f} val_iou={v['iou']:.4f} best_f1={v['best']:.4f} ({v['sec']}s/epoch)")
+            elif logf.exists() and not driver_alive and tag not in LAPTOP:
                 total_left += hrs
-                lines.append(f"✖ {label:<24} {bar(0)}   stopped / incomplete (relaunch to resume)")
+                lines.append(f"✖ {label:<31} {bar(0)}   stopped / incomplete (relaunch to resume)")
+            elif tag in LAPTOP:
+                n_rows -= 1
+                lines.append(f"→ {label:<31} {bar(0)}   runs on the laptop; shown here once copied back")
             else:
                 total_left += hrs
-                lines.append(f"· {label:<24} {bar(0)}   queued (~{hrs:g} h)")
+                lines.append(f"· {label:<31} {bar(0)}   queued (~{hrs:g} h)")
         lines.append("─" * 118)
         tot = total_done + total_left
         lines.append(f"QUEUE  {bar(total_done / tot if tot else 0, 40)} {100*total_done/tot if tot else 0:3.0f}%   {done_runs}/{n_rows} runs done   "

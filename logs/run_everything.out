@@ -7,3 +7,5 @@
 [2026-11-24T22:57:37-06:00] web_s42: started
 [2026-11-25T07:46:57-06:00] web_s42: exit=0, test_metrics.json written
 [2026-11-25T07:46:57-06:00] resnet_s42: started
+[2026-11-25T11:08:58-06:00] resnet_s42: exit=0, test_metrics.json written
+[2026-11-25T11:08:58-06:00] radio_s42: started
