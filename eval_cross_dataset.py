@@ -299,7 +299,9 @@ def build_gdd(root: Path, split: str):
     (real / fake), manipulation_type, mask_filepath, source_dataset. Masks are used for manipulated images only."""
     import csv
     items = []
-    with open(root / f"test_{split}_detection.csv", newline="") as f:
+    # split "localization" = test_indomain_localization.csv (500 real + 500 manipulated images, all with masks)
+    name = "test_indomain_localization.csv" if split == "localization" else f"test_{split}_detection.csv"
+    with open(root / name, newline="") as f:
         for r in csv.DictReader(f):
             fake = r["label"].strip().lower() == "fake"
             gen = (r.get("generator") or "").strip(); man = (r.get("manipulation_type") or "").strip()
@@ -374,7 +376,7 @@ def summarise(recs):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer", "overhead", "gdd"])
-    ap.add_argument("--gdd-split", default="indomain", choices=["indomain", "crossgenerator", "crossdomain"])
+    ap.add_argument("--gdd-split", default="indomain", choices=["indomain", "crossgenerator", "crossdomain", "localization"])
     ap.add_argument("--root", required=True)
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--dinov3", default=os.environ.get("DINOV3_CKPT", "facebook/dinov3-vitl16-pretrain-sat493m"))
