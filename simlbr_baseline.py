@@ -42,7 +42,7 @@ from sklearn.metrics import roc_auc_score, balanced_accuracy_score
 from transformers import AutoModel
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from eval_cross_dataset import build_fmow, build_rsfake_from_csv, build_uw  # noqa: E402
+from eval_cross_dataset import build_fmow, build_rsfake_from_csv, build_uw, build_dmaer  # noqa: E402
 import cv2
 from torchvision.transforms import v2
 
@@ -120,7 +120,13 @@ class ImgList(Dataset):
         return len(self.items)
 
     def __getitem__(self, i):
-        return self.tf(read_rgb_native(Path(self.items[i]["img"])))
+        img = read_rgb_native(Path(self.items[i]["img"]))
+        c = self.items[i].get("crop", 0)
+        if c:                      # same centre crop as eval_cross_dataset.read_rgb (DM-AER size matching)
+            h, w = img.shape[:2]
+            t, l = (h - c) // 2, (w - c) // 2
+            img = np.ascontiguousarray(img[t:t + c, l:l + c])
+        return self.tf(img)
 
 
 @torch.no_grad()
@@ -267,8 +273,10 @@ def main():
         evalsets["cross_uw"] = (it, embed("uw", it, cache))
     dmaer = DATA / "dm_aer/DM-AER-DeepFake-V1-sample"
     if dmaer.exists():
-        it = build_uw(dmaer)
-        evalsets["cross_dmaer"] = (it, embed("dmaer_sample", it, cache))
+        it = build_dmaer(dmaer, True)     # primary: size-matched (reals >= 512 px, centre crop 512)
+        evalsets["cross_dmaer"] = (it, embed("dmaer_sample_matched512", it, cache))
+        it = build_dmaer(dmaer, False)    # sensitivity check: all reals at native size
+        evalsets["cross_dmaer_allreals"] = (it, embed("dmaer_sample", it, cache))
     skipped = [n for n in ("cross_fmow", "cross_rsfake", "cross_uw", "cross_dmaer") if n not in evalsets]
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

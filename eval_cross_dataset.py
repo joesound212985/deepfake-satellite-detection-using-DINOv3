@@ -41,7 +41,7 @@ THR_MASK = 0.5
 # ----------------------------------------------------------------------------
 # image / mask readers (handle TIFF, 16-bit, >3 bands)
 # ----------------------------------------------------------------------------
-def read_rgb(path: Path) -> np.ndarray:
+def read_rgb(path: Path, crop: int = 0) -> np.ndarray:
     img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
     if img is None:
         from PIL import Image
@@ -57,6 +57,10 @@ def read_rgb(path: Path) -> np.ndarray:
             img = img / 65535.0 * 255.0 if mx > 4095 else img / mx * 255.0
         img = np.clip(img, 0, 255).astype(np.uint8)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    if crop:                      # centre crop to crop x crop at native resolution (DM-AER size matching)
+        h, w = img.shape[:2]
+        t, l = (h - crop) // 2, (w - crop) // 2
+        img = np.ascontiguousarray(img[t:t + crop, l:l + crop])
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_AREA)
     return img
 
@@ -85,7 +89,7 @@ class ListDataset(Dataset):
 
     def __getitem__(self, i):
         it = self.items[i]
-        img = read_rgb(Path(it["img"]))
+        img = read_rgb(Path(it["img"]), it.get("crop", 0))
         x = torch.from_numpy(img.astype(np.float32) / 255.0).permute(2, 0, 1).contiguous()
         m = read_mask(it.get("mask"))
         has_mask = m is not None and it["label"] == 1
@@ -214,6 +218,27 @@ def build_uw(root: Path):
     return items
 
 
+DMAER_SIZE = 512
+
+
+def build_dmaer(root: Path, matched: bool):
+    """DM-AER-DeepFake-V1 official sample. Fakes are all 512x512; reals (Million-AID) range from
+    137 to 4432 px. matched=True removes the resolution confound: keep only reals whose shorter
+    side is >= 512 and centre-crop every image to 512x512 (a no-op for the fakes), so both classes
+    reach the model at the same native size and go through the same 512->384 resize."""
+    items = build_uw(root)
+    if not matched:
+        return items
+    from PIL import Image
+    keep = []
+    for it in items:
+        with Image.open(it["img"]) as im:
+            w, h = im.size
+        if min(w, h) >= DMAER_SIZE:
+            keep.append(dict(it, crop=DMAER_SIZE))
+    return keep
+
+
 # ----------------------------------------------------------------------------
 # metrics
 # ----------------------------------------------------------------------------
@@ -270,6 +295,8 @@ def main():
     ap.add_argument("--batch", type=int, default=4)
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--legacy-token-slice", action="store_true")
+    ap.add_argument("--dmaer-matched", action="store_true",
+                    help="dmaer: reals with shorter side >= 512 only, every image centre-cropped to 512x512")
     ap.add_argument("--limit", type=int, default=0, help="debug: evaluate only a seeded random subset of this size")
     args = ap.parse_args()
 
@@ -282,6 +309,8 @@ def main():
         items = build_rsfake_from_csv(root, Path(args.subset_csv).expanduser())
     elif args.dataset == "rsfake":
         items = build_rsfake(root, args.per_gen, args.seed, Path(args.real_dir).expanduser() if args.real_dir else None)
+    elif args.dataset == "dmaer":
+        items = build_dmaer(root, args.dmaer_matched)
     else:
         items = build_uw(root)
     print(f"[data] {args.dataset}: {len(items)} images; groups:",
@@ -332,6 +361,9 @@ def main():
     result = {
         "dataset": args.dataset, "root": str(root), "checkpoint": args.ckpt, "dinov3": args.dinov3,
         "seed": args.seed, "per_gen": args.per_gen if args.dataset == "rsfake" else None,
+        "dmaer_matched": (args.dmaer_matched if args.dataset == "dmaer" else None),
+        "dmaer_note": ("reals with shorter side >= 512 only; every image centre-cropped to 512x512 before the 384 resize"
+                       if args.dataset == "dmaer" and args.dmaer_matched else None),
         "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
         "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
         "overall": summarise(recs),

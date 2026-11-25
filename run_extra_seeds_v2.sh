@@ -1,6 +1,7 @@
 #!/bin/bash
 # Replaces run_extra_seeds.sh (2026-11-25). Waits for the seed-42 queue, then, while the GPU is free:
-#   1. scores full_s42 on DM-AER (official sample: 1000 StyleGAN2 fakes + 1000 Million-AID reals),
+#   1. scores full_s42 on DM-AER (official sample; primary = size-matched: 1000 StyleGAN2 fakes + the 494
+#      Million-AID reals >= 512 px, all centre-cropped to 512; plus an all-reals run as a sensitivity check),
 #   2. scores web_s42 on fmow / rsfake / uw / dmaer (same subsets as full_s42),
 #   3. re-runs the SimLBR baseline (+ no-LBR control) with DM-AER added, to new output files,
 #   4. trains seeds 43 and 44 for full + plain.
@@ -27,11 +28,13 @@ FULL=$R/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt
 WEB=$R/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt
 DM="$D/dm_aer/DM-AER-DeepFake-V1-sample"
 UW="$D/uw_fake_sat/anti-deepfake/anti-deepfake-data and code/data"
-xeval cross_     $SATREPO "$FULL" dmaer  --root "$DM"
+xeval cross_     $SATREPO "$FULL" dmaer  --root "$DM" --dmaer-matched          # primary: size-matched reals
+xeval cross_allreals_ $SATREPO "$FULL" dmaer --root "$DM"                        # sensitivity: all reals, native size
 xeval cross_web_ $WEBREPO "$WEB"  fmow   --root "$D/fmow-fake-small"
 xeval cross_web_ $WEBREPO "$WEB"  rsfake --root "$D/rsfake" --subset-csv "$D/rsfake/subset_seed42_n500.csv" --per-gen 500
 xeval cross_web_ $WEBREPO "$WEB"  uw     --root "$UW"
-xeval cross_web_ $WEBREPO "$WEB"  dmaer  --root "$DM"
+xeval cross_web_ $WEBREPO "$WEB"  dmaer  --root "$DM" --dmaer-matched
+xeval cross_web_allreals_ $WEBREPO "$WEB" dmaer --root "$DM"
 if [ ! -f simlbr_dmaer_metrics.json ]; then
   log "\`python simlbr_baseline.py --out simlbr_dmaer_metrics.json\`" "simlbr_dmaer" "started"
   python simlbr_baseline.py --out simlbr_dmaer_metrics.json > logs/simlbr_dmaer.log 2>&1; log "" "simlbr_dmaer" "exit=$?"

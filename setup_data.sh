@@ -9,6 +9,7 @@
 #   rsfake/                                     RSFAKE-1M fakes + split csvs + rebuilt fMoW reals (subset)
 #   fmow-fake-small/                            geodf/fmow-fake-small (HF, approval required)
 #   uw_fake_sat/                                UW Fake Satellite Imagery (figshare)
+#   dm_aer/                                     DM-AER-DeepFake-V1 official sample (Google Drive)
 # Models are cached by Hugging Face / timm in ~/.cache.
 #
 # The main dataset cannot be downloaded by script (authors' Google Form). Provide it as ONE of:
@@ -104,6 +105,21 @@ else
     && unzip -q -o anti-deepfake-data-and-code.zip -d anti-deepfake \
     && ok "UW fake satellite downloaded" || warn "UW download failed"
   cd "$OLDPWD"
+fi
+
+# ---------------------------------------------------------------- 6. DM-AER-DeepFake-V1 official sample
+# github.com/rijulgupta-dm/deepfake-satellite-images (CC BY-NC-SA 4.0); 193 MB zip on Google Drive:
+# 1000 StyleGAN2 fakes + 1000 Million-AID reals from the validation split.
+DM=$DATA/dm_aer
+if [ -d "$DM/DM-AER-DeepFake-V1-sample/validation/FAKE" ] && [ -d "$DM/DM-AER-DeepFake-V1-sample/validation/REAL" ]; then
+  ok "DM-AER sample: $(find "$DM/DM-AER-DeepFake-V1-sample" -name '*.jpg' | wc -l) images"
+else
+  todo "DM-AER sample: downloading 193 MB from Google Drive"
+  mkdir -p "$DM" \
+    && curl -sL -A "Mozilla/5.0" -o "$DM/DM-AER-DeepFake-V1-sample.zip" \
+         "https://drive.usercontent.google.com/download?id=1iBGXLH0b0eIVki79ZgZyjJs8nhcl3Y2P&export=download&confirm=t" \
+    && unzip -q -n "$DM/DM-AER-DeepFake-V1-sample.zip" -d "$DM" \
+    && ok "DM-AER sample downloaded" || warn "DM-AER download failed (get DM-AER-DeepFake-V1-sample.zip from the Drive folder linked in the GitHub README)"
 fi
 
 echo "[setup] done.  DATA=$DATA"

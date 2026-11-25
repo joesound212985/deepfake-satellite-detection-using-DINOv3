@@ -7,18 +7,28 @@ from datetime import datetime, timedelta
 HOME = Path.home()
 GRSL = HOME / "grsl"
 RES = HOME / "results_dinov3"
-ROWS = [  # tag, results dir, label, est. hours
-    ("full_s42",   RES/"vit/dinov3-vitl16-pretrain-sat493m/full_s42",   "Full model (DINOv3-SAT)",   8.0),
-    ("plain_s42",  RES/"vit/dinov3-vitl16-pretrain-sat493m/plain_s42",  "Plain decoder",             8.0),
-    ("frozen_s42", RES/"vit/dinov3-vitl16-pretrain-sat493m/frozen_s42", "Frozen backbone",           5.5),
-    ("resnet_s42", RES/"resnet/resnet50/resnet_s42",                   "ResNet-50 baseline",        4.5),
-    ("web_s42",    RES/"vit/dinov3-vitl16-pretrain-lvd1689m/web_s42",  "Web-pretrained DINOv3",     8.0),
-    ("radio_s42",  RES/"radio/C-RADIOv4-SO400M/radio_s42",             "C-RADIOv4 baseline",       13.0),
-    ("noedge_s42", RES/"vit/dinov3-vitl16-pretrain-sat493m/noedge_s42", "No edge gate",              8.0),
-    ("nobound_s42",RES/"vit/dinov3-vitl16-pretrain-sat493m/nobound_s42","No boundary loss",          8.0),
-    ("nods_s42",   RES/"vit/dinov3-vitl16-pretrain-sat493m/nods_s42",   "No deep supervision",       8.0),
+SAT = RES/"vit/dinov3-vitl16-pretrain-sat493m"
+WEBD = RES/"vit/dinov3-vitl16-pretrain-lvd1689m"
+ROWS = [  # tag, results dir, label, est. hours (measured on this machine where a run has finished) -- in queue order
+    ("full_s42",   SAT/"full_s42",    "Full model (DINOv3-SAT)",   8.8),
+    ("plain_s42",  SAT/"plain_s42",   "Plain decoder",             8.3),
+    ("frozen_s42", SAT/"frozen_s42",  "Frozen backbone",           4.8),
+    ("web_s42",    WEBD/"web_s42",    "Web-pretrained DINOv3",     8.8),
+    ("resnet_s42", RES/"resnet/resnet50/resnet_s42",       "ResNet-50 baseline",  3.0),
+    ("radio_s42",  RES/"radio/C-RADIOv4-SO400M/radio_s42", "C-RADIOv4 baseline", 13.0),
+    ("full_s43",   SAT/"full_s43",    "Full model, seed 43",       8.8),
+    ("plain_s43",  SAT/"plain_s43",   "Plain decoder, seed 43",    8.3),
+    ("full_s44",   SAT/"full_s44",    "Full model, seed 44",       8.8),
+    ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),
+    ("web_s43",    WEBD/"web_s43",    "Web DINOv3, seed 43",       8.8),
+    ("web_s44",    WEBD/"web_s44",    "Web DINOv3, seed 44",       8.8),
 ]
-CROSS = [("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite")]
+# (metrics file stem, log stem, label)
+CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"),
+         ("cross_dmaer", "DM-AER (size-matched)")]
+CROSS_WEB = [("cross_web_fmow", "fmow-fake-small"), ("cross_web_rsfake", "RSFAKE-1M subset"), ("cross_web_uw", "UW fake satellite"),
+             ("cross_web_dmaer", "DM-AER (size-matched)")]
+QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds"
 BAR_W = 28
 
 
@@ -96,15 +106,13 @@ def running_tag():
 
 def main():
     while True:
-        rows = active_rows()
         cur = running_tag()
-        driver_alive = subprocess.call(["pgrep", "-f", "run_everything.sh"], stdout=subprocess.DEVNULL) == 0
+        driver_alive = subprocess.call(["pgrep", "-f", QUEUE_PAT], stdout=subprocess.DEVNULL) == 0
         lines = []
         lines.append(f"GRSL experiment queue   {datetime.now():%a %H:%M:%S}   {gpu()}   driver: {'RUNNING' if driver_alive else 'not running'}")
         lines.append("─" * 118)
         total_done = total_left = 0.0; done_runs = 0; n_rows = 0
         for tag, out, label, hrs in ROWS:
-            if rows is not None and tag.split("_s")[0] not in rows: continue
             n_rows += 1
             logf = GRSL / "logs" / f"{tag}.log"
             if (out / "test_metrics.json").exists():
@@ -141,19 +149,20 @@ def main():
         lines.append(f"QUEUE  {bar(total_done / tot if tot else 0, 40)} {100*total_done/tot if tot else 0:3.0f}%   {done_runs}/{n_rows} runs done   "
                      f"ETA all training ≈ {fmt_td(total_left*3600)}  (finish ≈ {(datetime.now()+timedelta(hours=total_left)):%a %H:%M})")
         lines.append("")
-        lines.append("Cross-dataset (after training):")
-        for name, label in CROSS:
-            f = GRSL / f"cross_{name}_metrics.json"
-            if f.exists():
-                o = json.load(open(f))["overall"]
-                auc = o.get("auc_real_vs_manipulated"); acc = o.get("accuracy_thr0.5"); det = o.get("detection_rate_manipulated_thr0.5")
-                lines.append(f"  ✔ {label:<20} n={o['n_images']}  AUC={auc:.4f}  acc={acc:.4f}" if auc is not None else f"  ✔ {label:<20} n={o['n_images']}  detection rate={det:.4f}")
-            else:
-                lg = GRSL / "logs" / f"cross_{name}.log"
-                if lg.exists() and (time.time() - lg.stat().st_mtime) < 120:
-                    d = parse_log(lg); lines.append(f"  ▶ {label:<20} evaluating {d['eval_frac']*100 if d['eval_frac'] else 0:.0f}%")
+        for title, group in (("Cross-dataset, full_s42 (after radio):", CROSS), ("Cross-dataset, web_s42:", CROSS_WEB)):
+            lines.append(title)
+            for stem, label in group:
+                f = GRSL / f"{stem}_metrics.json"
+                if f.exists():
+                    o = json.load(open(f))["overall"]
+                    auc = o.get("auc_real_vs_manipulated"); acc = o.get("accuracy_thr0.5"); det = o.get("detection_rate_manipulated_thr0.5")
+                    lines.append(f"  ✔ {label:<22} n={o['n_images']}  AUC={auc:.4f}  acc={acc:.4f}" if auc is not None else f"  ✔ {label:<22} n={o['n_images']}  detection rate={det:.4f}")
                 else:
-                    lines.append(f"  · {label:<20} pending")
+                    lg = GRSL / "logs" / f"{stem}.log"
+                    if lg.exists() and (time.time() - lg.stat().st_mtime) < 120:
+                        d = parse_log(lg); lines.append(f"  ▶ {label:<22} evaluating {d['eval_frac']*100 if d['eval_frac'] else 0:.0f}%")
+                    else:
+                        lines.append(f"  · {label:<22} pending")
         tcsv = GRSL / "table.csv"
         lines.append(f"\ntable.csv: {'written ' + datetime.fromtimestamp(tcsv.stat().st_mtime).strftime('%H:%M') if tcsv.exists() else 'pending'}")
         try:

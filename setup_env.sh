@@ -11,7 +11,7 @@ conda env list | grep -q "^$ENV " || conda create -n "$ENV" python=3.13 -y
 conda activate "$ENV"
 pip install -q --upgrade pip
 pip install -q torch torchvision --index-url https://download.pytorch.org/whl/$CUDA
-pip install -q "transformers>=5" timm opencv-python-headless scikit-learn matplotlib tqdm packaging "huggingface_hub[cli]" pillow pandas requests
+pip install -q "transformers>=5" timm opencv-python-headless scikit-learn matplotlib tqdm packaging "huggingface_hub[cli]" pillow pandas requests tifffile einops open_clip_torch
 python - <<'EOF'
 import torch, transformers, timm, cv2, sklearn
 print("torch", torch.__version__, "cuda", torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else "")

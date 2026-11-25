@@ -48,7 +48,10 @@ selected on a validation split of the training set, never on the test set.
 | SimLBR | Re-implementation of latent blending regularization following the official code (`simlbr_baseline.py`); binary real-vs-manipulated |
 
 The `full` checkpoint is also scored zero-shot on three external sets:
-fmow-fake-small, a 10,000-image subset of RSFAKE-1M and the UW Fake Satellite set.
+fmow-fake-small, a 10,000-image subset of RSFAKE-1M, the UW Fake Satellite set and the
+DM-AER-DeepFake-V1 official sample (StyleGAN2; real images size-matched to the fakes).
+`setup_data.sh` downloads all four; the main training set is gated by its authors' form
+and has to be supplied separately (see the header of `setup_data.sh`).
 
 ## Files
 
@@ -56,7 +59,8 @@ fmow-fake-small, a 10,000-image subset of RSFAKE-1M and the UW Fake Satellite se
 |---|---|
 | `dinov3_forensics_train_v2.py` | Training and evaluation script (variants via environment variables) |
 | `dinov3_map_forgery_2025.original.py`, `v2_changes.diff` | Original script and the changes made to it |
-| `run_everything.sh`, `run_extra_seeds.sh`, `go.sh` | Run queue: all rows, cross-dataset evaluation, aggregation |
+| `go.sh`, `watch.py` | Start the whole queue (if not running) and show a live dashboard |
+| `run_everything.sh`, `run_extra_seeds_v2.sh`, `run_web_seeds.sh` | The three queue stages: seed-42 rows; extra cross-dataset evaluations and seeds 43/44; web-backbone seeds |
 | `eval_cross_dataset.py`, `prepare_rsfake_subset.py` | Zero-shot cross-dataset evaluation |
 | `simlbr_baseline.py`, `simlbr_metrics.json`, `simlbr_nolbr_metrics.json` | SimLBR baseline and its results |
 | `count_flops.py`, `flops.json` | FLOP count per variant |
