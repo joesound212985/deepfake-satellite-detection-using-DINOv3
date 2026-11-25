@@ -1,0 +1,154 @@
+{
+  "dataset": "rsfake",
+  "root": "/home/adminuser/data/rsfake",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+  "seed": 42,
+  "per_gen": 500,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 10000,
+    "n_real": 5000,
+    "n_manipulated": 5000,
+    "auc_real_vs_manipulated": 0.6678000399999999,
+    "accuracy_thr0.5": 0.5396,
+    "accuracy_argmax": 0.5387,
+    "detection_rate_manipulated_thr0.5": 0.1046,
+    "false_alarm_rate_real_thr0.5": 0.0254,
+    "predicted_class_counts": {
+      "pristine": 9367,
+      "tampered": 312,
+      "fake": 321
+    }
+  },
+  "per_group": {
+    "generated_RSSD_768": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.002,
+      "predicted_class_counts": {
+        "pristine": 499,
+        "tampered": 1,
+        "fake": 0
+      }
+    },
+    "generated_SDFRS": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.222,
+      "predicted_class_counts": {
+        "pristine": 392,
+        "tampered": 28,
+        "fake": 80
+      }
+    },
+    "generated_crsdiff": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.156,
+      "predicted_class_counts": {
+        "pristine": 423,
+        "tampered": 39,
+        "fake": 38
+      }
+    },
+    "generated_diffusion_sat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.042,
+      "predicted_class_counts": {
+        "pristine": 479,
+        "tampered": 13,
+        "fake": 8
+      }
+    },
+    "generated_diffusion_sat_256": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.312,
+      "predicted_class_counts": {
+        "pristine": 351,
+        "tampered": 26,
+        "fake": 123
+      }
+    },
+    "generated_geosynth": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.002,
+      "predicted_class_counts": {
+        "pristine": 499,
+        "tampered": 1,
+        "fake": 0
+      }
+    },
+    "generated_geosynth_canny": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.046,
+      "predicted_class_counts": {
+        "pristine": 478,
+        "tampered": 9,
+        "fake": 13
+      }
+    },
+    "generated_geosynth_sam": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.002,
+      "predicted_class_counts": {
+        "pristine": 499,
+        "tampered": 1,
+        "fake": 0
+      }
+    },
+    "generated_mapsat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.088,
+      "predicted_class_counts": {
+        "pristine": 456,
+        "tampered": 29,
+        "fake": 15
+      }
+    },
+    "generated_rsinpaint": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.174,
+      "predicted_class_counts": {
+        "pristine": 414,
+        "tampered": 71,
+        "fake": 15
+      }
+    },
+    "real_fmow": {
+      "n_images": 5000,
+      "n_real": 5000,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.0254,
+      "predicted_class_counts": {
+        "pristine": 4877,
+        "tampered": 94,
+        "fake": 29
+      }
+    }
+  },
+  "wall_sec": 1120.7081905980012,
+  "torch_version": "2.14.1+cu126"
+}

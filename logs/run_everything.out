@@ -9,3 +9,11 @@
 [2026-11-25T07:46:57-06:00] resnet_s42: started
 [2026-11-25T11:08:58-06:00] resnet_s42: exit=0, test_metrics.json written
 [2026-11-25T11:08:58-06:00] radio_s42: started
+[2026-11-25T11:34:39-06:00] radio_s42: exit=1, NO test_metrics.json (see logs/radio_s42.log)
+[2026-11-25T11:34:39-06:00] cross_fmow: started
+[2026-11-25T11:34:57-06:00] cross_fmow: exit=0, cross_fmow_metrics.json written
+[2026-11-25T11:34:57-06:00] cross_rsfake: started
+[2026-11-25T11:49:45-06:00] cross_rsfake: exit=0, cross_rsfake_metrics.json written
+[2026-11-25T11:49:45-06:00] cross_uw: started
+[2026-11-25T12:01:39-06:00] cross_uw: exit=0, cross_uw_metrics.json written
+[2026-11-25T12:01:39-06:00] aggregate: table.csv written

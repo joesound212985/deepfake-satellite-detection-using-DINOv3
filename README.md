@@ -79,6 +79,8 @@ Run automatically on the seed-42 checkpoints of the satellite- and web-pretraine
 | `count_flops.py`, `flops.json` | FLOP count per variant |
 | `analyze_extras.py` | Post-hoc analyses from saved per-image files: two-class test scores next to SimLBR, per-generator RSFAKE results, robustness table, bootstrap 95% intervals |
 | `make_qualitative.py` | Qualitative figure; examples picked by a fixed rule, not by hand |
+| `run_frozen_cross.sh` | Zero-shot scoring of the frozen-backbone checkpoint on the external sets |
+| `FEWSHOT_PROTOCOL.md`, `fewshot_adapt.py`, `run_fewshot.sh` | Few-shot adaptation experiment: linear probes on frozen features with k labelled images per class from each external set (protocol fixed in advance) |
 | `run_laptop.sh` | Share of the queue run on a second machine: `fullnorm`, `webnorm`, then `plain` seeds 43/44 |
 | `train_norm.py`, `run_norm_check.sh` | Side experiment: same training with each backbone's own input normalisation (`fullnorm`, `webnorm` rows) |
 | `aggregate_runs.py` | Builds the results table from `test_metrics.json` files |
