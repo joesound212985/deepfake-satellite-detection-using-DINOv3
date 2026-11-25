@@ -6,7 +6,8 @@
 #   3. re-runs the SimLBR baseline (+ no-LBR control) with DM-AER added, to new output files,
 #   4. extra analyses: test set two-class scoring, JPEG / down-scaling robustness, qualitative figure,
 #      analysis_extras.json,
-#   5. trains seeds 43 and 44 for full + plain.
+#   5. SimLBR with the authors' code; resnetlr_s42 (ResNet-50 with backbone LR 1e-4),
+#   6. trains seeds 43 and 44 for full + plain.
 # Existing outputs are skipped, never overwritten. Kill this script to cancel.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
@@ -76,5 +77,19 @@ for bb in sat web; do
   fi
 done
 python analyze_extras.py > logs/analyze_extras.log 2>&1; log "\`python analyze_extras.py\`" "analysis_extras" "exit=$? (analysis_extras.json)"
+
+# ---- ResNet-50 with a conventional backbone learning rate (added 2026-11-25, Joe approved).
+# The resnet row uses the DINOv3 rates (backbone 2e-6), far below normal for a CNN, and was stuck near
+# 66% validation accuracy at epoch 18. This row changes ONLY LR_BACKBONE to 1e-4, fixed in advance
+# (not tuned on results); the decoder rate, schedule and everything else are identical. Reported as a
+# separate row (resnetlr) next to the original resnet row.
+RL=$HOME/results_dinov3/resnet/resnet50/resnetlr_s42
+if [ ! -f "$RL/test_metrics.json" ]; then
+  export TRAIN_ROOT=${TRAIN_ROOT:-$D/overhead/train_jpg/train} TEST_ROOT=${TEST_ROOT:-$D/overhead/test_jpg/test} PYTHONUNBUFFERED=1
+  log "\`SEED=42 BACKBONE=resnet50 LR_BACKBONE=1e-4 EVAL_SPLITS=val,test RUN_TAG=resnetlr_s42 python dinov3_forensics_train_v2.py\`" "resnetlr_s42" "started"
+  SEED=42 BACKBONE=resnet50 LR_BACKBONE=1e-4 EVAL_SPLITS=val,test RUN_TAG=resnetlr_s42 python dinov3_forensics_train_v2.py > logs/resnetlr_s42.log 2>&1
+  rc=$?
+  [ -f "$RL/test_metrics.json" ] && log "" "resnetlr_s42" "exit=$rc, test_metrics.json written" || log "" "resnetlr_s42" "exit=$rc, NO test_metrics.json (see logs/resnetlr_s42.log)"
+fi
 
 SKIP_SETUP=1 SEEDS="43 44" ROWS="full plain" ./run_everything.sh > logs/run_extra_seeds.out 2>&1

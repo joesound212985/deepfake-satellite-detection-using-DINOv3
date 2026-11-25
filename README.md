@@ -44,6 +44,7 @@ selected on a validation split of the training set, never on the test set.
 | `frozen` | Backbone kept frozen |
 | `web` | DINOv3 pretrained on web images instead of satellite images |
 | `resnet` | ResNet-50 backbone |
+| `resnetlr` | ResNet-50 with a conventional backbone learning rate (1e-4, fixed in advance); the `resnet` row uses the DINOv3 rate (2e-6) |
 | `radio` | C-RADIOv4 backbone |
 | SimLBR | Trained on our data with the authors' released code (`simlbr_official.py`, github.com/mvrl/SimLBR at commit ac90f86); binary real-vs-manipulated. `simlbr_baseline.py` is our earlier re-implementation, kept as a cross-check |
 

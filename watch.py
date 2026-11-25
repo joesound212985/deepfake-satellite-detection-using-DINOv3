@@ -16,6 +16,7 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("web_s42",    WEBD/"web_s42",    "Web-pretrained DINOv3",     8.8),
     ("resnet_s42", RES/"resnet/resnet50/resnet_s42",       "ResNet-50 baseline",  3.0),
     ("radio_s42",  RES/"radio/C-RADIOv4-SO400M/radio_s42", "C-RADIOv4 baseline", 13.0),
+    ("resnetlr_s42", RES/"resnet/resnet50/resnetlr_s42",   "ResNet-50, LR 1e-4",  3.2),
     ("full_s43",   SAT/"full_s43",    "Full model, seed 43",       8.8),
     ("plain_s43",  SAT/"plain_s43",   "Plain decoder, seed 43",    8.3),
     ("full_s44",   SAT/"full_s44",    "Full model, seed 44",       8.8),
