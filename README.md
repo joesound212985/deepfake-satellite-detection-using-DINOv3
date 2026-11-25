@@ -53,6 +53,16 @@ DM-AER-DeepFake-V1 official sample (StyleGAN2; real images size-matched to the f
 `setup_data.sh` downloads all four; the main training set is gated by its authors' form
 and has to be supplied separately (see the header of `setup_data.sh`).
 
+## Additional analyses
+
+Run automatically on the seed-42 checkpoints of the satellite- and web-pretrained models:
+
+- the test set re-scored as real-vs-manipulated, for a like-for-like comparison with SimLBR;
+- robustness to JPEG re-compression (quality 90/70/50/30) and down-scaling (0.75, 0.5);
+- per-generator detection on RSFAKE-1M and bootstrap 95% intervals on all external sets;
+- a qualitative figure (`qualitative.png`);
+- an input-normalisation check (`fullnorm`, `webnorm`), reported separately from the main rows.
+
 ## Files
 
 | File | Purpose |
@@ -64,6 +74,9 @@ and has to be supplied separately (see the header of `setup_data.sh`).
 | `eval_cross_dataset.py`, `prepare_rsfake_subset.py` | Zero-shot cross-dataset evaluation |
 | `simlbr_baseline.py`, `simlbr_metrics.json`, `simlbr_nolbr_metrics.json` | SimLBR baseline and its results |
 | `count_flops.py`, `flops.json` | FLOP count per variant |
+| `analyze_extras.py` | Post-hoc analyses from saved per-image files: two-class test scores next to SimLBR, per-generator RSFAKE results, robustness table, bootstrap 95% intervals |
+| `make_qualitative.py` | Qualitative figure; examples picked by a fixed rule, not by hand |
+| `train_norm.py`, `run_norm_check.sh` | Side experiment: same training with each backbone's own input normalisation (`fullnorm`, `webnorm` rows) |
 | `aggregate_runs.py` | Builds the results table from `test_metrics.json` files |
 | `setup_env.sh`, `setup_data.sh` | Environment and dataset setup |
 | `RUNLOG.md`, `logs/` | Run log and per-run output |

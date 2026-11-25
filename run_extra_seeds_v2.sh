@@ -4,7 +4,9 @@
 #      Million-AID reals >= 512 px, all centre-cropped to 512; plus an all-reals run as a sensitivity check),
 #   2. scores web_s42 on fmow / rsfake / uw / dmaer (same subsets as full_s42),
 #   3. re-runs the SimLBR baseline (+ no-LBR control) with DM-AER added, to new output files,
-#   4. trains seeds 43 and 44 for full + plain.
+#   4. extra analyses: test set two-class scoring, JPEG / down-scaling robustness, qualitative figure,
+#      analysis_extras.json,
+#   5. trains seeds 43 and 44 for full + plain.
 # Existing outputs are skipped, never overwritten. Kill this script to cancel.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
@@ -43,4 +45,29 @@ if [ ! -f simlbr_nolbr_dmaer_metrics.json ]; then
   log "\`python simlbr_baseline.py --no-lbr --out simlbr_nolbr_dmaer_metrics.json\`" "simlbr_nolbr_dmaer" "started"
   python simlbr_baseline.py --no-lbr --out simlbr_nolbr_dmaer_metrics.json > logs/simlbr_nolbr_dmaer.log 2>&1; log "" "simlbr_nolbr_dmaer" "exit=$?"
 fi
+# ---- extra analyses on the two seed-42 checkpoints (added 2026-11-25): test set re-scored with the
+# cross-dataset code (two-class numbers next to SimLBR), robustness to JPEG re-compression and
+# down-scaling, qualitative figure, then analyze_extras.py (per-generator RSFAKE, bootstrap CIs).
+oeval() {  # oeval <outstem> <dinov3 repo> <ckpt> <extra args...>
+  local stem=$1 repo=$2 ck=$3; shift 3
+  local out=${stem}_metrics.json
+  [ -f "$out" ] && return
+  [ -f "$ck" ] || { log "" "$stem" "SKIPPED: checkpoint missing"; return; }
+  log "\`python eval_cross_dataset.py --dataset overhead --dinov3 $repo --ckpt $ck --out $out $*\`" "$stem" "started"
+  python eval_cross_dataset.py --dataset overhead --root "$D/overhead/test_jpg/test" --dinov3 $repo --ckpt "$ck" --out "$out" "$@" > logs/$stem.log 2>&1
+  local rc=$?
+  [ -f "$out" ] && log "" "$stem" "exit=$rc, $out written" || log "" "$stem" "exit=$rc, FAILED (logs/$stem.log)"
+}
+for n in full web; do
+  if [ $n = full ]; then repo=$SATREPO; ck=$FULL; else repo=$WEBREPO; ck=$WEB; fi
+  oeval overhead_$n $repo "$ck"
+  for dg in jpeg:90 jpeg:70 jpeg:50 jpeg:30 scale:0.75 scale:0.5; do
+    oeval robust_${n}_${dg/:/} $repo "$ck" --degrade $dg
+  done
+done
+if [ ! -f qualitative.png ] && [ -f overhead_full_metrics.per_image.json ]; then
+  python make_qualitative.py > logs/make_qualitative.log 2>&1; log "\`python make_qualitative.py\`" "qualitative" "exit=$?"
+fi
+python analyze_extras.py > logs/analyze_extras.log 2>&1; log "\`python analyze_extras.py\`" "analysis_extras" "exit=$? (analysis_extras.json)"
+
 SKIP_SETUP=1 SEEDS="43 44" ROWS="full plain" ./run_everything.sh > logs/run_extra_seeds.out 2>&1

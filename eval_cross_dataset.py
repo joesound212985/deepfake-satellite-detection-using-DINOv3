@@ -13,6 +13,8 @@ Datasets:
   fmow    geodf/fmow-fake-small   (train/ + val/, real/ and fake/{simple-splice,object-splice,inpaint})
   rsfake  TZHSW/RSFAKE            (official test split, fixed-seed per-generator subset)
   uw      UW Fake Satellite Imagery (figshare 12197655; whole-image labels)
+  overhead  the main test split (metadata.csv): two-class + three-class scores, tampered-only IoU;
+          with --degrade jpeg:Q | scale:S it gives the robustness numbers
   dmaer   DM-AER-DeepFake-V1 official sample (validation/FAKE StyleGAN2, validation/REAL Million-AID;
           whole-image labels, same folder-name rule as uw)
 
@@ -41,7 +43,23 @@ THR_MASK = 0.5
 # ----------------------------------------------------------------------------
 # image / mask readers (handle TIFF, 16-bit, >3 bands)
 # ----------------------------------------------------------------------------
-def read_rgb(path: Path, crop: int = 0) -> np.ndarray:
+def degrade_bgr(img: np.ndarray, spec: str) -> np.ndarray:
+    """Robustness perturbation applied to the decoded uint8 image at native resolution, before the
+    usual 384 resize.  spec: 'jpeg:Q' (re-encode with OpenCV at quality Q) or 'scale:S' (resize both
+    sides by factor S with INTER_AREA; the standard 384 resize then follows)."""
+    kind, val = spec.split(":")
+    if kind == "jpeg":
+        ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, int(val)])
+        if not ok:
+            raise RuntimeError("jpeg encode failed")
+        return cv2.imdecode(buf, cv2.IMREAD_COLOR)
+    if kind == "scale":
+        h, w = img.shape[:2]
+        return cv2.resize(img, (max(8, round(w * float(val))), max(8, round(h * float(val)))), interpolation=cv2.INTER_AREA)
+    raise ValueError(f"unknown --degrade spec: {spec}")
+
+
+def read_rgb(path: Path, crop: int = 0, degrade: str = "") -> np.ndarray:
     img = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
     if img is None:
         from PIL import Image
@@ -56,6 +74,8 @@ def read_rgb(path: Path, crop: int = 0) -> np.ndarray:
         if mx > 255.0:            # 16-bit style data
             img = img / 65535.0 * 255.0 if mx > 4095 else img / mx * 255.0
         img = np.clip(img, 0, 255).astype(np.uint8)
+    if degrade:
+        img = degrade_bgr(img, degrade)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     if crop:                      # centre crop to crop x crop at native resolution (DM-AER size matching)
         h, w = img.shape[:2]
@@ -81,22 +101,23 @@ def read_mask(path):
 
 class ListDataset(Dataset):
     """items: list of dicts {img, mask (path or None), label (0 real / 1 manipulated), group, id}"""
-    def __init__(self, items):
+    def __init__(self, items, degrade: str = ""):
         self.items = items
+        self.degrade = degrade
 
     def __len__(self):
         return len(self.items)
 
     def __getitem__(self, i):
         it = self.items[i]
-        img = read_rgb(Path(it["img"]), it.get("crop", 0))
+        img = read_rgb(Path(it["img"]), it.get("crop", 0), self.degrade)
         x = torch.from_numpy(img.astype(np.float32) / 255.0).permute(2, 0, 1).contiguous()
         m = read_mask(it.get("mask"))
         has_mask = m is not None and it["label"] == 1
         if m is None:
             m = np.zeros((IMG_SIZE, IMG_SIZE), np.uint8)
         return {"pixel_values": x, "mask": torch.from_numpy(m), "has_mask": has_mask,
-                "label": it["label"], "group": it["group"], "id": it["id"], "idx": i}
+                "label": it["label"], "group": it["group"], "id": it["id"], "idx": i, "cls3": it.get("cls3", -1)}
 
 
 def collate(b):
@@ -107,6 +128,7 @@ def collate(b):
         "label": [d["label"] for d in b],
         "group": [d["group"] for d in b],
         "id": [d["id"] for d in b],
+        "cls3": [d["cls3"] for d in b],
     }
 
 
@@ -218,6 +240,35 @@ def build_uw(root: Path):
     return items
 
 
+CLASS_NAMES = ["pristine", "tampered", "fake"]
+
+
+def label_3class(manip: str) -> int:
+    """Same mapping as ForensicsDataset3C in dinov3_forensics_train_v2.py."""
+    manip = manip.lower().strip()
+    if "pristine" in manip:
+        return 0
+    if any(k in manip for k in ("inpaint", "partial", "building", "roads", "greenspace", "water")):
+        return 1
+    if any(k in manip for k in ("synthetic", "generated", "gen", "diff")):
+        return 2
+    raise ValueError(f"unknown manipulation type: {manip}")
+
+
+def build_overhead(root: Path):
+    """The main (May et al.) test split, read from metadata.csv. Two-class label = class > 0; the
+    three-class label is kept as cls3; masks are used for the tampered class only (as in training)."""
+    import csv
+    items = []
+    with open(root / "metadata.csv", newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            c = label_3class(row.get("manipulation_type", ""))
+            mask = root / row["mask_filename"] if c == 1 and row.get("mask_filename") else None
+            items.append({"img": root / row["image_filename"], "mask": mask, "label": int(c > 0), "cls3": c,
+                          "group": CLASS_NAMES[c], "id": Path(row["image_filename"]).stem})
+    return items
+
+
 DMAER_SIZE = 512
 
 
@@ -275,6 +326,24 @@ def summarise(recs):
             "mean_dice": float(np.mean([r["dice"] for r in loc])),
             "mean_mcc": float(np.mean([r["mcc"] for r in loc])),
         }
+    if recs and all("cls3" in r for r in recs):
+        from sklearn.metrics import f1_score, balanced_accuracy_score, confusion_matrix
+        y3 = np.array([r["cls3"] for r in recs]); p3 = np.array([r["pred_class"] for r in recs])
+        if len(set(y3.tolist())) == 3:
+            out["three_class"] = {
+                "accuracy": float((y3 == p3).mean()),
+                "macro_f1": float(f1_score(y3, p3, average="macro", labels=[0, 1, 2])),
+                "balanced_accuracy": float(balanced_accuracy_score(y3, p3)),
+                "tampered_recall": float((p3[y3 == 1] == 1).mean()),
+                "confusion_matrix_rows_true_cols_pred": confusion_matrix(y3, p3, labels=[0, 1, 2]).tolist(),
+            }
+            pm = (p3 > 0).astype(int); ym = (y3 > 0).astype(int)
+            out["two_class_from_argmax"] = {
+                "accuracy": float((pm == ym).mean()),
+                "f1_manipulated": float(f1_score(ym, pm)),
+                "precision_manipulated": float((ym[pm == 1] == 1).mean()) if pm.sum() else float("nan"),
+                "recall_manipulated": float((pm[ym == 1] == 1).mean()),
+            }
     cls = np.array([r["pred_class"] for r in recs])
     out["predicted_class_counts"] = {"pristine": int((cls == 0).sum()), "tampered": int((cls == 1).sum()),
                                      "fake": int((cls == 2).sum())}
@@ -283,7 +352,7 @@ def summarise(recs):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer"])
+    ap.add_argument("--dataset", required=True, choices=["fmow", "rsfake", "uw", "dmaer", "overhead"])
     ap.add_argument("--root", required=True)
     ap.add_argument("--ckpt", required=True)
     ap.add_argument("--dinov3", default=os.environ.get("DINOV3_CKPT", "facebook/dinov3-vitl16-pretrain-sat493m"))
@@ -297,6 +366,8 @@ def main():
     ap.add_argument("--legacy-token-slice", action="store_true")
     ap.add_argument("--dmaer-matched", action="store_true",
                     help="dmaer: reals with shorter side >= 512 only, every image centre-cropped to 512x512")
+    ap.add_argument("--degrade", default="",
+                    help="robustness perturbation before the 384 resize: jpeg:Q or scale:S (see degrade_bgr)")
     ap.add_argument("--limit", type=int, default=0, help="debug: evaluate only a seeded random subset of this size")
     args = ap.parse_args()
 
@@ -311,6 +382,8 @@ def main():
         items = build_rsfake(root, args.per_gen, args.seed, Path(args.real_dir).expanduser() if args.real_dir else None)
     elif args.dataset == "dmaer":
         items = build_dmaer(root, args.dmaer_matched)
+    elif args.dataset == "overhead":
+        items = build_overhead(root)
     else:
         items = build_uw(root)
     print(f"[data] {args.dataset}: {len(items)} images; groups:",
@@ -336,7 +409,7 @@ def main():
         print("[load] missing keys:", missing[:10])
     model.eval()
 
-    dl = DataLoader(ListDataset(items), batch_size=args.batch, shuffle=False, num_workers=args.workers,
+    dl = DataLoader(ListDataset(items, args.degrade), batch_size=args.batch, shuffle=False, num_workers=args.workers,
                     collate_fn=collate, pin_memory=True)
     recs = []
     t0 = time.perf_counter()
@@ -350,6 +423,8 @@ def main():
                      "p_pristine": float(p_cls[k, 0]), "p_tampered": float(p_cls[k, 1]),
                      "p_fake": float(p_cls[k, 2]), "p_manip": float(p_cls[k, 1] + p_cls[k, 2]),
                      "pred_class": int(np.argmax(p_cls[k]))}
+                if b["cls3"][k] >= 0:
+                    r["cls3"] = int(b["cls3"][k])
                 if b["has_mask"][k]:
                     gt = b["mask"][k].numpy().astype(np.uint8)
                     pred = (seg[k, 0] >= THR_MASK).astype(np.uint8)
@@ -364,6 +439,7 @@ def main():
         "dmaer_matched": (args.dmaer_matched if args.dataset == "dmaer" else None),
         "dmaer_note": ("reals with shorter side >= 512 only; every image centre-cropped to 512x512 before the 384 resize"
                        if args.dataset == "dmaer" and args.dmaer_matched else None),
+        "degrade": args.degrade or None,
         "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
         "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
         "overall": summarise(recs),

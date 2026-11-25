@@ -8,7 +8,7 @@ Usage:
     python aggregate_runs.py /path/to/results     # scans another folder
     python aggregate_runs.py --csv table.csv      # also writes a CSV
 """
-import sys, json, csv
+import re, sys, json, csv
 from pathlib import Path
 from collections import defaultdict
 from statistics import mean, stdev
@@ -38,11 +38,22 @@ def main():
     root = Path(args[0]) if args else Path.home() / "results_dinov3"
 
     groups = defaultdict(list)
+    skipped = []
     for f in sorted(root.rglob("test_metrics.json")):
         with open(f, encoding="utf-8") as fh:
             m = json.load(fh)
-        key = (Path(str(m.get("checkpoint", "?"))).name, m.get("variant", "?"))
+        # Only table rows count: run folders named <row>_s<seed> (full_s42, web_s43, ...). Smoke tests,
+        # the bf16 verification run, the re-scored old model and renamed/diverged folders are skipped,
+        # and rows are keyed by the folder's row name so that e.g. fullnorm_s42 never merges into full.
+        tag = f.parent.name
+        mt = re.fullmatch(r"([A-Za-z0-9]+)_s(\d+)", tag)
+        if not mt or m.get("run_tag", tag) != tag:
+            skipped.append(str(f.parent.relative_to(root)))
+            continue
+        key = (Path(str(m.get("checkpoint", "?"))).name, mt.group(1))
         groups[key].append(m)
+    if skipped:
+        print("skipped (not <row>_s<seed> runs):", ", ".join(skipped))
 
     if not groups:
         print(f"No test_metrics.json found under {root}")

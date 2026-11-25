@@ -22,13 +22,15 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),
     ("web_s43",    WEBD/"web_s43",    "Web DINOv3, seed 43",       8.8),
     ("web_s44",    WEBD/"web_s44",    "Web DINOv3, seed 44",       8.8),
+    ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side)",  8.8),
+    ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side)",  8.8),
 ]
 # (metrics file stem, log stem, label)
 CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"),
          ("cross_dmaer", "DM-AER (size-matched)")]
 CROSS_WEB = [("cross_web_fmow", "fmow-fake-small"), ("cross_web_rsfake", "RSFAKE-1M subset"), ("cross_web_uw", "UW fake satellite"),
              ("cross_web_dmaer", "DM-AER (size-matched)")]
-QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds"
+QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check"
 BAR_W = 28
 
 
@@ -94,7 +96,7 @@ def parse_log(logf: Path):
 
 def running_tag():
     try:
-        out = subprocess.check_output(["pgrep", "-af", "dinov3_forensics_train_v2.py"], text=True)
+        out = subprocess.check_output(["pgrep", "-af", "dinov3_forensics_train_v2.py|train_norm.py"], text=True)
         for pid in re.findall(r"^(\d+)", out, re.M):
             e = Path(f"/proc/{pid}/environ").read_bytes().split(b"\0")
             for kv in e:
@@ -163,6 +165,9 @@ def main():
                         d = parse_log(lg); lines.append(f"  ▶ {label:<22} evaluating {d['eval_frac']*100 if d['eval_frac'] else 0:.0f}%")
                     else:
                         lines.append(f"  · {label:<22} pending")
+        nrob = len(list(GRSL.glob("robust_*_metrics.json"))); nov = len(list(GRSL.glob("overhead_*_metrics.json")))
+        lines.append(f"Extras (after cross-dataset): test set two-class {nov}/2   robustness {nrob}/12   "
+                     f"figure {'✔' if (GRSL / 'qualitative.png').exists() else '·'}   analysis_extras.json {'✔' if (GRSL / 'analysis_extras.json').exists() else '·'}")
         tcsv = GRSL / "table.csv"
         lines.append(f"\ntable.csv: {'written ' + datetime.fromtimestamp(tcsv.stat().st_mtime).strftime('%H:%M') if tcsv.exists() else 'pending'}")
         try:
