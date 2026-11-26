@@ -142,7 +142,7 @@ table{border-collapse:collapse;font-size:8pt;margin:0 auto 8pt;border-top:1.2px 
 th{font-weight:normal;border-bottom:0.7px solid #000;padding:2px 7px;text-align:center}
 td{padding:1px 6px;text-align:center;white-space:nowrap}td:first-child,td:nth-child(2){text-align:left}
 tr.sep td{border-top:0.5px solid #000}tr{break-inside:avoid}
-.fig{text-align:center;margin:10pt 0 2pt;break-inside:avoid}.fig img{width:100%}
+.fig{text-align:center;margin:10pt 0 2pt;break-inside:avoid;page-break-inside:avoid}.fig img{max-width:100%;max-height:8.3in;width:auto;height:auto}
 .figcap{font-size:8pt;text-align:justify;text-indent:0;margin:0 0 8pt}"""
 import re
 items = []
@@ -165,7 +165,7 @@ for kind, x in items:
         num, title = x.split(". ", 1)
         md.append(f"**{num.upper()}** — {title}"); ht.append(f"<p class='cap'>{html.escape(num.upper())}<span>{html.escape(title.rstrip('.'))}</span></p>")
     elif kind == "img":
-        md.append(f"![{x[1]}](../{x[0]})\n\n{x[1]}"); ht.append(f"<div class='fig'><img src='../{x[0]}'></div><p class='figcap'>{html.escape(x[1])}</p>")
+        md.append(f"![{x[1]}](../{x[0]})\n\n{x[1]}"); ht.append(f"<div class='fig'><img src='../{x[0]}'><p class='figcap'>{html.escape(x[1])}</p></div>")
     else:
         hd, rows = x
         md.append("| " + " | ".join(hd) + " |\n|" + "---|" * len(hd) + "\n" + "\n".join("| " + " | ".join(str(c) for c in r) + " |" for r in rows))
