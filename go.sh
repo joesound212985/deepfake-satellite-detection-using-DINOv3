@@ -7,6 +7,9 @@
 #                                     two-class / figure / analysis, official SimLBR, resnetlr_s42,
 #                                     then seeds 43/44 in the order web, full
 #   stage 3  run_web_seeds.sh         test-set re-scoring of all seeds + significance tests, table.csv rebuilt
+#   extras   (started by hand, not by this launcher) run_fewshot*.sh few-shot probes, run_gdd*.sh GDD scoring,
+#            run_zeroshot_extras.sh label-free experiments, run_fewshot_seeds.sh (waits for the queue);
+#            supplement/make_supplement.py rebuilds the supplementary material from the result files
 #   laptop   run_laptop.sh            (second machine) fullnorm_s42, webnorm_s42, then plain seeds 43/44;
 #                                     results are copied back into ~/results_dinov3 afterwards
 source ~/Desktop/.venv/bin/activate

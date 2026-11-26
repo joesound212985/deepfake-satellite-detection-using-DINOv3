@@ -32,7 +32,7 @@ CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset")
          ("cross_dmaer", "DM-AER (size-matched)")]
 CROSS_WEB = [("cross_web_fmow", "fmow-fake-small"), ("cross_web_rsfake", "RSFAKE-1M subset"), ("cross_web_uw", "UW fake satellite"),
              ("cross_web_dmaer", "DM-AER (size-matched)")]
-QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check|run_laptop|run_fewshot|run_frozen_cross"
+QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check|run_laptop|run_fewshot|run_frozen_cross|run_zeroshot_extras"
 ROLE = os.environ.get("GRSL_ROLE") or ("laptop" if (GRSL / ".laptop").exists() else "workstation")
 if ROLE == "laptop":      # dashboard started on the laptop itself: show only its own rows, read locally
     ROWS = [r for r in ROWS if r[0] in LAPTOP]; LAPTOP = set()
@@ -390,11 +390,16 @@ def render():
         extra = []
         try:      # few-shot: AUC on the held-out half, linear probe on frozen CLS features
             fs = json.load(open(GRSL / "fewshot_metrics.json"))["datasets"]
+            if (GRSL / "fewshot_gdd_metrics.json").exists():
+                fs.update(json.load(open(GRSL / "fewshot_gdd_metrics.json"))["datasets"])
             ft = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
             ft.add_column("few-shot AUC, full_s42 features (labelled images per class)")
             for h in ("zero-shot", "4", "16", "64", "256", "whole pool"): ft.add_column(h, justify="center")
             col = lambda a: "green" if a >= 0.8 else ("yellow" if a >= 0.65 else "red")
-            for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)")):
+            for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
+                               ("gdd_indomain", "GDD in-domain"), ("gdd_crossgenerator", "GDD cross-generator"),
+                               ("gdd_crossdomain", "GDD cross-domain"), ("gdd_localization", "GDD tamper set")):
+                if key not in fs: continue
                 d = fs[key]; e = d["extractors"]["full_s42"]; z = (d.get("zero_shot") or {}).get("full_s42", {}).get("auc")
                 cells = [Text(f"{z:.3f}", style=col(z)) if isinstance(z, float) else Text("-", style="dim")]
                 for k in ("k4", "k16", "k64", "k256"):
@@ -415,6 +420,14 @@ def render():
                     ("cross_rsfake", "rsfake"), ("cross_uw", "uw"), ("cross_dmaer", "dmaer")) if k in m)))
         except Exception:
             pass
+        try:      # label-free transfer experiments (ZEROSHOT_EXTRAS_PROTOCOL.md): AUC of the frozen-backbone probe
+            zx = json.load(open(GRSL / "zeroshot_extras_metrics.json"))["B_frozen_probe"]
+            for ex in ("sat_orig", "full_s42"):
+                extra.append(Text(f"frozen probe trained on own data ({ex}) AUC:  " + "   ".join(
+                    f"{n} {zx[ex][k]['auc']:.3f}" for k, n in (("own_test", "own test"), ("rsfake", "rsfake"), ("uw", "uw"), ("dmaer", "dmaer"),
+                    ("gdd_crossgenerator", "gdd-cg"), ("gdd_crossdomain", "gdd-cd")))))
+        except Exception:
+            pass
         nrob = len(list(GRSL.glob("robust_*_metrics.json"))); nov = len(list(GRSL.glob("overhead_*_metrics.json")))
         nf = len(list((HOME / "data/features/fewshot_cls384").glob("*/*.npy")))
         yes = lambda b: "[green]✔[/]" if b else "[dim]·[/]"
@@ -423,6 +436,9 @@ def render():
             f"SimLBR official {len(list(GRSL.glob('simlbr_official_*_metrics.json')))}/2   "
             f"significance re-scores {len(list(GRSL.glob('overhead_*_s4?_metrics.json')))}/7   "
             f"few-shot features {nf}/16   few-shot results {yes((GRSL / 'fewshot_metrics.json').exists())}   "
+            f"few-shot GDD {yes((GRSL / 'fewshot_gdd_metrics.json').exists())}   few-shot seeds 43/44 {yes((GRSL / 'fewshot_seeds_metrics.json').exists())}   "
+            f"intervals {yes((GRSL / 'cross_detail.json').exists())}   label-free extras {yes((GRSL / 'zeroshot_extras_metrics.json').exists())}   "
+            f"supplement {yes((GRSL / 'supplement/SUPPLEMENT.pdf').exists())}   "
             f"analysis {yes((GRSL / 'analysis_extras.json').exists())}   table.csv {yes((GRSL / 'table.csv').exists())}")
         panels.append(Panel(Group(tb, *extra, ex), title="[bold] RESULTS SO FAR [/]", border_style="grey50", padding=(0, 1)))
     try:

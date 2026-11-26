@@ -276,3 +276,9 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T09:56:26-06:00 | `python make_supplement.py` + headless browser print | supplement | SUPPLEMENT.md/.html/.pdf draft (7 pages, 8 tables, 2 figures) |
 | 2026-11-26T10:04:40-06:00 | supplement draft removed from the repo (kept locally, git-ignored) at Joe's request | supplement | ok |
 | 2026-11-26T10:39:47-06:00 | supplement files and generator moved to supplement/ (run: python supplement/make_supplement.py) | supplement | ok |
+| 2026-11-26T14:04:02-06:00 |  | web_s44 | exit=0, test_metrics.json written |
+| 2026-11-26T14:04:02-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-26T14:04:02-06:00] run_everything.sh finished (SEEDS=43 44 ROWS=web)
+| 2026-11-26T14:04:02-06:00 | `SEED=43 EVAL_SPLITS=val,test RUN_TAG=full_s43 python dinov3_forensics_train_v2.py` | full_s43 | started |
+| 2026-11-26T14:33:29-06:00 | `python fewshot_adapt.py extract --sets own` (on laptop, alongside its training run) | zeroshot_extras | started |
+| 2026-11-26T14:34:37-06:00 | watch.py/go.sh: few-shot table with GDD rows, status marks for new analyses, comments updated | dashboard | ok |
