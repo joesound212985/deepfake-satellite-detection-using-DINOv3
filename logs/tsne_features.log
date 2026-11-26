@@ -1,0 +1,1 @@
+[save] /home/adminuser/grsl/tsne_features.png {'rsfake': {'n_real': 500, 'n_manipulated': 500}, 'uw': {'n_real': 500, 'n_manipulated': 500}, 'dmaer': {'n_real': 494, 'n_manipulated': 500}, 'gdd_crossgenerator': {'n_real': 500, 'n_manipulated': 500}}

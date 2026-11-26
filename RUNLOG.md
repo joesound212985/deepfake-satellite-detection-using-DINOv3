@@ -265,3 +265,7 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-25T23:46:57-06:00 | `python fewshot_adapt.py extract --sets gdd` (on laptop, alongside its training run) | fewshot_gdd | started |
 | 2026-11-25T23:48:15-06:00 | laptop: platform profile performance, CPU turbo back on (Joe asked for more speed) | laptop-setup | applied during radio_s42 epoch 43 |
 | 2026-11-25T23:49:21-06:00 | laptop: CPU hit 101 C with turbo on (plus GDD extraction workers); turbo off again -> 61 C; profile left at performance | laptop-setup | ok |
+| 2026-11-25T23:53:54-06:00 | laptop: platform profile quiet (Joe asked for silent mode); turbo stays off | laptop-setup | applied during radio_s42 |
+| 2026-11-26T00:02:00-06:00 |  | fewshot_gdd extract | exit=0 |
+| 2026-11-26T00:02:44-06:00 | `python fewshot_adapt.py analyse --sets gdd` | fewshot_gdd | exit=0 (fewshot_gdd_metrics.json) |
+| 2026-11-26T00:02:53-06:00 | `python tsne_features.py` | tsne | exit=0 (tsne_features.png) |

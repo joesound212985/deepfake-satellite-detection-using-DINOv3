@@ -1,0 +1,24 @@
+{
+ "protocol": "FEWSHOT_PROTOCOL.md addendum",
+ "perplexity": 30,
+ "pca": 50,
+ "random_state": 0,
+ "samples": {
+  "rsfake": {
+   "n_real": 500,
+   "n_manipulated": 500
+  },
+  "uw": {
+   "n_real": 500,
+   "n_manipulated": 500
+  },
+  "dmaer": {
+   "n_real": 494,
+   "n_manipulated": 500
+  },
+  "gdd_crossgenerator": {
+   "n_real": 500,
+   "n_manipulated": 500
+  }
+ }
+}
