@@ -269,3 +269,7 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T00:02:00-06:00 |  | fewshot_gdd extract | exit=0 |
 | 2026-11-26T00:02:44-06:00 | `python fewshot_adapt.py analyse --sets gdd` | fewshot_gdd | exit=0 (fewshot_gdd_metrics.json) |
 | 2026-11-26T00:02:53-06:00 | `python tsne_features.py` | tsne | exit=0 (tsne_features.png) |
+| 2026-11-26T05:14:16-06:00 |  | web_s43 | exit=0, test_metrics.json written |
+| 2026-11-26T05:14:16-06:00 | `SEED=44 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=web_s44 python dinov3_forensics_train_v2.py` | web_s44 | started |
+| 2026-11-26T09:52:21-06:00 | `python analyze_cross_detail.py` | cross_detail | exit=0 (cross_detail.json, CROSS_DETAIL.md) |
+| 2026-11-26T09:52:21-06:00 | `./run_fewshot_seeds.sh` (waits for the training queue) | fewshot_seeds | queued |

@@ -75,3 +75,12 @@ Illustration only; no number in the letter is derived from it.
 - L2-normalised CLS features -> PCA to 50 dimensions -> `sklearn.manifold.TSNE(n_components=2,
   perplexity=30, init="pca", random_state=0)`, fitted separately per panel.
 - One run, no parameter search; the figure is kept whatever it shows.
+
+## Addendum 2026-11-26: other model seeds
+Written before seeds 43/44 of the full model existed (Joe approved the same morning).
+Same protocol, same splits, same shot draws, all eight sets (four external + four GDD subsets), with the
+fine-tuned backbones of the other seeds as extractors: `full_s43`, `full_s44`, `web_s43`, `web_s44`.
+Run with `python fewshot_adapt.py {extract,analyse} --sets seeds` after the training queue has finished;
+results in `fewshot_seeds_metrics.json`. Purpose: spread of the few-shot numbers over model seeds
+(report mean and std over seeds 42/43/44 of the per-seed means). Earlier result files are not touched.
+The zero-shot reference rows in that file are those of seed 42 (the only seed scored zero-shot on every set).

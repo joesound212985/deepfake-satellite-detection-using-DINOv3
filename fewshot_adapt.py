@@ -226,11 +226,20 @@ if __name__ == "__main__":
     ap.add_argument("cmd", choices=["extract", "analyse"])
     ap.add_argument("--dry", type=int, default=0, help="debug: N images per set, written to a scratch dir, NOT a result")
     ap.add_argument("--scratch", default="")
-    ap.add_argument("--sets", choices=["external", "gdd"], default="external")
+    ap.add_argument("--sets", choices=["external", "gdd", "seeds"], default="external")
     a = ap.parse_args()
     tag = ""
     if a.sets == "gdd":
         DATASETS[:] = GDD_SETS; tag = "_gdd"
+    if a.sets == "seeds":      # addendum 2026-11-26: other model seeds, all eight sets
+        DATASETS[:] = ["rsfake", "uw", "dmaer", "fmow"] + GDD_SETS; tag = "_seeds"
+        EXTRACTORS.clear()
+        for sd in (43, 44):
+            EXTRACTORS[f"full_s{sd}"] = (SAT, RES / "dinov3-vitl16-pretrain-sat493m" / f"full_s{sd}" / "best_checkpoint.pt")
+            EXTRACTORS[f"web_s{sd}"] = (WEB, RES / "dinov3-vitl16-pretrain-lvd1689m" / f"web_s{sd}" / "best_checkpoint.pt")
+        missing = [str(c) for _, c in EXTRACTORS.values() if not c.exists()]
+        if missing:
+            sys.exit("checkpoints missing: " + ", ".join(missing))
     if a.dry:
         if not a.scratch:
             sys.exit("--dry needs --scratch DIR")
