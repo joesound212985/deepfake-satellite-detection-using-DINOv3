@@ -127,18 +127,53 @@ if (H / "tsne_features.png").exists():
 if (H / "qualitative.png").exists():
     img("qualitative.png", "Fig. S2. Qualitative examples chosen by a fixed rule (see qualitative.json): image, ground-truth mask, full-model mask, web-backbone mask.")
 
-# ---- write
-md, ht = [], ["<html><head><meta charset='utf-8'><style>body{font-family:'Times New Roman',serif;font-size:10pt}table{border-collapse:collapse;font-size:8.5pt}"
-              "td,th{border:1px solid #555;padding:2px 5px}th{background:#ddd}img{width:100%}</style></head><body>"]
-for kind, x in out:
-    if kind == "h": md.append("#" * x[0] + " " + x[1]); ht.append(f"<h{x[0]}>{html.escape(x[1])}</h{x[0]}>")
-    elif kind == "p": md.append(x); ht.append(f"<p>{html.escape(x)}</p>")
-    elif kind == "img": md.append(f"![{x[1]}]({x[0]})\n\n{x[1]}"); ht.append(f"<p><img src='{x[0]}'></p><p>{html.escape(x[1])}</p>")
+# ---- write (IEEE-like look: Times, centred small-caps section heads with roman numerals, table captions above
+#      the table as "TABLE S1" + small-caps title, horizontal rules only, "Fig. S1." captions below figures)
+ROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+CSS = """@page{size:letter;margin:0.75in 0.7in}
+body{font-family:'Times New Roman','Nimbus Roman',Times,serif;font-size:10pt;line-height:1.15;text-align:justify}
+h1{font-size:22pt;font-weight:normal;text-align:center;margin:0 0 4pt}
+.sub{text-align:center;font-size:11pt;margin:0 0 2pt}.note{text-align:center;font-size:8pt;font-style:italic;margin:0 0 14pt}
+h2{font-size:10pt;font-weight:normal;font-variant:small-caps;text-align:center;margin:14pt 0 5pt;break-after:avoid}
+p{margin:0 0 5pt;text-indent:1em}
+.cap{text-align:center;font-size:8pt;margin:10pt 0 3pt;text-indent:0;break-after:avoid}.cap span{font-variant:small-caps;display:block}
+table{border-collapse:collapse;font-size:8pt;margin:0 auto 8pt;border-top:1.2px solid #000;border-bottom:1.2px solid #000}
+th{font-weight:normal;border-bottom:0.7px solid #000;padding:2px 7px;text-align:center}
+td{padding:1px 6px;text-align:center;white-space:nowrap}td:first-child,td:nth-child(2){text-align:left}
+tr.sep td{border-top:0.5px solid #000}tr{break-inside:avoid}
+.fig{text-align:center;margin:10pt 0 2pt;break-inside:avoid}.fig img{width:100%}
+.figcap{font-size:8pt;text-align:justify;text-indent:0;margin:0 0 8pt}"""
+import re
+items = []
+for kind, x in out:      # move "Table Sn. ..." paragraphs above their table
+    if kind == "p" and x.startswith("Table S") and items and items[-1][0] == "t":
+        tb = items.pop(); items.append(("cap", x)); items.append(tb)
+    else:
+        items.append((kind, x))
+md, ht, nsec = [], [f"<html><head><meta charset='utf-8'><title>Supplementary Material</title><style>{CSS}</style></head><body>"], 0
+for kind, x in items:
+    if kind == "h" and x[0] == 1:
+        md.append("# " + x[1]); ht.append(f"<h1>{html.escape(x[1])}</h1>")
+    elif kind == "h":
+        title = re.sub(r"^S\d+\.\s*", "", x[1]); nsec += 1
+        md.append(f"## {ROM[nsec-1]}. {title}"); ht.append(f"<h2>{ROM[nsec-1]}. {html.escape(title)}</h2>")
+    elif kind == "p":
+        cls = " class='sub'" if x.startswith("Detecting AI-Generated") else (" class='note'" if x.startswith("DRAFT") else "")
+        md.append(x); ht.append(f"<p{cls}>{html.escape(x)}</p>")
+    elif kind == "cap":
+        num, title = x.split(". ", 1)
+        md.append(f"**{num.upper()}** — {title}"); ht.append(f"<p class='cap'>{html.escape(num.upper())}<span>{html.escape(title.rstrip('.'))}</span></p>")
+    elif kind == "img":
+        md.append(f"![{x[1]}]({x[0]})\n\n{x[1]}"); ht.append(f"<div class='fig'><img src='{x[0]}'></div><p class='figcap'>{html.escape(x[1])}</p>")
     else:
         hd, rows = x
         md.append("| " + " | ".join(hd) + " |\n|" + "---|" * len(hd) + "\n" + "\n".join("| " + " | ".join(str(c) for c in r) + " |" for r in rows))
-        ht.append("<table><tr>" + "".join(f"<th>{html.escape(c)}</th>" for c in hd) + "</tr>" +
-                  "".join("<tr>" + "".join(f"<td>{html.escape(str(c))}</td>" for c in r) + "</tr>" for r in rows) + "</table>")
+        body, prev = [], None
+        for r in rows:      # a thin rule whenever the first column changes; repeated first-column labels are left blank
+            first = str(r[0]); sep = prev is not None and first != prev
+            cells = [("" if (first == prev and len(hd) > 4) else first)] + [str(c) for c in r[1:]]; prev = first
+            body.append(f"<tr{' class=sep' if sep else ''}>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
+        ht.append("<table><tr>" + "".join(f"<th>{html.escape(c)}</th>" for c in hd) + "</tr>" + "".join(body) + "</table>")
     md.append("")
 (H / "SUPPLEMENT.md").write_text("\n".join(md)); (H / "SUPPLEMENT.html").write_text("\n".join(ht) + "</body></html>")
 print("wrote SUPPLEMENT.md, SUPPLEMENT.html;", sum(k == "t" for k, _ in out), "tables")
