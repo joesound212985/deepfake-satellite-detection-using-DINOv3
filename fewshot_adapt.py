@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from eval_cross_dataset import (ListDataset, collate, build_fmow, build_rsfake_from_csv, build_uw, build_dmaer, build_gdd)  # noqa: E402
+from eval_cross_dataset import (ListDataset, collate, build_fmow, build_rsfake_from_csv, build_uw, build_dmaer, build_gdd, build_overhead)  # noqa: E402
 from dinov3_forensics_train_v2 import DINOv3ViTSegFormer3C, remap_state_dict_keys  # noqa: E402
 
 HOME = Path.home()
@@ -49,6 +49,9 @@ def build(name):
         return build_uw(DATA / "uw_fake_sat" / "anti-deepfake" / "anti-deepfake-data and code" / "data")
     if name == "dmaer":
         return build_dmaer(DATA / "dm_aer" / "DM-AER-DeepFake-V1-sample", True)
+    if name in ("own_train", "own_test"):      # ZEROSHOT_EXTRAS_PROTOCOL.md
+        sp = name[4:]
+        return build_overhead(DATA / "overhead" / f"{sp}_jpg" / sp)
     if name.startswith("gdd_"):
         return build_gdd(DATA / "gdd", name[4:])
     raise ValueError(name)
@@ -226,11 +229,15 @@ if __name__ == "__main__":
     ap.add_argument("cmd", choices=["extract", "analyse"])
     ap.add_argument("--dry", type=int, default=0, help="debug: N images per set, written to a scratch dir, NOT a result")
     ap.add_argument("--scratch", default="")
-    ap.add_argument("--sets", choices=["external", "gdd", "seeds"], default="external")
+    ap.add_argument("--sets", choices=["external", "gdd", "seeds", "own"], default="external")
     a = ap.parse_args()
     tag = ""
     if a.sets == "gdd":
         DATASETS[:] = GDD_SETS; tag = "_gdd"
+    if a.sets == "own":
+        DATASETS[:] = ["own_train", "own_test"]; tag = "_own"
+        if a.cmd == "analyse":
+            sys.exit("own-data features are analysed by zeroshot_extras.py")
     if a.sets == "seeds":      # addendum 2026-11-26: other model seeds, all eight sets
         DATASETS[:] = ["rsfake", "uw", "dmaer", "fmow"] + GDD_SETS; tag = "_seeds"
         EXTRACTORS.clear()
