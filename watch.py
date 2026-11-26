@@ -435,7 +435,7 @@ def render():
             f"robustness {nrob}/12   test two-class {nov}/2   figure {yes((GRSL / 'qualitative.png').exists())}   "
             f"SimLBR official {len(list(GRSL.glob('simlbr_official_*_metrics.json')))}/2   "
             f"significance re-scores {len(list(GRSL.glob('overhead_*_s4?_metrics.json')))}/7   "
-            f"few-shot features {nf}/16   few-shot results {yes((GRSL / 'fewshot_metrics.json').exists())}   "
+            f"few-shot feature files {nf}   few-shot results {yes((GRSL / 'fewshot_metrics.json').exists())}   "
             f"few-shot GDD {yes((GRSL / 'fewshot_gdd_metrics.json').exists())}   few-shot seeds 43/44 {yes((GRSL / 'fewshot_seeds_metrics.json').exists())}   "
             f"intervals {yes((GRSL / 'cross_detail.json').exists())}   label-free extras {yes((GRSL / 'zeroshot_extras_metrics.json').exists())}   "
             f"supplement {yes((GRSL / 'supplement/SUPPLEMENT.pdf').exists())}   "
