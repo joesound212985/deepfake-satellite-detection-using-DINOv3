@@ -275,3 +275,4 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T09:52:21-06:00 | `./run_fewshot_seeds.sh` (waits for the training queue) | fewshot_seeds | queued |
 | 2026-11-26T09:56:26-06:00 | `python make_supplement.py` + headless browser print | supplement | SUPPLEMENT.md/.html/.pdf draft (7 pages, 8 tables, 2 figures) |
 | 2026-11-26T10:04:40-06:00 | supplement draft removed from the repo (kept locally, git-ignored) at Joe's request | supplement | ok |
+| 2026-11-26T10:39:47-06:00 | supplement files and generator moved to supplement/ (run: python supplement/make_supplement.py) | supplement | ok |

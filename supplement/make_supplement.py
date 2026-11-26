@@ -5,7 +5,8 @@ import json, html
 from pathlib import Path
 from datetime import date
 
-H = Path(__file__).resolve().parent
+OUT_DIR = Path(__file__).resolve().parent      # supplement/
+H = OUT_DIR.parent                             # repository root, where the result files are
 J = lambda n: json.load(open(H / n)) if (H / n).exists() else None
 SETS = [("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
         ("gdd_indomain", "GDD in-domain"), ("gdd_crossgenerator", "GDD cross-generator"), ("gdd_crossdomain", "GDD cross-domain"),
@@ -164,7 +165,7 @@ for kind, x in items:
         num, title = x.split(". ", 1)
         md.append(f"**{num.upper()}** — {title}"); ht.append(f"<p class='cap'>{html.escape(num.upper())}<span>{html.escape(title.rstrip('.'))}</span></p>")
     elif kind == "img":
-        md.append(f"![{x[1]}]({x[0]})\n\n{x[1]}"); ht.append(f"<div class='fig'><img src='{x[0]}'></div><p class='figcap'>{html.escape(x[1])}</p>")
+        md.append(f"![{x[1]}](../{x[0]})\n\n{x[1]}"); ht.append(f"<div class='fig'><img src='../{x[0]}'></div><p class='figcap'>{html.escape(x[1])}</p>")
     else:
         hd, rows = x
         md.append("| " + " | ".join(hd) + " |\n|" + "---|" * len(hd) + "\n" + "\n".join("| " + " | ".join(str(c) for c in r) + " |" for r in rows))
@@ -175,5 +176,5 @@ for kind, x in items:
             body.append(f"<tr{' class=sep' if sep else ''}>" + "".join(f"<td>{html.escape(c)}</td>" for c in cells) + "</tr>")
         ht.append("<table><tr>" + "".join(f"<th>{html.escape(c)}</th>" for c in hd) + "</tr>" + "".join(body) + "</table>")
     md.append("")
-(H / "SUPPLEMENT.md").write_text("\n".join(md)); (H / "SUPPLEMENT.html").write_text("\n".join(ht) + "</body></html>")
-print("wrote SUPPLEMENT.md, SUPPLEMENT.html;", sum(k == "t" for k, _ in out), "tables")
+(OUT_DIR / "SUPPLEMENT.md").write_text("\n".join(md)); (OUT_DIR / "SUPPLEMENT.html").write_text("\n".join(ht) + "</body></html>")
+print("wrote supplement/SUPPLEMENT.md, supplement/SUPPLEMENT.html;", sum(k == "t" for k, _ in out), "tables")

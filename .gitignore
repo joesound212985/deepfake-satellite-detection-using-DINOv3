@@ -2,6 +2,6 @@ __pycache__/
 *.pyc
 simlbr_official_runs/
 .laptop
-SUPPLEMENT.md
-SUPPLEMENT.html
-SUPPLEMENT.pdf
+supplement/SUPPLEMENT.md
+supplement/SUPPLEMENT.html
+supplement/SUPPLEMENT.pdf
