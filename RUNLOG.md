@@ -273,3 +273,4 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T05:14:16-06:00 | `SEED=44 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=web_s44 python dinov3_forensics_train_v2.py` | web_s44 | started |
 | 2026-11-26T09:52:21-06:00 | `python analyze_cross_detail.py` | cross_detail | exit=0 (cross_detail.json, CROSS_DETAIL.md) |
 | 2026-11-26T09:52:21-06:00 | `./run_fewshot_seeds.sh` (waits for the training queue) | fewshot_seeds | queued |
+| 2026-11-26T09:56:26-06:00 | `python make_supplement.py` + headless browser print | supplement | SUPPLEMENT.md/.html/.pdf draft (7 pages, 8 tables, 2 figures) |
