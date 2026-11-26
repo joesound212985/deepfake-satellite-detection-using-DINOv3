@@ -178,3 +178,69 @@ for kind, x in items:
     md.append("")
 (OUT_DIR / "SUPPLEMENT.md").write_text("\n".join(md)); (OUT_DIR / "SUPPLEMENT.html").write_text("\n".join(ht) + "</body></html>")
 print("wrote supplement/SUPPLEMENT.md, supplement/SUPPLEMENT.html;", sum(k == "t" for k, _ in out), "tables")
+
+# ---- Word version (needs python-docx; kept outside the experiment environment:
+#      PYTHONPATH=~/.local/share/grsl-docx-tools python supplement/make_supplement.py)
+try:
+    import docx
+except ImportError:
+    docx = None
+    print("python-docx not importable: SUPPLEMENT.docx not written")
+if docx:
+    from docx.shared import Pt, Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as AL
+    from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    from PIL import Image
+    D = docx.Document(); sec = D.sections[0]
+    sec.page_width, sec.page_height = Inches(8.5), Inches(11)
+    sec.left_margin = sec.right_margin = Inches(0.7); sec.top_margin = sec.bottom_margin = Inches(0.75)
+    st = D.styles["Normal"]; st.font.name = "Times New Roman"; st.font.size = Pt(10)
+    st.element.rPr.rFonts.set(qn("w:eastAsia"), "Times New Roman")
+    st.paragraph_format.space_after = Pt(4); st.paragraph_format.space_before = Pt(0)
+
+    def para(text, size=10, align=AL.JUSTIFY, caps=False, italic=False, before=0, after=4, keep=False, indent=False):
+        q = D.add_paragraph(); r = q.add_run(text); r.font.size = Pt(size); r.font.small_caps = caps; r.italic = italic
+        q.alignment = align; f = q.paragraph_format; f.space_before = Pt(before); f.space_after = Pt(after); f.keep_with_next = keep
+        if indent: f.first_line_indent = Pt(10)
+        return q
+
+    def border(cell, **edges):
+        tcPr = cell._tc.get_or_add_tcPr(); b = tcPr.find(qn("w:tcBorders"))
+        if b is None: b = OxmlElement("w:tcBorders"); tcPr.append(b)
+        for e, sz in edges.items():
+            el = OxmlElement(f"w:{e}"); el.set(qn("w:val"), "single"); el.set(qn("w:sz"), str(sz)); el.set(qn("w:color"), "000000"); b.append(el)
+
+    nsec = 0
+    for kind, x in items:
+        if kind == "h" and x[0] == 1: para(x[1], 22, AL.CENTER, after=2)
+        elif kind == "h":
+            nsec += 1; para(f"{ROM[nsec-1]}. " + re.sub(r"^S\d+\.\s*", "", x[1]), 10, AL.CENTER, caps=True, before=12, after=5, keep=True)
+        elif kind == "p":
+            if x.startswith("Detecting AI-Generated"): para(x, 11, AL.CENTER, after=2)
+            elif x.startswith("DRAFT"): para(x, 8, AL.CENTER, italic=True, after=12)
+            else: para(x, indent=True)
+        elif kind == "cap":
+            num, title = x.split(". ", 1)
+            para(num.upper(), 8, AL.CENTER, before=8, after=0, keep=True); para(title.rstrip("."), 8, AL.CENTER, caps=True, after=2, keep=True)
+        elif kind == "img":
+            w, hgt = Image.open(H / x[0]).size; W = min(7.0, 8.0 * w / hgt)
+            D.add_picture(str(H / x[0]), width=Inches(W)); D.paragraphs[-1].alignment = AL.CENTER; D.paragraphs[-1].paragraph_format.keep_with_next = True
+            para(x[1], 8, after=8)
+        else:
+            hd, rows = x; T = D.add_table(rows=1 + len(rows), cols=len(hd)); T.alignment = WD_TABLE_ALIGNMENT.CENTER; T.autofit = True
+            prev = None
+            for i, r in enumerate([hd] + rows):
+                first = str(r[0]); grp = i > 1 and first != prev
+                vals = [("" if (i > 1 and first == prev and len(hd) > 4) else first)] + [str(c) for c in r[1:]]
+                if i > 0: prev = first
+                for j, v in enumerate(vals):
+                    c = T.cell(i, j); q = c.paragraphs[0]; q.paragraph_format.space_after = Pt(0)
+                    q.alignment = AL.LEFT if (i > 0 and j < 2) else AL.CENTER
+                    rr = q.add_run(v); rr.font.size = Pt(8)
+                    if i == 0: border(c, top=10, bottom=6)
+                    if grp: border(c, top=4)
+                    if i == len(rows): border(c, bottom=10)
+            D.add_paragraph().paragraph_format.space_after = Pt(2)
+    D.save(OUT_DIR / "SUPPLEMENT.docx"); print("wrote supplement/SUPPLEMENT.docx")
