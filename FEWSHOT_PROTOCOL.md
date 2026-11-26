@@ -50,3 +50,28 @@ mean and standard deviation over the 10 draws. Per-group detection rates are sav
 - The split is within each external set, so "held-out" images share the source and generators of the shots.
   This measures adaptation to a known new source, not generalisation to yet another unseen one.
 - `sat_orig` / `web_orig` receive /255 inputs without their own mean-std, like the frozen row of the main table.
+
+## Addendum 2026-11-25 (late evening): GDD and a t-SNE figure
+Written before any GDD few-shot number or any t-SNE plot was computed (Joe approved both the same evening).
+The GDD zero-shot results were already known.
+
+### GDD few-shot
+Same protocol as above, unchanged in every setting, applied to the four GDD test subsets used for the
+zero-shot evaluation, each treated as its own set with its own 50/50 split: `gdd_indomain`,
+`gdd_crossgenerator`, `gdd_crossdomain`, `gdd_localization` (500 real + 500 locally manipulated).
+Run with `python fewshot_adapt.py {extract,analyse} --sets gdd`; results in `fewshot_gdd_metrics.json`,
+splits in `fewshot_gdd_splits.json`. The existing `fewshot_metrics.json` is not touched.
+The GDD subsets may share real images with one another; each is split and evaluated on its own, so nothing
+crosses between pool and held-out half within a reported number.
+Feature extraction runs on the laptop (RTX 5090, torch 2.14.1+cu130) because the workstation GPU is full
+with a training run; features of the first four sets were extracted on the workstation (cu126).
+
+### t-SNE figure (`tsne_features.py` -> `tsne_features.png`)
+Illustration only; no number in the letter is derived from it.
+- Extractors: `sat_orig` (top row) and `full_s42` (bottom row). Sets (columns): RSFAKE-1M subset, UW,
+  DM-AER (size-matched), GDD cross-generator. fmow-fake-small is left out (120 images).
+- Per set: up to 500 real and 500 manipulated images, drawn with `numpy.random.RandomState(0)` from the
+  whole set, the same images for both extractors.
+- L2-normalised CLS features -> PCA to 50 dimensions -> `sklearn.manifold.TSNE(n_components=2,
+  perplexity=30, init="pca", random_state=0)`, fitted separately per panel.
+- One run, no parameter search; the figure is kept whatever it shows.

@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-from eval_cross_dataset import (ListDataset, collate, build_fmow, build_rsfake_from_csv, build_uw, build_dmaer)  # noqa: E402
+from eval_cross_dataset import (ListDataset, collate, build_fmow, build_rsfake_from_csv, build_uw, build_dmaer, build_gdd)  # noqa: E402
 from dinov3_forensics_train_v2 import DINOv3ViTSegFormer3C, remap_state_dict_keys  # noqa: E402
 
 HOME = Path.home()
@@ -34,6 +34,7 @@ EXTRACTORS = {  # name: (hf repo, checkpoint or None)
 }
 ZEROSHOT = {"full_s42": "cross_{d}_metrics.per_image.json", "web_s42": "cross_web_{d}_metrics.per_image.json"}
 DATASETS = ["rsfake", "uw", "dmaer", "fmow"]
+GDD_SETS = ["gdd_indomain", "gdd_crossgenerator", "gdd_crossdomain", "gdd_localization"]   # addendum in FEWSHOT_PROTOCOL.md
 KS = [4, 16, 64, 256]
 DRAWS = 10
 FEAT = DATA / "features" / "fewshot_cls384"
@@ -48,6 +49,8 @@ def build(name):
         return build_uw(DATA / "uw_fake_sat" / "anti-deepfake" / "anti-deepfake-data and code" / "data")
     if name == "dmaer":
         return build_dmaer(DATA / "dm_aer" / "DM-AER-DeepFake-V1-sample", True)
+    if name.startswith("gdd_"):
+        return build_gdd(DATA / "gdd", name[4:])
     raise ValueError(name)
 
 
@@ -223,7 +226,11 @@ if __name__ == "__main__":
     ap.add_argument("cmd", choices=["extract", "analyse"])
     ap.add_argument("--dry", type=int, default=0, help="debug: N images per set, written to a scratch dir, NOT a result")
     ap.add_argument("--scratch", default="")
+    ap.add_argument("--sets", choices=["external", "gdd"], default="external")
     a = ap.parse_args()
+    tag = ""
+    if a.sets == "gdd":
+        DATASETS[:] = GDD_SETS; tag = "_gdd"
     if a.dry:
         if not a.scratch:
             sys.exit("--dry needs --scratch DIR")
@@ -235,4 +242,4 @@ if __name__ == "__main__":
     elif a.cmd == "extract":
         extract()
     else:
-        analyse()
+        analyse(out=HERE / f"fewshot{tag}_metrics.json", splits_out=HERE / f"fewshot{tag}_splits.json")
