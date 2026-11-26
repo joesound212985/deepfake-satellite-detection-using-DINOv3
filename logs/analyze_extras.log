@@ -1,0 +1,255 @@
+{
+ "two_class_test": {
+  "full_s42": {
+   "n": 3150,
+   "n_real": 1511,
+   "n_manipulated": 1639,
+   "auc": 0.9656087209154425,
+   "auc_ci95": [
+    0.9592390346926792,
+    0.9713914086013963
+   ],
+   "accuracy_thr0.5": 0.912063492063492,
+   "accuracy_ci95": [
+    0.9028492063492063,
+    0.9212698412698412
+   ],
+   "f1_manipulated_thr0.5": 0.9135725429017161,
+   "false_alarm_rate": 0.06750496360026473,
+   "detection_rate": 0.8932275777913362,
+   "from_argmax": {
+    "accuracy": 0.9123809523809524,
+    "f1_manipulated": 0.9136420525657072,
+    "precision_manipulated": 0.9377007064868337,
+    "recall_manipulated": 0.8907870652837095
+   }
+  },
+  "web_s42": {
+   "n": 3150,
+   "n_real": 1511,
+   "n_manipulated": 1639,
+   "auc": 0.9806935432615568,
+   "auc_ci95": [
+    0.9762804159937096,
+    0.9853427720161598
+   ],
+   "accuracy_thr0.5": 0.94,
+   "accuracy_ci95": [
+    0.9314285714285714,
+    0.9482539682539682
+   ],
+   "f1_manipulated_thr0.5": 0.939712918660287,
+   "false_alarm_rate": 0.015221707478491065,
+   "detection_rate": 0.8987187309334961,
+   "from_argmax": {
+    "accuracy": 0.9396825396825397,
+    "f1_manipulated": 0.939297124600639,
+    "precision_manipulated": 0.9859154929577465,
+    "recall_manipulated": 0.896888346552776
+   }
+  },
+  "simlbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.6128042328042328,
+    "std": 0.005334215094657614,
+    "n_seeds": 3
+   },
+   "balanced_accuracy_thr0.5": {
+    "mean": 0.6042430756918251,
+    "std": 0.006944191955989253,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7096519631575752,
+    "std": 0.002187489553709529,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.8149278015049828,
+    "std": 0.038074797954848055,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.6064416501213324,
+    "std": 0.050819050828736057,
+    "n_seeds": 3
+   },
+   "source": "simlbr_dmaer_metrics.json"
+  },
+  "simlbr_nolbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.6467724867724868,
+    "std": 0.00986343297162418,
+    "n_seeds": 3
+   },
+   "balanced_accuracy_thr0.5": {
+    "mean": 0.6396931619483021,
+    "std": 0.011024464393198164,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7432817598071063,
+    "std": 0.0010806904952101455,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.8139109212934716,
+    "std": 0.017975497086828874,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.5345245973968674,
+    "std": 0.03980428258997233,
+    "n_seeds": 3
+   },
+   "source": "simlbr_nolbr_dmaer_metrics.json"
+  },
+  "simlbr_official_sat_lbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.622010582010582,
+    "std": 0.002113754958247401,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7096203328664163,
+    "std": 0.001747694995280463,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.7943868212324589,
+    "std": 0.012018130325559631,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.5649680123538495,
+    "std": 0.016929146298654062,
+    "n_seeds": 3
+   },
+   "official_ap": {
+    "mean": 0.7282856901486715,
+    "std": 0.0014888445308278797,
+    "n_seeds": 3
+   },
+   "official_f1": {
+    "mean": 0.6862090428670248,
+    "std": 0.00232385001034932,
+    "n_seeds": 3
+   },
+   "source": "simlbr_official_sat_metrics.json"
+  },
+  "simlbr_official_sat_nolbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.6452910052910052,
+    "std": 0.0027736174438267023,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7413546001951387,
+    "std": 0.001952763184485032,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.8124872889973561,
+    "std": 0.0056361222129554306,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.5360688285903374,
+    "std": 0.009336026459077355,
+    "n_seeds": 3
+   },
+   "official_ap": {
+    "mean": 0.7603469491004944,
+    "std": 0.0028712373584174073,
+    "n_seeds": 3
+   },
+   "official_f1": {
+    "mean": 0.7044597864151001,
+    "std": 0.0019101866334033327,
+    "n_seeds": 3
+   },
+   "source": "simlbr_official_sat_metrics.json"
+  },
+  "simlbr_official_web_lbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.6973544973544974,
+    "std": 0.003258159644093301,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7734081988675817,
+    "std": 0.0027516209572700616,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.641651413463494,
+    "std": 0.00933981086288799,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.24222369291859694,
+    "std": 0.01678189587439571,
+    "n_seeds": 3
+   },
+   "official_ap": {
+    "mean": 0.8134506543477377,
+    "std": 0.002879725319269568,
+    "n_seeds": 3
+   },
+   "official_f1": {
+    "mean": 0.6881058017412821,
+    "std": 0.0010823046133168976,
+    "n_seeds": 3
+   },
+   "source": "simlbr_official_web_metrics.json"
+  },
+  "simlbr_official_web_nolbr": {
+   "accuracy_thr0.5": {
+    "mean": 0.7215873015873017,
+    "std": 0.0016495721976846648,
+    "n_seeds": 3
+   },
+   "auc_real_vs_manipulated": {
+    "mean": 0.7982764721646035,
+    "std": 0.001904879374531563,
+    "n_seeds": 3
+   },
+   "detection_rate_manipulated_thr0.5": {
+    "mean": 0.6817164937970306,
+    "std": 0.012568244503136369,
+    "n_seeds": 3
+   },
+   "false_alarm_rate_real_thr0.5": {
+    "mean": 0.23516435031987648,
+    "std": 0.01509650307604291,
+    "n_seeds": 3
+   },
+   "official_ap": {
+    "mean": 0.8410489559173584,
+    "std": 0.0012282727109689804,
+    "n_seeds": 3
+   },
+   "official_f1": {
+    "mean": 0.7181277275085449,
+    "std": 0.0035453156762753966,
+    "n_seeds": 3
+   },
+   "source": "simlbr_official_web_metrics.json"
+  }
+ },
+ "consistency": {
+  "full_s42": {
+   "accuracy": [
+    0.9,
+    0.9
+   ],
+   "macro_f1": [
+    0.8975276055675855,
+    0.8975276055675855
+   ],
+   "mean_iou": [
+    0.6746482300229365,
+    0.6745602409500756
+   ],
+   "order": "[re-ev
+[save] analysis_extras.json

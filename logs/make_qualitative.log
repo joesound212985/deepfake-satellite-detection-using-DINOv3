@@ -1,0 +1,5 @@
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 49755.21it/s]
+[tokens] sequence=581, prefix (CLS+register)=5, patch grid=24x24
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 29767.69it/s]
+[tokens] sequence=581, prefix (CLS+register)=5, patch grid=24x24
+[save] qualitative.png, qualitative.json

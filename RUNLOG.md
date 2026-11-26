@@ -261,3 +261,7 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-25T20:25:25-06:00 |  | resnetlr_s42 | exit=0, test_metrics.json written |
 | 2026-11-25T20:25:25-06:00 | `SEED=43 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=web_s43 python dinov3_forensics_train_v2.py` | web_s43 | started |
 | 2026-11-25T21:14:20-06:00 | watch.py: reloads itself when updated, results panel on the laptop too (pulls result files every 10 min), overall finish time in header | dashboard | ok |
+| 2026-11-25T23:44:42-06:00 | rsync GDD test data + full_s42/web_s42 checkpoints to laptop | fewshot_gdd | started |
+| 2026-11-25T23:46:57-06:00 | `python fewshot_adapt.py extract --sets gdd` (on laptop, alongside its training run) | fewshot_gdd | started |
+| 2026-11-25T23:48:15-06:00 | laptop: platform profile performance, CPU turbo back on (Joe asked for more speed) | laptop-setup | applied during radio_s42 epoch 43 |
+| 2026-11-25T23:49:21-06:00 | laptop: CPU hit 101 C with turbo on (plus GDD extraction workers); turbo off again -> 61 C; profile left at performance | laptop-setup | ok |

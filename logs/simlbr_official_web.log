@@ -1,0 +1,967 @@
+Random seed set as 42
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 30505.90it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/lbr_s42/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:15 • 0:00:00 1.14it/s v_num: qtdy       
+                                                              train_loss: 0.581 
+                                                              val_loss: 0.559   
+                                                              val_acc: 0.721    
+                                                              val_f1: 0.698     
+                                                              val_ap: 0.831     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 27584.05it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.7210000157356262
+Test F1 Score: 0.6977248191833496
+Test Average Precision: 0.83077073097229
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7210000157356262     │
+│        predict_ap         │     0.83077073097229      │
+│        predict_f1         │    0.6977248191833496     │
+│       predict_loss        │    0.5593613386154175     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:02 • 0:00:00 1.69it/s 
+overhead_val {'accuracy_thr0.5': 0.721, 'detection_rate_manipulated_thr0.5': 0.6466, 'false_alarm_rate_real_thr0.5': 0.2052, 'auc_real_vs_manipulated': 0.8007}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.6946031451225281
+Test F1 Score: 0.6880674362182617
+Test Average Precision: 0.8102034330368042
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6946031451225281     │
+│        predict_ap         │    0.8102034330368042     │
+│        predict_f1         │    0.6880674362182617     │
+│       predict_loss        │    0.5786093473434448     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.6946, 'detection_rate_manipulated_thr0.5': 0.6473, 'false_alarm_rate_real_thr0.5': 0.2541, 'auc_real_vs_manipulated': 0.7702}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.4833333194255829
+Test F1 Score: 0.20512820780277252
+Test Average Precision: 0.47885608673095703
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.4833333194255829     │
+│        predict_ap         │    0.47885608673095703    │
+│        predict_f1         │    0.20512820780277252    │
+│       predict_loss        │    0.8304862380027771     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.4833, 'detection_rate_manipulated_thr0.5': 0.1333, 'false_alarm_rate_real_thr0.5': 0.1667, 'auc_real_vs_manipulated': 0.4357}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.5568000078201294
+Test F1 Score: 0.4093816578388214
+Test Average Precision: 0.5825765132904053
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5568000078201294     │
+│        predict_ap         │    0.5825765132904053     │
+│        predict_f1         │    0.4093816578388214     │
+│       predict_loss        │    0.6972790360450745     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:30 • 0:00:00 1.65it/s 
+cross_rsfake {'accuracy_thr0.5': 0.5568, 'detection_rate_manipulated_thr0.5': 0.3072, 'false_alarm_rate_real_thr0.5': 0.1936, 'auc_real_vs_manipulated': 0.6163}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.5269097089767456
+Test F1 Score: 0.25705939531326294
+Test Average Precision: 0.600798487663269
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5269097089767456     │
+│        predict_ap         │     0.600798487663269     │
+│        predict_f1         │    0.25705939531326294    │
+│       predict_loss        │    0.6831198334693909     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:24 • 0:00:00 1.71it/s 
+cross_uw {'accuracy_thr0.5': 0.5269, 'detection_rate_manipulated_thr0.5': 0.1637, 'false_alarm_rate_real_thr0.5': 0.1099, 'auc_real_vs_manipulated': 0.6484}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.5716198086738586
+Test F1 Score: 0.5622435212135315
+Test Average Precision: 0.8643471598625183
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5716198086738586     │
+│        predict_ap         │    0.8643471598625183     │
+│        predict_f1         │    0.5622435212135315     │
+│       predict_loss        │    0.6724282503128052     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.5716, 'detection_rate_manipulated_thr0.5': 0.411, 'false_alarm_rate_real_thr0.5': 0.1032, 'auc_real_vs_manipulated': 0.7556}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/lbr_s42/metrics.json
+Random seed set as 42
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 37711.21it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s42/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: False
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:02 • 0:00:00 1.68it/s v_num: 0vfg       
+                                                              train_loss: 0.509 
+                                                              val_loss: 0.478   
+                                                              val_acc: 0.775    
+                                                              val_f1: 0.746     
+                                                              val_ap: 0.876     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 30644.46it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: False
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.7749999761581421
+Test F1 Score: 0.7463359832763672
+Test Average Precision: 0.8758034110069275
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7749999761581421     │
+│        predict_ap         │    0.8758034110069275     │
+│        predict_f1         │    0.7463359832763672     │
+│       predict_loss        │    0.47780105471611023    │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:02 • 0:00:00 1.69it/s 
+overhead_val {'accuracy_thr0.5': 0.775, 'detection_rate_manipulated_thr0.5': 0.6647, 'false_alarm_rate_real_thr0.5': 0.1155, 'auc_real_vs_manipulated': 0.8465}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.7225396633148193
+Test F1 Score: 0.714565634727478
+Test Average Precision: 0.8396385908126831
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7225396633148193     │
+│        predict_ap         │    0.8396385908126831     │
+│        predict_f1         │     0.714565634727478     │
+│       predict_loss        │    0.5357354879379272     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.7225, 'detection_rate_manipulated_thr0.5': 0.6675, 'false_alarm_rate_real_thr0.5': 0.2177, 'auc_real_vs_manipulated': 0.7961}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.44999998807907104
+Test F1 Score: 0.029411764815449715
+Test Average Precision: 0.4300267696380615
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.44999998807907104    │
+│        predict_ap         │    0.4300267696380615     │
+│        predict_f1         │   0.029411764815449715    │
+│       predict_loss        │    1.0026832818984985     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.45, 'detection_rate_manipulated_thr0.5': 0.0167, 'false_alarm_rate_real_thr0.5': 0.1167, 'auc_real_vs_manipulated': 0.3897}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.5993000268936157
+Test F1 Score: 0.4830344617366791
+Test Average Precision: 0.6520416140556335
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5993000268936157     │
+│        predict_ap         │    0.6520416140556335     │
+│        predict_f1         │    0.4830344617366791     │
+│       predict_loss        │     0.696178138256073     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:30 • 0:00:00 1.65it/s 
+cross_rsfake {'accuracy_thr0.5': 0.5993, 'detection_rate_manipulated_thr0.5': 0.3744, 'false_alarm_rate_real_thr0.5': 0.1758, 'auc_real_vs_manipulated': 0.6628}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.6617063283920288
+Test F1 Score: 0.5885369777679443
+Test Average Precision: 0.6872660517692566
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6617063283920288     │
+│        predict_ap         │    0.6872660517692566     │
+│        predict_f1         │    0.5885369777679443     │
+│       predict_loss        │    0.6732059121131897     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:23 • 0:00:00 1.72it/s 
+cross_uw {'accuracy_thr0.5': 0.6617, 'detection_rate_manipulated_thr0.5': 0.4839, 'false_alarm_rate_real_thr0.5': 0.1605, 'auc_real_vs_manipulated': 0.6909}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.6646586060523987
+Test F1 Score: 0.7071887850761414
+Test Average Precision: 0.871074914932251
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6646586060523987     │
+│        predict_ap         │     0.871074914932251     │
+│        predict_f1         │    0.7071887850761414     │
+│       predict_loss        │    0.6067787408828735     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.6647, 'detection_rate_manipulated_thr0.5': 0.605, 'false_alarm_rate_real_thr0.5': 0.2146, 'auc_real_vs_manipulated': 0.7705}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s42/metrics.json
+Random seed set as 43
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 28683.61it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/lbr_s43/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:13 • 0:00:00 1.14it/s v_num: 0h77       
+                                                              train_loss: 0.558 
+                                                              val_loss: 0.552   
+                                                              val_acc: 0.720    
+                                                              val_f1: 0.685     
+                                                              val_ap: 0.839     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 28081.12it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.7200000286102295
+Test F1 Score: 0.6853932738304138
+Test Average Precision: 0.8389167785644531
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7200000286102295     │
+│        predict_ap         │    0.8389167785644531     │
+│        predict_f1         │    0.6853932738304138     │
+│       predict_loss        │    0.5516976118087769     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:02 • 0:00:00 1.69it/s 
+overhead_val {'accuracy_thr0.5': 0.72, 'detection_rate_manipulated_thr0.5': 0.6124, 'false_alarm_rate_real_thr0.5': 0.1733, 'auc_real_vs_manipulated': 0.8122}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.700952410697937
+Test F1 Score: 0.6870431900024414
+Test Average Precision: 0.8156943321228027
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │     0.700952410697937     │
+│        predict_ap         │    0.8156943321228027     │
+│        predict_f1         │    0.6870431900024414     │
+│       predict_loss        │    0.5764651298522949     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.701, 'detection_rate_manipulated_thr0.5': 0.6309, 'false_alarm_rate_real_thr0.5': 0.223, 'auc_real_vs_manipulated': 0.7748}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.4749999940395355
+Test F1 Score: 0.1599999964237213
+Test Average Precision: 0.47371363639831543
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.4749999940395355     │
+│        predict_ap         │    0.47371363639831543    │
+│        predict_f1         │    0.1599999964237213     │
+│       predict_loss        │     0.864741325378418     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.475, 'detection_rate_manipulated_thr0.5': 0.1, 'false_alarm_rate_real_thr0.5': 0.15, 'auc_real_vs_manipulated': 0.4246}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.5723999738693237
+Test F1 Score: 0.4327407777309418
+Test Average Precision: 0.6106076240539551
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5723999738693237     │
+│        predict_ap         │    0.6106076240539551     │
+│        predict_f1         │    0.4327407777309418     │
+│       predict_loss        │    0.6880724430084229     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:30 • 0:00:00 1.64it/s 
+cross_rsfake {'accuracy_thr0.5': 0.5724, 'detection_rate_manipulated_thr0.5': 0.3262, 'false_alarm_rate_real_thr0.5': 0.1814, 'auc_real_vs_manipulated': 0.637}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.5654761791229248
+Test F1 Score: 0.33636364340782166
+Test Average Precision: 0.6812551021575928
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5654761791229248     │
+│        predict_ap         │    0.6812551021575928     │
+│        predict_f1         │    0.33636364340782166    │
+│       predict_loss        │    0.6542778015136719     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:23 • 0:00:00 1.72it/s 
+cross_uw {'accuracy_thr0.5': 0.5655, 'detection_rate_manipulated_thr0.5': 0.2202, 'false_alarm_rate_real_thr0.5': 0.0893, 'auc_real_vs_manipulated': 0.7167}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.5850067138671875
+Test F1 Score: 0.5833333134651184
+Test Average Precision: 0.8637223839759827
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5850067138671875     │
+│        predict_ap         │    0.8637223839759827     │
+│        predict_f1         │    0.5833333134651184     │
+│       predict_loss        │    0.6719471216201782     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.585, 'detection_rate_manipulated_thr0.5': 0.434, 'false_alarm_rate_real_thr0.5': 0.1093, 'auc_real_vs_manipulated': 0.7525}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/lbr_s43/metrics.json
+Random seed set as 43
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 28518.66it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s43/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: False
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:01 • 0:00:00 1.69it/s v_num: exfr       
+                                                              train_loss: 0.503 
+                                                              val_loss: 0.475   
+                                                              val_acc: 0.775    
+                                                              val_f1: 0.754     
+                                                              val_ap: 0.876     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 30320.45it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: False
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.7749999761581421
+Test F1 Score: 0.7540983557701111
+Test Average Precision: 0.8763041496276855
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7749999761581421     │
+│        predict_ap         │    0.8763041496276855     │
+│        predict_f1         │    0.7540983557701111     │
+│       predict_loss        │    0.47481220960617065    │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:02 • 0:00:00 1.69it/s 
+overhead_val {'accuracy_thr0.5': 0.775, 'detection_rate_manipulated_thr0.5': 0.6928, 'false_alarm_rate_real_thr0.5': 0.1434, 'auc_real_vs_manipulated': 0.8482}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.719682514667511
+Test F1 Score: 0.7181615233421326
+Test Average Precision: 0.8418837785720825
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │     0.719682514667511     │
+│        predict_ap         │    0.8418837785720825     │
+│        predict_f1         │    0.7181615233421326     │
+│       predict_loss        │    0.5329800844192505     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.7197, 'detection_rate_manipulated_thr0.5': 0.6864, 'false_alarm_rate_real_thr0.5': 0.2442, 'auc_real_vs_manipulated': 0.7996}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.44999998807907104
+Test F1 Score: 0.029411764815449715
+Test Average Precision: 0.4319794178009033
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.44999998807907104    │
+│        predict_ap         │    0.4319794178009033     │
+│        predict_f1         │   0.029411764815449715    │
+│       predict_loss        │     1.027293086051941     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.45, 'detection_rate_manipulated_thr0.5': 0.0167, 'false_alarm_rate_real_thr0.5': 0.1167, 'auc_real_vs_manipulated': 0.3971}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.6004999876022339
+Test F1 Score: 0.5013107061386108
+Test Average Precision: 0.6507164239883423
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6004999876022339     │
+│        predict_ap         │    0.6507164239883423     │
+│        predict_f1         │    0.5013107061386108     │
+│       predict_loss        │    0.6979972720146179     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:29 • 0:00:00 1.68it/s 
+cross_rsfake {'accuracy_thr0.5': 0.6005, 'detection_rate_manipulated_thr0.5': 0.4016, 'false_alarm_rate_real_thr0.5': 0.2006, 'auc_real_vs_manipulated': 0.6598}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.6643105149269104
+Test F1 Score: 0.6041818857192993
+Test Average Precision: 0.6863225102424622
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6643105149269104     │
+│        predict_ap         │    0.6863225102424622     │
+│        predict_f1         │    0.6041818857192993     │
+│       predict_loss        │     0.662632942199707     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:23 • 0:00:00 1.72it/s 
+cross_uw {'accuracy_thr0.5': 0.6643, 'detection_rate_manipulated_thr0.5': 0.5124, 'false_alarm_rate_real_thr0.5': 0.1838, 'auc_real_vs_manipulated': 0.7006}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.6753681302070618
+Test F1 Score: 0.7226986885070801
+Test Average Precision: 0.8785492181777954
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6753681302070618     │
+│        predict_ap         │    0.8785492181777954     │
+│        predict_f1         │    0.7226986885070801     │
+│       predict_loss        │    0.5905113220214844     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.6754, 'detection_rate_manipulated_thr0.5': 0.632, 'false_alarm_rate_real_thr0.5': 0.2368, 'auc_real_vs_manipulated': 0.7816}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s43/metrics.json
+Random seed set as 44
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 31184.14it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/lbr_s44/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:14 • 0:00:00 1.14it/s v_num: 51s5       
+                                                              train_loss: 0.572 
+                                                              val_loss: 0.547   
+                                                              val_acc: 0.719    
+                                                              val_f1: 0.699     
+                                                              val_ap: 0.838     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 31098.89it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: True
+LBR alpha distribution: U(0.5, 0.8)
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.718999981880188
+Test F1 Score: 0.6988210082054138
+Test Average Precision: 0.8381609916687012
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │     0.718999981880188     │
+│        predict_ap         │    0.8381609916687012     │
+│        predict_f1         │    0.6988210082054138     │
+│       predict_loss        │    0.5472819805145264     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:02 • 0:00:00 1.69it/s 
+overhead_val {'accuracy_thr0.5': 0.719, 'detection_rate_manipulated_thr0.5': 0.6546, 'false_alarm_rate_real_thr0.5': 0.2171, 'auc_real_vs_manipulated': 0.8114}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.6965079307556152
+Test F1 Score: 0.6892067790031433
+Test Average Precision: 0.814454197883606
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6965079307556152     │
+│        predict_ap         │     0.814454197883606     │
+│        predict_f1         │    0.6892067790031433     │
+│       predict_loss        │    0.5729453563690186     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.6965, 'detection_rate_manipulated_thr0.5': 0.6467, 'false_alarm_rate_real_thr0.5': 0.2495, 'auc_real_vs_manipulated': 0.7752}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.4749999940395355
+Test F1 Score: 0.1818181872367859
+Test Average Precision: 0.4669454097747803
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.4749999940395355     │
+│        predict_ap         │    0.4669454097747803     │
+│        predict_f1         │    0.1818181872367859     │
+│       predict_loss        │    0.8817004561424255     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.475, 'detection_rate_manipulated_thr0.5': 0.1167, 'false_alarm_rate_real_thr0.5': 0.1667, 'auc_real_vs_manipulated': 0.4206}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.5636000037193298
+Test F1 Score: 0.425789475440979
+Test Average Precision: 0.586288332939148
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5636000037193298     │
+│        predict_ap         │     0.586288332939148     │
+│        predict_f1         │     0.425789475440979     │
+│       predict_loss        │    0.7046061754226685     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:31 • 0:00:00 1.69it/s 
+cross_rsfake {'accuracy_thr0.5': 0.5636, 'detection_rate_manipulated_thr0.5': 0.3236, 'false_alarm_rate_real_thr0.5': 0.1964, 'auc_real_vs_manipulated': 0.616}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.5605158805847168
+Test F1 Score: 0.32211169600486755
+Test Average Precision: 0.6690585613250732
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5605158805847168     │
+│        predict_ap         │    0.6690585613250732     │
+│        predict_f1         │    0.32211169600486755    │
+│       predict_loss        │    0.6623871922492981     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:24 • 0:00:00 1.66it/s 
+cross_uw {'accuracy_thr0.5': 0.5605, 'detection_rate_manipulated_thr0.5': 0.2088, 'false_alarm_rate_real_thr0.5': 0.0878, 'auc_real_vs_manipulated': 0.7072}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.6030789613723755
+Test F1 Score: 0.6059800386428833
+Test Average Precision: 0.8742814064025879
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6030789613723755     │
+│        predict_ap         │    0.8742814064025879     │
+│        predict_f1         │    0.6059800386428833     │
+│       predict_loss        │    0.6530649662017822     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.6031, 'detection_rate_manipulated_thr0.5': 0.456, 'false_alarm_rate_real_thr0.5': 0.0992, 'auc_real_vs_manipulated': 0.7758}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/lbr_s44/metrics.json
+Random seed set as 44
+Loading ProGAN dataset for train
+Loading overhead_val dataset for test
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 38714.36it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+`Trainer(limit_val_batches=1.0)` was configured so 100% of the batches will be used..
+`Trainer(val_check_interval=1.0)` was configured so validation will run at the end of the training epoch..
+Initializing distributed: GLOBAL_RANK: 0, MEMBER: 1/1
+----------------------------------------------------------------------------------------------------
+distributed_backend=nccl
+All distributed processes registered. Starting with 1 processes
+----------------------------------------------------------------------------------------------------
+
+wandb: WARNING The anonymous setting has no effect and will be removed in a future version.
+wandb: WARNING git root /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s44/lightning does not exist
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/model_summary/model_summary.py:242: Precision 16-mixed is not supported by the model summary.  Estimated model size in MB will not be accurate. Using 32 bits instead.
+LBR enabled: False
+┏━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name       ┃ Type                   ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ backbone   │ VisionBackbone         │  303 M │ train │     0 │
+│ 1 │ classifier │ Sequential             │  656 K │ train │     0 │
+│ 2 │ criterion  │ BCEWithLogitsLoss      │      0 │ train │     0 │
+│ 3 │ train_acc  │ BinaryAccuracy         │      0 │ train │     0 │
+│ 4 │ val_acc    │ BinaryAccuracy         │      0 │ train │     0 │
+│ 5 │ val_f1     │ BinaryF1Score          │      0 │ train │     0 │
+│ 6 │ val_ap     │ BinaryAveragePrecision │      0 │ train │     0 │
+│ 7 │ test_acc   │ BinaryAccuracy         │      0 │ train │     0 │
+│ 8 │ test_f1    │ BinaryF1Score          │      0 │ train │     0 │
+│ 9 │ test_ap    │ BinaryAveragePrecision │      0 │ train │     0 │
+└───┴────────────┴────────────────────────┴────────┴───────┴───────┘
+Trainable params: 656 K                                                         
+Non-trainable params: 303 M                                                     
+Total params: 303 M                                                             
+Total estimated model params size (MB): 1,215.144                               
+Modules in train mode: 18                                                       
+Modules in eval mode: 367                                                       
+Total FLOPs: 0                                                                  
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/loops/fit_loop.py:538: Found 367 module(s) in eval mode at the start of training. This may lead to unexpected behavior during training. If this is intentional, you can ignore this warning.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/torch/autograd/graph.py:1072: UserWarning: The AccumulateGrad node's stream does not match the stream of the node that produced the incoming gradient. This may incur unnecessary synchronization and break CUDA graph capture if the AccumulateGrad node's stream is the default stream. This mismatch is caused by an AccumulateGrad node created prior to the current iteration being kept alive. This can happen if the autograd graph is still being kept alive by tensors such as the loss, or if you are using DDP, which will stash a reference to the node. To resolve the mismatch, delete all references to the autograd graph or ensure that DDP initialization is performed under the same stream as subsequent forwards. If the mismatch is intentional, you can use torch.autograd.graph.set_warn_on_accumulate_grad_stream_mismatch(False) to suppress this warning. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/input_buffer.cpp:310.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('val_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('Epoch', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+`Trainer.fit` stopped: `max_epochs=5` reached.
+Epoch 4/4  ━━━━━━━━━━━━━━━━━ 45/45 0:01:02 • 0:00:00 1.68it/s v_num: 8e2c       
+                                                              train_loss: 0.513 
+                                                              val_loss: 0.473   
+                                                              val_acc: 0.780    
+                                                              val_f1: 0.760     
+                                                              val_ap: 0.877     
+Loading weights:   0%|          | 0/415 [00:00<?, ?it/s]Loading weights: 100%|██████████| 415/415 [00:00<00:00, 30399.88it/s]
+Using 16bit Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+LBR enabled: False
+Evaluating on subset: overhead_val
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/trainer/connectors/logger_connector/result.py:433: It is recommended to use `self.log('predict_loss', ..., sync_dist=True)` when logging on epoch level in distributed setting to accumulate the metric across devices.
+Test Accuracy: 0.7799999713897705
+Test F1 Score: 0.7598253488540649
+Test Average Precision: 0.8774240016937256
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7799999713897705     │
+│        predict_ap         │    0.8774240016937256     │
+│        predict_f1         │    0.7598253488540649     │
+│       predict_loss        │    0.47316351532936096    │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5/5 0:00:03 • 0:00:00 1.66it/s 
+overhead_val {'accuracy_thr0.5': 0.78, 'detection_rate_manipulated_thr0.5': 0.6988, 'false_alarm_rate_real_thr0.5': 0.1394, 'auc_real_vs_manipulated': 0.8488}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: overhead_test
+Test Accuracy: 0.7225396633148193
+Test F1 Score: 0.7216560244560242
+Test Average Precision: 0.8416244983673096
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.7225396633148193     │
+│        predict_ap         │    0.8416244983673096     │
+│        predict_f1         │    0.7216560244560242     │
+│       predict_loss        │    0.5334150195121765     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16/16 0:00:09 • 0:00:00 1.72it/s 
+overhead_test {'accuracy_thr0.5': 0.7225, 'detection_rate_manipulated_thr0.5': 0.6913, 'false_alarm_rate_real_thr0.5': 0.2435, 'auc_real_vs_manipulated': 0.7991}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_fmow
+Test Accuracy: 0.44999998807907104
+Test F1 Score: 0.029411764815449715
+Test Average Precision: 0.4322073459625244
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.44999998807907104    │
+│        predict_ap         │    0.4322073459625244     │
+│        predict_f1         │   0.029411764815449715    │
+│       predict_loss        │    1.0199854373931885     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1/1 0:00:00 • 0:00:00 0.00it/s 
+cross_fmow {'accuracy_thr0.5': 0.45, 'detection_rate_manipulated_thr0.5': 0.0167, 'false_alarm_rate_real_thr0.5': 0.1167, 'auc_real_vs_manipulated': 0.3989}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_rsfake
+Test Accuracy: 0.5971999764442444
+Test F1 Score: 0.4914141297340393
+Test Average Precision: 0.6474834084510803
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.5971999764442444     │
+│        predict_ap         │    0.6474834084510803     │
+│        predict_f1         │    0.4914141297340393     │
+│       predict_loss        │    0.6997396945953369     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50/50 0:00:29 • 0:00:00 1.67it/s 
+cross_rsfake {'accuracy_thr0.5': 0.5972, 'detection_rate_manipulated_thr0.5': 0.3892, 'false_alarm_rate_real_thr0.5': 0.1948, 'auc_real_vs_manipulated': 0.6579}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_uw
+Test Accuracy: 0.6692708134651184
+Test F1 Score: 0.6077364087104797
+Test Average Precision: 0.6967393755912781
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6692708134651184     │
+│        predict_ap         │    0.6967393755912781     │
+│        predict_f1         │    0.6077364087104797     │
+│       predict_loss        │    0.6571042537689209     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 41/41 0:00:24 • 0:00:00 1.70it/s 
+cross_uw {'accuracy_thr0.5': 0.6693, 'detection_rate_manipulated_thr0.5': 0.5124, 'false_alarm_rate_real_thr0.5': 0.1739, 'auc_real_vs_manipulated': 0.7065}
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+/home/adminuser/Desktop/.venv/lib/python3.14/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+Evaluating on subset: cross_dmaer
+Test Accuracy: 0.6900936961174011
+Test F1 Score: 0.7370812296867371
+Test Average Precision: 0.8842266798019409
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        predict_acc        │    0.6900936961174011     │
+│        predict_ap         │    0.8842266798019409     │
+│        predict_f1         │    0.7370812296867371     │
+│       predict_loss        │    0.5791239738464355     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8/8 0:00:04 • 0:00:00 1.83it/s 
+cross_dmaer {'accuracy_thr0.5': 0.6901, 'detection_rate_manipulated_thr0.5': 0.649, 'false_alarm_rate_real_thr0.5': 0.2267, 'auc_real_vs_manipulated': 0.7901}
+[save] /home/adminuser/grsl/simlbr_official_runs/web/nolbr_s44/metrics.json
+lbr    overhead_val   acc=0.7200 auc=0.8081 n=3
+lbr    overhead_test  acc=0.6974 auc=0.7734 n=3
+lbr    cross_fmow     acc=0.4778 auc=0.4269 n=3
+lbr    cross_rsfake   acc=0.5643 auc=0.6231 n=3
+lbr    cross_uw       acc=0.5510 auc=0.6908 n=3
+lbr    cross_dmaer    acc=0.5866 auc=0.7613 n=3
+nolbr  overhead_val   acc=0.7767 auc=0.8478 n=3
+nolbr  overhead_test  acc=0.7216 auc=0.7983 n=3
+nolbr  cross_fmow     acc=0.4500 auc=0.3952 n=3
+nolbr  cross_rsfake   acc=0.5990 auc=0.6602 n=3
+nolbr  cross_uw       acc=0.6651 auc=0.6993 n=3
+nolbr  cross_dmaer    acc=0.6767 auc=0.7808 n=3
+[save] /home/adminuser/grsl/simlbr_official_web_metrics.json

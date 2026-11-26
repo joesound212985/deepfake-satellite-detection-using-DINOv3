@@ -1,0 +1,137 @@
+{
+  "selection_rule": "\nQualitative figure for the letter: image | ground-truth mask | full_s42 mask | web_s42 mask.\n\nExamples are chosen by a fixed rule from the saved per-image results of full_s42 (no hand picking):\n  tampered images ranked by full_s42 IoU -> the images at the 90th, 50th and 10th percentile;\n  the small-region failure: among tampered images with manipulated_fraction < 0.0625 that full_s42\n    classified as pristine, the one with the median manipulated_fraction;\n  the first fake and the first pristine image by filename.\nWrites qualitative.png and qualitative.json (ids, rule, predictions).\n",
+  "examples": [
+    {
+      "id": "im0372",
+      "why": "tampered, IoU 90th percentile",
+      "manipulation_type": "inpainted_unstruct",
+      "manipulated_fraction": 0.231,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.0042363316752016544,
+          0.9955933094024658,
+          0.00017033214680850506
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.008556564338505268,
+          0.9900950193405151,
+          0.0013484348310157657
+        ]
+      }
+    },
+    {
+      "id": "im2877",
+      "why": "tampered, IoU 50th percentile",
+      "manipulation_type": "inpainted_unstruct",
+      "manipulated_fraction": 0.13,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.0018310581799596548,
+          0.997431218624115,
+          0.0007377312867902219
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.0044870031997561455,
+          0.9931427836418152,
+          0.002370185451582074
+        ]
+      }
+    },
+    {
+      "id": "im2912",
+      "why": "tampered, IoU 10th percentile",
+      "manipulation_type": "inpainted_unstruct",
+      "manipulated_fraction": 0.094,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.04636821523308754,
+          0.615837812423706,
+          0.3377940058708191
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "tampered",
+        "probs": [
+          0.1447511911392212,
+          0.8476309776306152,
+          0.0076178074814379215
+        ]
+      }
+    },
+    {
+      "id": "im3142",
+      "why": "small-region miss",
+      "manipulation_type": "inpainted_unstruct",
+      "manipulated_fraction": 0.031,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "pristine",
+        "probs": [
+          0.7221433520317078,
+          0.27692916989326477,
+          0.0009274177718907595
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "pristine",
+        "probs": [
+          0.6830778121948242,
+          0.3142377436161041,
+          0.0026844143867492676
+        ]
+      }
+    },
+    {
+      "id": "im0002",
+      "why": "fake (first by filename)",
+      "manipulation_type": "generated_uncond",
+      "manipulated_fraction": 1.0,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "fake",
+        "probs": [
+          6.819431291660294e-05,
+          0.0008870142046362162,
+          0.9990447759628296
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "fake",
+        "probs": [
+          0.001072110142558813,
+          0.0019871946424245834,
+          0.9969406723976135
+        ]
+      }
+    },
+    {
+      "id": "im0000",
+      "why": "pristine (first by filename)",
+      "manipulation_type": "pristine",
+      "manipulated_fraction": 0.0,
+      "full_s42 (satellite-pretrained)": {
+        "pred_class": "pristine",
+        "probs": [
+          0.9966106414794922,
+          0.003275444731116295,
+          0.00011387241829652339
+        ]
+      },
+      "web_s42 (web-pretrained)": {
+        "pred_class": "pristine",
+        "probs": [
+          0.9959889650344849,
+          0.0037900907918810844,
+          0.00022091635037213564
+        ]
+      }
+    }
+  ]
+}
