@@ -282,3 +282,5 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T14:04:02-06:00 | `SEED=43 EVAL_SPLITS=val,test RUN_TAG=full_s43 python dinov3_forensics_train_v2.py` | full_s43 | started |
 | 2026-11-26T14:33:29-06:00 | `python fewshot_adapt.py extract --sets own` (on laptop, alongside its training run) | zeroshot_extras | started |
 | 2026-11-26T14:34:37-06:00 | watch.py/go.sh: few-shot table with GDD rows, status marks for new analyses, comments updated | dashboard | ok |
+| 2026-11-26T15:05:22-06:00 |  | zeroshot_extras extract | exit=0 |
+| 2026-11-26T15:05:47-06:00 | `python zeroshot_extras.py` | zeroshot_extras | exit=0 (zeroshot_extras_metrics.json) |

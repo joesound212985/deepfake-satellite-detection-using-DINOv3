@@ -1,0 +1,741 @@
+{
+ "protocol": "ZEROSHOT_EXTRAS_PROTOCOL.md",
+ "A_clustering": {
+  "full_s42": {
+   "rsfake": {
+    "accuracy": 0.5787,
+    "balanced_accuracy": 0.5787000000000001,
+    "detection_rate": 0.3052,
+    "false_alarm_rate": 0.1478,
+    "oracle_naming_accuracy": 0.5787,
+    "cluster_sizes": [
+     7735,
+     2265
+    ],
+    "zero_shot_auc_same_model": 0.5837318
+   },
+   "uw": {
+    "accuracy": 0.4175347222222222,
+    "balanced_accuracy": 0.41753472222222227,
+    "detection_rate": 0.7398313492063492,
+    "false_alarm_rate": 0.9047619047619048,
+    "oracle_naming_accuracy": 0.5824652777777778,
+    "cluster_sizes": [
+     6631,
+     1433
+    ],
+    "zero_shot_auc_same_model": 0.5000815032320799
+   },
+   "dmaer": {
+    "accuracy": 0.6278447121820616,
+    "balanced_accuracy": 0.7102206477732794,
+    "detection_rate": 0.467,
+    "false_alarm_rate": 0.0465587044534413,
+    "oracle_naming_accuracy": 0.6278447121820616,
+    "cluster_sizes": [
+     490,
+     1004
+    ],
+    "zero_shot_auc_same_model": 0.7798299595141701
+   },
+   "fmow": {
+    "accuracy": 0.4083333333333333,
+    "balanced_accuracy": 0.4083333333333333,
+    "detection_rate": 0.15,
+    "false_alarm_rate": 0.3333333333333333,
+    "oracle_naming_accuracy": 0.5916666666666667,
+    "cluster_sizes": [
+     91,
+     29
+    ],
+    "zero_shot_auc_same_model": 0.4502777777777778
+   },
+   "gdd_indomain": {
+    "accuracy": 0.588,
+    "balanced_accuracy": 0.588,
+    "detection_rate": 0.288,
+    "false_alarm_rate": 0.112,
+    "oracle_naming_accuracy": 0.588,
+    "cluster_sizes": [
+     300,
+     1200
+    ],
+    "zero_shot_auc_same_model": 0.5357404444444445
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5735,
+    "balanced_accuracy": 0.5735,
+    "detection_rate": 0.249,
+    "false_alarm_rate": 0.102,
+    "oracle_naming_accuracy": 0.5735,
+    "cluster_sizes": [
+     351,
+     1649
+    ],
+    "zero_shot_auc_same_model": 0.648276
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.627,
+    "balanced_accuracy": 0.627,
+    "detection_rate": 0.423,
+    "false_alarm_rate": 0.169,
+    "oracle_naming_accuracy": 0.627,
+    "cluster_sizes": [
+     592,
+     1408
+    ],
+    "zero_shot_auc_same_model": 0.7064490000000001
+   },
+   "gdd_localization": {
+    "accuracy": 0.534,
+    "balanced_accuracy": 0.534,
+    "detection_rate": 0.216,
+    "false_alarm_rate": 0.148,
+    "oracle_naming_accuracy": 0.534,
+    "cluster_sizes": [
+     182,
+     818
+    ],
+    "zero_shot_auc_same_model": 0.56804
+   }
+  },
+  "web_s42": {
+   "rsfake": {
+    "accuracy": 0.5921,
+    "balanced_accuracy": 0.5921,
+    "detection_rate": 0.2922,
+    "false_alarm_rate": 0.108,
+    "oracle_naming_accuracy": 0.5921,
+    "cluster_sizes": [
+     2001,
+     7999
+    ],
+    "zero_shot_auc_same_model": 0.6678000399999999
+   },
+   "uw": {
+    "accuracy": 0.5783730158730159,
+    "balanced_accuracy": 0.5783730158730158,
+    "detection_rate": 0.2482638888888889,
+    "false_alarm_rate": 0.09151785714285714,
+    "oracle_naming_accuracy": 0.5783730158730159,
+    "cluster_sizes": [
+     1370,
+     6694
+    ],
+    "zero_shot_auc_same_model": 0.5266903093702758
+   },
+   "dmaer": {
+    "accuracy": 0.463855421686747,
+    "balanced_accuracy": 0.5984757085020244,
+    "detection_rate": 0.201,
+    "false_alarm_rate": 0.004048582995951417,
+    "oracle_naming_accuracy": 0.536144578313253,
+    "cluster_sizes": [
+     203,
+     1291
+    ],
+    "zero_shot_auc_same_model": 0.7380627530364373
+   },
+   "fmow": {
+    "accuracy": 0.38333333333333336,
+    "balanced_accuracy": 0.38333333333333336,
+    "detection_rate": 0.36666666666666664,
+    "false_alarm_rate": 0.6,
+    "oracle_naming_accuracy": 0.6166666666666667,
+    "cluster_sizes": [
+     58,
+     62
+    ],
+    "zero_shot_auc_same_model": 0.4325
+   },
+   "gdd_indomain": {
+    "accuracy": 0.5006666666666667,
+    "balanced_accuracy": 0.5006666666666667,
+    "detection_rate": 0.38666666666666666,
+    "false_alarm_rate": 0.38533333333333336,
+    "oracle_naming_accuracy": 0.5006666666666667,
+    "cluster_sizes": [
+     579,
+     921
+    ],
+    "zero_shot_auc_same_model": 0.4805457777777778
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.505,
+    "balanced_accuracy": 0.505,
+    "detection_rate": 0.42,
+    "false_alarm_rate": 0.41,
+    "oracle_naming_accuracy": 0.505,
+    "cluster_sizes": [
+     830,
+     1170
+    ],
+    "zero_shot_auc_same_model": 0.596344
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.5425,
+    "balanced_accuracy": 0.5425,
+    "detection_rate": 0.407,
+    "false_alarm_rate": 0.322,
+    "oracle_naming_accuracy": 0.5425,
+    "cluster_sizes": [
+     729,
+     1271
+    ],
+    "zero_shot_auc_same_model": 0.6343110000000001
+   },
+   "gdd_localization": {
+    "accuracy": 0.476,
+    "balanced_accuracy": 0.476,
+    "detection_rate": 0.368,
+    "false_alarm_rate": 0.416,
+    "oracle_naming_accuracy": 0.524,
+    "cluster_sizes": [
+     392,
+     608
+    ],
+    "zero_shot_auc_same_model": 0.560168
+   }
+  }
+ },
+ "B_frozen_probe": {
+  "full_s42": {
+   "n_train": 10000,
+   "own_test": {
+    "accuracy": 0.9079365079365079,
+    "balanced_accuracy": 0.9086112054411638,
+    "detection_rate": 0.8920073215375229,
+    "false_alarm_rate": 0.07478491065519524,
+    "auc": 0.9635195065351546
+   },
+   "rsfake": {
+    "accuracy": 0.5499,
+    "balanced_accuracy": 0.5499,
+    "detection_rate": 0.151,
+    "false_alarm_rate": 0.0512,
+    "auc": 0.58655392
+   },
+   "uw": {
+    "accuracy": 0.4991319444444444,
+    "balanced_accuracy": 0.4991319444444445,
+    "detection_rate": 0.041666666666666664,
+    "false_alarm_rate": 0.043402777777777776,
+    "auc": 0.5588051663084215
+   },
+   "dmaer": {
+    "accuracy": 0.4243641231593039,
+    "balanced_accuracy": 0.5669271255060728,
+    "detection_rate": 0.146,
+    "false_alarm_rate": 0.012145748987854251,
+    "auc": 0.78267004048583
+   },
+   "fmow": {
+    "accuracy": 0.5,
+    "balanced_accuracy": 0.5,
+    "detection_rate": 0.0,
+    "false_alarm_rate": 0.0,
+    "auc": 0.3616666666666667
+   },
+   "gdd_indomain": {
+    "accuracy": 0.5353333333333333,
+    "balanced_accuracy": 0.5353333333333333,
+    "detection_rate": 0.09866666666666667,
+    "false_alarm_rate": 0.028,
+    "auc": 0.5048675555555555
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5305,
+    "balanced_accuracy": 0.5305000000000001,
+    "detection_rate": 0.092,
+    "false_alarm_rate": 0.031,
+    "auc": 0.6286999999999999
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.5415,
+    "balanced_accuracy": 0.5415000000000001,
+    "detection_rate": 0.092,
+    "false_alarm_rate": 0.009,
+    "auc": 0.7507149999999999
+   },
+   "gdd_localization": {
+    "accuracy": 0.526,
+    "balanced_accuracy": 0.526,
+    "detection_rate": 0.072,
+    "false_alarm_rate": 0.02,
+    "auc": 0.556676
+   }
+  },
+  "web_s42": {
+   "n_train": 10000,
+   "own_test": {
+    "accuracy": 0.9298412698412698,
+    "balanced_accuracy": 0.931650507625794,
+    "detection_rate": 0.8871262965222697,
+    "false_alarm_rate": 0.02382528127068167,
+    "auc": 0.9767388146878152
+   },
+   "rsfake": {
+    "accuracy": 0.5481,
+    "balanced_accuracy": 0.5480999999999999,
+    "detection_rate": 0.134,
+    "false_alarm_rate": 0.0378,
+    "auc": 0.73944676
+   },
+   "uw": {
+    "accuracy": 0.5932539682539683,
+    "balanced_accuracy": 0.5932539682539683,
+    "detection_rate": 0.2562003968253968,
+    "false_alarm_rate": 0.06969246031746032,
+    "auc": 0.6073438164328231
+   },
+   "dmaer": {
+    "accuracy": 0.4725568942436412,
+    "balanced_accuracy": 0.5998542510121457,
+    "detection_rate": 0.224,
+    "false_alarm_rate": 0.024291497975708502,
+    "auc": 0.7761943319838056
+   },
+   "fmow": {
+    "accuracy": 0.5,
+    "balanced_accuracy": 0.5,
+    "detection_rate": 0.0,
+    "false_alarm_rate": 0.0,
+    "auc": 0.3950000000000001
+   },
+   "gdd_indomain": {
+    "accuracy": 0.514,
+    "balanced_accuracy": 0.514,
+    "detection_rate": 0.050666666666666665,
+    "false_alarm_rate": 0.02266666666666667,
+    "auc": 0.5098968888888888
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5325,
+    "balanced_accuracy": 0.5325000000000001,
+    "detection_rate": 0.086,
+    "false_alarm_rate": 0.021,
+    "auc": 0.607448
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.5335,
+    "balanced_accuracy": 0.5335000000000001,
+    "detection_rate": 0.086,
+    "false_alarm_rate": 0.019,
+    "auc": 0.59677
+   },
+   "gdd_localization": {
+    "accuracy": 0.524,
+    "balanced_accuracy": 0.524,
+    "detection_rate": 0.068,
+    "false_alarm_rate": 0.02,
+    "auc": 0.542848
+   }
+  },
+  "sat_orig": {
+   "n_train": 10000,
+   "own_test": {
+    "accuracy": 0.7146031746031746,
+    "balanced_accuracy": 0.7124384572116862,
+    "detection_rate": 0.7657107992678462,
+    "false_alarm_rate": 0.34083388484447386,
+    "auc": 0.7944486012479564
+   },
+   "rsfake": {
+    "accuracy": 0.5911,
+    "balanced_accuracy": 0.5911000000000001,
+    "detection_rate": 0.3864,
+    "false_alarm_rate": 0.2042,
+    "auc": 0.6203221600000001
+   },
+   "uw": {
+    "accuracy": 0.6277281746031746,
+    "balanced_accuracy": 0.6277281746031746,
+    "detection_rate": 0.544890873015873,
+    "false_alarm_rate": 0.28943452380952384,
+    "auc": 0.6160952336663832
+   },
+   "dmaer": {
+    "accuracy": 0.678714859437751,
+    "balanced_accuracy": 0.7272226720647774,
+    "detection_rate": 0.584,
+    "false_alarm_rate": 0.12955465587044535,
+    "auc": 0.8134190283400811
+   },
+   "fmow": {
+    "accuracy": 0.48333333333333334,
+    "balanced_accuracy": 0.48333333333333334,
+    "detection_rate": 0.05,
+    "false_alarm_rate": 0.08333333333333333,
+    "auc": 0.4930555555555556
+   },
+   "gdd_indomain": {
+    "accuracy": 0.602,
+    "balanced_accuracy": 0.602,
+    "detection_rate": 0.3586666666666667,
+    "false_alarm_rate": 0.15466666666666667,
+    "auc": 0.5497848888888888
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.557,
+    "balanced_accuracy": 0.557,
+    "detection_rate": 0.278,
+    "false_alarm_rate": 0.164,
+    "auc": 0.553178
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.567,
+    "balanced_accuracy": 0.5670000000000001,
+    "detection_rate": 0.278,
+    "false_alarm_rate": 0.144,
+    "auc": 0.576362
+   },
+   "gdd_localization": {
+    "accuracy": 0.509,
+    "balanced_accuracy": 0.509,
+    "detection_rate": 0.18,
+    "false_alarm_rate": 0.162,
+    "auc": 0.5295
+   }
+  },
+  "web_orig": {
+   "n_train": 10000,
+   "own_test": {
+    "accuracy": 0.7476190476190476,
+    "balanced_accuracy": 0.7523055453822669,
+    "detection_rate": 0.636973764490543,
+    "false_alarm_rate": 0.13236267372600927,
+    "auc": 0.8239136307307526
+   },
+   "rsfake": {
+    "accuracy": 0.5584,
+    "balanced_accuracy": 0.5584,
+    "detection_rate": 0.3522,
+    "false_alarm_rate": 0.2354,
+    "auc": 0.54923188
+   },
+   "uw": {
+    "accuracy": 0.43092757936507936,
+    "balanced_accuracy": 0.4309275793650794,
+    "detection_rate": 0.1892361111111111,
+    "false_alarm_rate": 0.3273809523809524,
+    "auc": 0.40859717006015367
+   },
+   "dmaer": {
+    "accuracy": 0.7008032128514057,
+    "balanced_accuracy": 0.7529412955465586,
+    "detection_rate": 0.599,
+    "false_alarm_rate": 0.0931174089068826,
+    "auc": 0.8249068825910931
+   },
+   "fmow": {
+    "accuracy": 0.4666666666666667,
+    "balanced_accuracy": 0.4666666666666666,
+    "detection_rate": 0.016666666666666666,
+    "false_alarm_rate": 0.08333333333333333,
+    "auc": 0.5108333333333333
+   },
+   "gdd_indomain": {
+    "accuracy": 0.6013333333333334,
+    "balanced_accuracy": 0.6013333333333333,
+    "detection_rate": 0.3253333333333333,
+    "false_alarm_rate": 0.12266666666666666,
+    "auc": 0.48203911111111114
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5555,
+    "balanced_accuracy": 0.5555000000000001,
+    "detection_rate": 0.241,
+    "false_alarm_rate": 0.13,
+    "auc": 0.49267099999999997
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.597,
+    "balanced_accuracy": 0.5970000000000001,
+    "detection_rate": 0.241,
+    "false_alarm_rate": 0.047,
+    "auc": 0.5977319999999999
+   },
+   "gdd_localization": {
+    "accuracy": 0.519,
+    "balanced_accuracy": 0.5189999999999999,
+    "detection_rate": 0.156,
+    "false_alarm_rate": 0.118,
+    "auc": 0.538796
+   }
+  }
+ },
+ "C_one_class": {
+  "full_s42": {
+   "n_reference": 4468,
+   "n_calibration": 496,
+   "threshold": 0.17926578977189037,
+   "own_test": {
+    "accuracy": 0.8003174603174603,
+    "balanced_accuracy": 0.7929709282629035,
+    "detection_rate": 0.9737644905430141,
+    "false_alarm_rate": 0.3878226340172071,
+    "auc": 0.9484625457646568
+   },
+   "rsfake": {
+    "accuracy": 0.5268,
+    "balanced_accuracy": 0.5267999999999999,
+    "detection_rate": 0.897,
+    "false_alarm_rate": 0.8434,
+    "auc": 0.57056276
+   },
+   "uw": {
+    "accuracy": 0.5720486111111112,
+    "balanced_accuracy": 0.5720486111111112,
+    "detection_rate": 0.9037698412698413,
+    "false_alarm_rate": 0.7596726190476191,
+    "auc": 0.5967542398904006
+   },
+   "dmaer": {
+    "accuracy": 0.7416331994645248,
+    "balanced_accuracy": 0.6205789473684211,
+    "detection_rate": 0.978,
+    "false_alarm_rate": 0.7368421052631579,
+    "auc": 0.734668016194332
+   },
+   "fmow": {
+    "accuracy": 0.425,
+    "balanced_accuracy": 0.425,
+    "detection_rate": 0.5166666666666667,
+    "false_alarm_rate": 0.6666666666666666,
+    "auc": 0.3552777777777778
+   },
+   "gdd_indomain": {
+    "accuracy": 0.45266666666666666,
+    "balanced_accuracy": 0.4526666666666667,
+    "detection_rate": 0.604,
+    "false_alarm_rate": 0.6986666666666667,
+    "auc": 0.4941937777777778
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5415,
+    "balanced_accuracy": 0.5415,
+    "detection_rate": 0.752,
+    "false_alarm_rate": 0.669,
+    "auc": 0.585445
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.6735,
+    "balanced_accuracy": 0.6735,
+    "detection_rate": 0.752,
+    "false_alarm_rate": 0.405,
+    "auc": 0.725669
+   },
+   "gdd_localization": {
+    "accuracy": 0.499,
+    "balanced_accuracy": 0.49900000000000005,
+    "detection_rate": 0.684,
+    "false_alarm_rate": 0.686,
+    "auc": 0.524744
+   }
+  },
+  "web_s42": {
+   "n_reference": 4468,
+   "n_calibration": 496,
+   "threshold": 0.12089481194855943,
+   "own_test": {
+    "accuracy": 0.8206349206349206,
+    "balanced_accuracy": 0.813968057713033,
+    "detection_rate": 0.9780353874313605,
+    "false_alarm_rate": 0.3500992720052945,
+    "auc": 0.9719631791107637
+   },
+   "rsfake": {
+    "accuracy": 0.6759,
+    "balanced_accuracy": 0.6759,
+    "detection_rate": 0.9762,
+    "false_alarm_rate": 0.6244,
+    "auc": 0.7895409600000001
+   },
+   "uw": {
+    "accuracy": 0.6608382936507936,
+    "balanced_accuracy": 0.6608382936507936,
+    "detection_rate": 0.9379960317460317,
+    "false_alarm_rate": 0.6163194444444444,
+    "auc": 0.7305707981977514
+   },
+   "dmaer": {
+    "accuracy": 0.7269076305220884,
+    "balanced_accuracy": 0.5906295546558704,
+    "detection_rate": 0.993,
+    "false_alarm_rate": 0.8117408906882592,
+    "auc": 0.8001396761133603
+   },
+   "fmow": {
+    "accuracy": 0.44166666666666665,
+    "balanced_accuracy": 0.4416666666666667,
+    "detection_rate": 0.16666666666666666,
+    "false_alarm_rate": 0.2833333333333333,
+    "auc": 0.39
+   },
+   "gdd_indomain": {
+    "accuracy": 0.5913333333333334,
+    "balanced_accuracy": 0.5913333333333333,
+    "detection_rate": 0.6946666666666667,
+    "false_alarm_rate": 0.512,
+    "auc": 0.6380728888888888
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.6245,
+    "balanced_accuracy": 0.6244999999999999,
+    "detection_rate": 0.751,
+    "false_alarm_rate": 0.502,
+    "auc": 0.6875720000000001
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.571,
+    "balanced_accuracy": 0.571,
+    "detection_rate": 0.751,
+    "false_alarm_rate": 0.609,
+    "auc": 0.642639
+   },
+   "gdd_localization": {
+    "accuracy": 0.547,
+    "balanced_accuracy": 0.5469999999999999,
+    "detection_rate": 0.602,
+    "false_alarm_rate": 0.508,
+    "auc": 0.5663
+   }
+  },
+  "sat_orig": {
+   "n_reference": 4468,
+   "n_calibration": 496,
+   "threshold": 0.2937415193994588,
+   "own_test": {
+    "accuracy": 0.5019047619047619,
+    "balanced_accuracy": 0.5025668990752783,
+    "detection_rate": 0.4862721171446004,
+    "false_alarm_rate": 0.4811383189940437,
+    "auc": 0.5142786537125146
+   },
+   "rsfake": {
+    "accuracy": 0.5054,
+    "balanced_accuracy": 0.5054,
+    "detection_rate": 0.9562,
+    "false_alarm_rate": 0.9454,
+    "auc": 0.46809292
+   },
+   "uw": {
+    "accuracy": 0.5354662698412699,
+    "balanced_accuracy": 0.5354662698412699,
+    "detection_rate": 0.9682539682539683,
+    "false_alarm_rate": 0.8973214285714286,
+    "auc": 0.7184694443460254
+   },
+   "dmaer": {
+    "accuracy": 0.572289156626506,
+    "balanced_accuracy": 0.43364574898785424,
+    "detection_rate": 0.843,
+    "false_alarm_rate": 0.9757085020242915,
+    "auc": 0.4279858299595142
+   },
+   "fmow": {
+    "accuracy": 0.48333333333333334,
+    "balanced_accuracy": 0.48333333333333334,
+    "detection_rate": 0.9333333333333333,
+    "false_alarm_rate": 0.9666666666666667,
+    "auc": 0.3577777777777778
+   },
+   "gdd_indomain": {
+    "accuracy": 0.502,
+    "balanced_accuracy": 0.502,
+    "detection_rate": 0.9573333333333334,
+    "false_alarm_rate": 0.9533333333333334,
+    "auc": 0.47275911111111113
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.4755,
+    "balanced_accuracy": 0.4755,
+    "detection_rate": 0.912,
+    "false_alarm_rate": 0.961,
+    "auc": 0.486414
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.5035,
+    "balanced_accuracy": 0.5035,
+    "detection_rate": 0.912,
+    "false_alarm_rate": 0.905,
+    "auc": 0.573709
+   },
+   "gdd_localization": {
+    "accuracy": 0.504,
+    "balanced_accuracy": 0.504,
+    "detection_rate": 0.962,
+    "false_alarm_rate": 0.954,
+    "auc": 0.453164
+   }
+  },
+  "web_orig": {
+   "n_reference": 4468,
+   "n_calibration": 496,
+   "threshold": 0.23599077678793345,
+   "own_test": {
+    "accuracy": 0.4653968253968254,
+    "balanced_accuracy": 0.476632819563187,
+    "detection_rate": 0.20012202562538134,
+    "false_alarm_rate": 0.2468563864990073,
+    "auc": 0.487073238391313
+   },
+   "rsfake": {
+    "accuracy": 0.6446,
+    "balanced_accuracy": 0.6446000000000001,
+    "detection_rate": 0.736,
+    "false_alarm_rate": 0.4468,
+    "auc": 0.69637956
+   },
+   "uw": {
+    "accuracy": 0.798859126984127,
+    "balanced_accuracy": 0.798859126984127,
+    "detection_rate": 0.7986111111111112,
+    "false_alarm_rate": 0.20089285714285715,
+    "auc": 0.880082357016881
+   },
+   "dmaer": {
+    "accuracy": 0.6298527443105756,
+    "balanced_accuracy": 0.5560283400809717,
+    "detection_rate": 0.774,
+    "false_alarm_rate": 0.6619433198380567,
+    "auc": 0.589344129554656
+   },
+   "fmow": {
+    "accuracy": 0.4,
+    "balanced_accuracy": 0.4,
+    "detection_rate": 0.18333333333333332,
+    "false_alarm_rate": 0.38333333333333336,
+    "auc": 0.3458333333333333
+   },
+   "gdd_indomain": {
+    "accuracy": 0.508,
+    "balanced_accuracy": 0.5080000000000001,
+    "detection_rate": 0.5106666666666667,
+    "false_alarm_rate": 0.49466666666666664,
+    "auc": 0.5282435555555556
+   },
+   "gdd_crossgenerator": {
+    "accuracy": 0.5665,
+    "balanced_accuracy": 0.5665,
+    "detection_rate": 0.629,
+    "false_alarm_rate": 0.496,
+    "auc": 0.6248659999999999
+   },
+   "gdd_crossdomain": {
+    "accuracy": 0.496,
+    "balanced_accuracy": 0.496,
+    "detection_rate": 0.629,
+    "false_alarm_rate": 0.637,
+    "auc": 0.5306630000000001
+   },
+   "gdd_localization": {
+    "accuracy": 0.537,
+    "balanced_accuracy": 0.5369999999999999,
+    "detection_rate": 0.574,
+    "false_alarm_rate": 0.5,
+    "auc": 0.5557920000000001
+   }
+  }
+ }
+}

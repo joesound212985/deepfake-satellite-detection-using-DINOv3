@@ -1,0 +1,17 @@
+[save] /home/adminuser/grsl/zeroshot_extras_metrics.json
+
+A_clustering
+  full_s42 rsfake: acc=0.579 | uw: acc=0.418 | dmaer: acc=0.628 | fmow: acc=0.408 | gdd_indomain: acc=0.588 | gdd_crossgenerator: acc=0.574 | gdd_crossdomain: acc=0.627 | gdd_localization: acc=0.534
+  web_s42 rsfake: acc=0.592 | uw: acc=0.578 | dmaer: acc=0.464 | fmow: acc=0.383 | gdd_indomain: acc=0.501 | gdd_crossgenerator: acc=0.505 | gdd_crossdomain: acc=0.542 | gdd_localization: acc=0.476
+
+B_frozen_probe
+  full_s42 own_test: AUC=0.964 acc=0.908 | rsfake: AUC=0.587 acc=0.550 | uw: AUC=0.559 acc=0.499 | dmaer: AUC=0.783 acc=0.424 | fmow: AUC=0.362 acc=0.500 | gdd_indomain: AUC=0.505 acc=0.535 | gdd_crossgenerator: AUC=0.629 acc=0.530 | gdd_crossdomain: AUC=0.751 acc=0.541 | gdd_localization: AUC=0.557 acc=0.526
+  web_s42 own_test: AUC=0.977 acc=0.930 | rsfake: AUC=0.739 acc=0.548 | uw: AUC=0.607 acc=0.593 | dmaer: AUC=0.776 acc=0.473 | fmow: AUC=0.395 acc=0.500 | gdd_indomain: AUC=0.510 acc=0.514 | gdd_crossgenerator: AUC=0.607 acc=0.532 | gdd_crossdomain: AUC=0.597 acc=0.533 | gdd_localization: AUC=0.543 acc=0.524
+  sat_orig own_test: AUC=0.794 acc=0.715 | rsfake: AUC=0.620 acc=0.591 | uw: AUC=0.616 acc=0.628 | dmaer: AUC=0.813 acc=0.679 | fmow: AUC=0.493 acc=0.483 | gdd_indomain: AUC=0.550 acc=0.602 | gdd_crossgenerator: AUC=0.553 acc=0.557 | gdd_crossdomain: AUC=0.576 acc=0.567 | gdd_localization: AUC=0.529 acc=0.509
+  web_orig own_test: AUC=0.824 acc=0.748 | rsfake: AUC=0.549 acc=0.558 | uw: AUC=0.409 acc=0.431 | dmaer: AUC=0.825 acc=0.701 | fmow: AUC=0.511 acc=0.467 | gdd_indomain: AUC=0.482 acc=0.601 | gdd_crossgenerator: AUC=0.493 acc=0.555 | gdd_crossdomain: AUC=0.598 acc=0.597 | gdd_localization: AUC=0.539 acc=0.519
+
+C_one_class
+  full_s42 own_test: AUC=0.948 acc=0.800 | rsfake: AUC=0.571 acc=0.527 | uw: AUC=0.597 acc=0.572 | dmaer: AUC=0.735 acc=0.742 | fmow: AUC=0.355 acc=0.425 | gdd_indomain: AUC=0.494 acc=0.453 | gdd_crossgenerator: AUC=0.585 acc=0.541 | gdd_crossdomain: AUC=0.726 acc=0.673 | gdd_localization: AUC=0.525 acc=0.499
+  web_s42 own_test: AUC=0.972 acc=0.821 | rsfake: AUC=0.790 acc=0.676 | uw: AUC=0.731 acc=0.661 | dmaer: AUC=0.800 acc=0.727 | fmow: AUC=0.390 acc=0.442 | gdd_indomain: AUC=0.638 acc=0.591 | gdd_crossgenerator: AUC=0.688 acc=0.625 | gdd_crossdomain: AUC=0.643 acc=0.571 | gdd_localization: AUC=0.566 acc=0.547
+  sat_orig own_test: AUC=0.514 acc=0.502 | rsfake: AUC=0.468 acc=0.505 | uw: AUC=0.718 acc=0.535 | dmaer: AUC=0.428 acc=0.572 | fmow: AUC=0.358 acc=0.483 | gdd_indomain: AUC=0.473 acc=0.502 | gdd_crossgenerator: AUC=0.486 acc=0.475 | gdd_crossdomain: AUC=0.574 acc=0.503 | gdd_localization: AUC=0.453 acc=0.504
+  web_orig own_test: AUC=0.487 acc=0.465 | rsfake: AUC=0.696 acc=0.645 | uw: AUC=0.880 acc=0.799 | dmaer: AUC=0.589 acc=0.630 | fmow: AUC=0.346 acc=0.400 | gdd_indomain: AUC=0.528 acc=0.508 | gdd_crossgenerator: AUC=0.625 acc=0.567 | gdd_crossdomain: AUC=0.531 acc=0.496 | gdd_localization: AUC=0.556 acc=0.537
