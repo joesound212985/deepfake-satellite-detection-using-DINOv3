@@ -255,3 +255,9 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-25T16:06:04-06:00 | `python simlbr_official.py --backbone web` | simlbr_official_web | started |
 | 2026-11-25T17:02:30-06:00 | laptop: logind drop-in /etc/systemd/logind.conf.d/90-lid-ignore.conf (HandleLidSwitch*=ignore), reloaded logind | laptop-setup | lid close no longer suspends |
 | 2026-11-25T17:04:30-06:00 | watch.py: results panel now shows GDD zero-shot rows, few-shot AUC table, official SimLBR line | dashboard | ok |
+| 2026-11-25T17:04:46-06:00 |  | simlbr_official_web | exit=0 |
+| 2026-11-25T17:05:22-06:00 | `python analyze_extras.py` | analysis_extras | exit=0 (analysis_extras.json) |
+| 2026-11-25T17:05:22-06:00 | `SEED=42 BACKBONE=resnet50 LR_BACKBONE=1e-4 EVAL_SPLITS=val,test RUN_TAG=resnetlr_s42 python dinov3_forensics_train_v2.py` | resnetlr_s42 | started |
+| 2026-11-25T20:25:25-06:00 |  | resnetlr_s42 | exit=0, test_metrics.json written |
+| 2026-11-25T20:25:25-06:00 | `SEED=43 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=web_s43 python dinov3_forensics_train_v2.py` | web_s43 | started |
+| 2026-11-25T21:14:20-06:00 | watch.py: reloads itself when updated, results panel on the laptop too (pulls result files every 10 min), overall finish time in header | dashboard | ok |

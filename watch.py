@@ -371,7 +371,7 @@ def render():
         panels.append(Panel(body, title=f"[bold {LAP_COL}] LAPTOP (RTX 5090) [/]", border_style=LAP_COL, box=box.HEAVY, padding=(0, 1)))
 
     # ---- results (workstation only)
-    if ROLE != "laptop":
+    if (GRSL / "cross_fmow_metrics.json").exists():
         tb = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
         tb.add_column("zero-shot on outside data (AUC / accuracy)")
         for h in ("full_s42", "web_s42", "frozen_s42"): tb.add_column(h, justify="center")
@@ -431,16 +431,25 @@ def render():
     except Exception:
         log = Text("")
     head = Text.assemble(("GRSL experiment queue", "bold"), f"   {datetime.now():%a %d %b %H:%M:%S}   ",
-                         ("■ workstation", WS_COL), "  ", ("■ laptop", LAP_COL), ("   Ctrl-C closes this view; the runs keep going", "dim"))
+                         ("■ workstation", WS_COL), "  ", ("■ laptop", LAP_COL), (f"   all training done ≈ {(datetime.now()+timedelta(hours=max(left_h, lap_left))):%a %H:%M}" if ROLE != "laptop" else "", "bold"),
+                         ("   Ctrl-C closes; runs keep going", "dim"))
     return Group(head, *panels, log)
 
 
 def main():
     if "--once" in sys.argv or not sys.stdout.isatty():
         Console(force_terminal=True, width=int(os.environ.get("COLUMNS", 130))).print(render()); return
+    born = os.path.getmtime(__file__); synced = 0
     with Live(render(), screen=True, auto_refresh=False) as live:
         while True:
             time.sleep(5)
+            if os.path.getmtime(__file__) != born:      # watch.py was updated: restart this view with the new code
+                live.stop(); os.execv(sys.executable, [sys.executable] + sys.argv)
+            if ROLE == "laptop" and time.time() - synced > 600:   # laptop: pull the dashboard code and result files
+                synced = time.time()                               # (never logs or RUNLOG.md, which a live run has open)
+                subprocess.Popen("git fetch -q origin grsl-experiments && git checkout -q origin/grsl-experiments -- "
+                                 "watch.py '*_metrics.json' table.csv", shell=True, cwd=GRSL,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             live.update(render(), refresh=True)
 
 
