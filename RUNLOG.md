@@ -290,3 +290,7 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26 20:37 | watch.py: more colour and detail (own-test summary by variant, validation history, fan/RAM/disk, finish clock times) | dashboard | done |
 | 2026-11-26 20:53 | watch.py: optional panel for the separate spacecraft project (~/spacecraft/status.py), workstation only | dashboard | done |
 | 2026-11-26 21:28 | `python supplement/make_supplement.py`: label-free section added (Tables S9-S11), PDF/DOCX rebuilt (git-ignored) | supplement | done |
+| 2026-11-26T22:54:41-06:00 |  | full_s43 | exit=0, test_metrics.json written |
+| 2026-11-26T22:54:41-06:00 | `SEED=44 EVAL_SPLITS=val,test RUN_TAG=full_s44 python dinov3_forensics_train_v2.py` | full_s44 | started |
+| 2026-11-26 23:01 | laptop: platform_profile performance -> quiet (Joe's request); night light 1700 K on both machines | – | done |
+| 2026-11-26 23:23 | watch.py: views split into tabs (Runs, Own test, Zero-shot, Few-shot, Spacecraft), keys 1-5 / arrows / q | dashboard | done |

@@ -374,7 +374,12 @@ def done_detail(m, tail):
     return metric_text([("acc", m["accuracy"]), ("F1", m["macro_f1"]), ("IoU", L["mean_iou"]), ("Dice", L["mean_dice"])], tail)
 
 
-def render():
+TAB = 0
+
+
+def render(tab=None):
+    """tab=None: every view one after the other (--once / piped output); otherwise only that tab, under a tab bar."""
+    space = None; res = []
     cur = running_tag(); lap = laptop()
     driver_alive = subprocess.call(["pgrep", "-f", QUEUE_PAT], stdout=subprocess.DEVNULL) == 0
     me, mycol = ("LAPTOP", LAP_COL) if ROLE == "laptop" else ("WORKSTATION", WS_COL)
@@ -544,7 +549,10 @@ def render():
             f"supplement {yes((GRSL / 'supplement/SUPPLEMENT.pdf').exists())}   "
             f"analysis {yes((GRSL / 'analysis_extras.json').exists())}   table.csv {yes((GRSL / 'table.csv').exists())}")
         key = Text.assemble(("score colours:  ", "grey62"), ("≥0.90 ", sc(0.95)), ("≥0.80 ", sc(0.85)), ("≥0.65 ", sc(0.7)), ("≥0.55 ", sc(0.6)), ("<0.55", sc(0.5)))
-        panels.append(Panel(Group(*([summ] if summ else []), tb, *extra, ex, key), title=f"[bold {RES_COL}] ★ RESULTS SO FAR ★ [/]", border_style=RES_COL, box=box.HEAVY, padding=(0, 1)))
+        P = lambda title, *body: Panel(Group(*body), title=f"[bold {RES_COL}] ★ {title} ★ [/]", border_style=RES_COL, box=box.HEAVY, padding=(0, 1))
+        res = [("Own test", [P("OWN TEST SET: finished runs by variant", *([summ] if summ else [Text("no finished run yet", style="dim")]), Text(""), ex, key)]),
+               ("Zero-shot", [P("ZERO-SHOT ON OUTSIDE DATA", tb, *[e for e in extra if isinstance(e, Text)], Text(""), key)]),
+               ("Few-shot", [P("FEW-SHOT ADAPTATION", *([e for e in extra if isinstance(e, Table)] or [Text("pending", style="dim")]), key)])]
     try:
         last = [l for l in (GRSL / "RUNLOG.md").read_text().splitlines() if l.startswith("|")][-1]
         log = Text("last log entry: " + last[2:150], style="dim", no_wrap=True, overflow="ellipsis")
@@ -555,11 +563,11 @@ def render():
                          ("■ workstation", WS_COL), "  ", ("■ laptop", LAP_COL),
                          (f"   all training done ≈ {(datetime.now()+timedelta(hours=allh)):%a %H:%M}" if ROLE != "laptop" else "", "bold bright_green"),
                          (f"  (in {int(allh)} h {int(allh % 1 * 60):02d} m)" if ROLE != "laptop" else "", "green3"),
-                         ("   Ctrl-C closes; runs keep going", "dim"))
+                         )
     if ROLE != "laptop" and (HOME / "spacecraft/status.py").exists():      # second project: dataset downloads (its own repo)
         try:
             if str(HOME / "spacecraft") not in sys.path: sys.path.insert(0, str(HOME / "spacecraft"))
-            import status as _space; panels.insert(0, _space.compact())      # at the top: the bottom of a long view is cut off
+            import status as _space; space = _space.panel()
         except Exception:
             pass
     if ROLE == "laptop" and (HOME / ".spacecraft_status.json").exists():   # sent by the workstation (~/spacecraft/push_status.sh)
@@ -573,29 +581,49 @@ def render():
                 elif state == "done": t.append(f" {have:.0f} GB", style="green3")
                 t.append("   ")
             nd = sum(r[3] == "done" for r in sp["rows"])
-            panels.insert(0, Panel(t, title=f"[bold spring_green1] ✦ SPACECRAFT PROJECT (on the workstation): dataset downloads  {nd}/{len(sp['rows'])} done  ·  "
+            space = (Panel(t, title=f"[bold spring_green1] ✦ SPACECRAFT PROJECT (on the workstation): dataset downloads  {nd}/{len(sp['rows'])} done  ·  "
                                             f"{sum(r[1] for r in sp['rows']):.0f} GB on disk  ·  {sp['free']} free ✦ [/]",
                                    subtitle=f"[grey62]updated {int(age // 60)} min ago[/]", border_style="spring_green1", box=box.HEAVY, padding=(0, 1)))
         except Exception:
             pass
-    return Group(head, *panels, log)
+    tabs = [("Runs", panels)] + res + ([("Spacecraft", [space])] if space is not None else [])
+    if tab is None: return Group(head, *[x for _, v in tabs for x in v], log)
+    global TAB
+    TAB = tab % len(tabs); bar = Text(" ")
+    for i, (name, _) in enumerate(tabs):
+        bar.append(f" {i+1} {name} ", style="bold black on gold1" if i == TAB else "bold white on grey23"); bar.append(" ")
+    bar.append("   keys 1-%d or ←/→ switch tabs   q quits (runs keep going)" % len(tabs), style="grey62")
+    return Group(head, bar, *tabs[TAB][1], log)
 
 
 def main():
     if "--once" in sys.argv or not sys.stdout.isatty():
         Console(force_terminal=True, width=int(os.environ.get("COLUMNS", 130))).print(render()); return
     born = os.path.getmtime(__file__); synced = 0
-    with Live(render(), screen=True, auto_refresh=False) as live:
+    import select, termios, tty
+    global TAB
+    fd = sys.stdin.fileno(); old = termios.tcgetattr(fd); tty.setcbreak(fd)      # single key presses, no Enter needed
+    import atexit; atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, old))
+    with Live(render(TAB), screen=True, auto_refresh=False) as live:
         while True:
-            time.sleep(5)
+            end = time.time() + 5
+            while time.time() < end:                         # wait up to 5 s, react to a key at once
+                if select.select([fd], [], [], max(0.0, end - time.time()))[0]:
+                    k = os.read(fd, 8)
+                    if k in (b"q", b"Q"): return
+                    if k.isdigit() and k != b"0": TAB = int(k) - 1
+                    elif k in (b"\x1b[C", b"\t", b"l", b" "): TAB += 1
+                    elif k in (b"\x1b[D", b"h"): TAB -= 1
+                    else: continue
+                    live.update(render(TAB), refresh=True)
             if os.path.getmtime(__file__) != born:      # watch.py was updated: restart this view with the new code
-                live.stop(); os.execv(sys.executable, [sys.executable] + sys.argv)
+                live.stop(); termios.tcsetattr(fd, termios.TCSADRAIN, old); os.execv(sys.executable, [sys.executable] + sys.argv)
             if ROLE == "laptop" and time.time() - synced > 600:   # laptop: pull the dashboard code and result files
                 synced = time.time()                               # (never logs or RUNLOG.md, which a live run has open)
                 subprocess.Popen("git fetch -q origin grsl-experiments && git checkout -q origin/grsl-experiments -- "
                                  "watch.py '*_metrics.json' table.csv", shell=True, cwd=GRSL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            live.update(render(), refresh=True)
+            live.update(render(TAB), refresh=True)
 
 
 if __name__ == "__main__":
