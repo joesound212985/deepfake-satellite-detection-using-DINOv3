@@ -1,1 +1,17 @@
 [2026-11-25T20:25:25-06:00] web_s43: started
+[2026-11-26T05:14:16-06:00] web_s43: exit=0, test_metrics.json written
+[2026-11-26T05:14:16-06:00] web_s44: started
+[2026-11-26T14:04:02-06:00] web_s44: exit=0, test_metrics.json written
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-26T14:04:02-06:00] aggregate: table.csv written
+[2026-11-26T14:04:02-06:00] full_s43: started
+[2026-11-26T22:54:41-06:00] full_s43: exit=0, test_metrics.json written
+[2026-11-26T22:54:41-06:00] full_s44: started
+[2026-11-27T07:48:26-06:00] full_s44: exit=0, test_metrics.json written
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T07:48:26-06:00] aggregate: table.csv written
+[2026-11-27T07:48:40-06:00] plain_s44: started

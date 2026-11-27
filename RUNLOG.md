@@ -294,3 +294,21 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T22:54:41-06:00 | `SEED=44 EVAL_SPLITS=val,test RUN_TAG=full_s44 python dinov3_forensics_train_v2.py` | full_s44 | started |
 | 2026-11-26 23:01 | laptop: platform_profile performance -> quiet (Joe's request); night light 1700 K on both machines | – | done |
 | 2026-11-26 23:23 | watch.py: views split into tabs (Runs, Own test, Zero-shot, Few-shot, Spacecraft), keys 1-5 / arrows / q | dashboard | done |
+| 2026-11-26 23:26 | laptop: dashboard window restarted with tabs; brightness 100%, night light off (Joe's request) | – | done |
+| 2026-11-26 23:38 | laptop: speaker muted, brightness 1/255, night light on 1700 K (Joe's request) | – | done |
+| 2026-11-27 01:20 | laptop: AlienFX case-light commands sent to AW-ELC controller (hidraw, not saved to firmware); GTA trailer screen saver installed then removed (its idle check was wrong: it never closed on input) | laptop settings | removed; `~/gta` kept, autostart entry disabled |
+| 2026-11-27 01:36 | laptop: `~/stocks/saver.sh` (world stock market screen saver: local page + Yahoo Finance data, shows after 2 min idle, closes on input, speaks headline with Piper voice in `~/stocks/venv`, CPU only) added to autostart; speaker unmuted at 40% only while it shows; brightness 180/255 | laptop settings | running; training queue unaffected (2 queue scripts alive) |
+| 2026-11-27 01:36 | workstation: night light set to 1000 K | workstation settings | done |
+| 2026-11-27 01:37 | read-only analysis of zero-shot results started (agents; no GPU, nothing written to the repo) after Joe asked to improve zero-shot accuracy | zeroshot_improve | running |
+| 2026-11-27 01:45 | laptop: stock screen saver stopped and removed from autostart at Joe's request; speaker muted again; files left in `~/stocks` (incl. voice models) and `~/gta`, nothing running from them | laptop settings | done; training queue unaffected |
+| 2026-11-27 01:47 | laptop: brightness back to 1/255 (Joe's request) | laptop settings | done |
+| 2026-11-27 | zero-shot analysis (agents, read-only, no GPU) finished: `ZEROSHOT_SOTA.md` (literature) and `ZEROSHOT_IMPROVE_PLAN_DRAFT.md` (diagnosis + draft protocol + adversarial review) saved, uncommitted; nothing run, awaiting Joe | zeroshot_improve | draft only |
+| 2026-11-27T07:48:26-06:00 |  | full_s44 | exit=0, test_metrics.json written |
+| 2026-11-27T07:48:26-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-27T07:48:26-06:00] run_everything.sh finished (SEEDS=43 44 ROWS=full)
+| 2026-11-27T07:48:40-06:00 | `SKIP_SETUP=1 SEEDS=44 ROWS=plain ./run_everything.sh` (moved from laptop) | plain_s44 | queue started |
+| 2026-11-27T07:48:40-06:00 | `SEED=44 ABL_EDGE_GATE=0 ABL_BOUNDARY=0 ABL_DEEP_SUP=0 EVAL_SPLITS=val,test RUN_TAG=plain_s44 python dinov3_forensics_train_v2.py` | plain_s44 | started |
+| 2026-11-27 10:20 | `~/HANDOFF.md` written (state of both projects, rules, machines, open decisions) for a new chat | handoff | done |
+| 2026-11-27 10:38 | handoff log moved to `~/Desktop/Handoff_Logs/v_1_2026-11-27.md`; later handoffs are saved there as v_2, v_3 ... (Joe's request) | handoff | done |
+| 2026-11-27 10:40 | `ZEROSHOT_AUG_PROTOCOL.md` written (one run `fullaug_s42` with resampling-factor augmentation, switch `AUG_SHIFT=1`); no code written, nothing run; scratch diagnostics copied to `~/grsl_zeroshot_diag_scratch_2026-11-27/` | zeroshot_aug | protocol draft, run approval pending (Joe) |
+| 2026-11-27 10:42 | Joe decided to skip the resampling-augmentation run (`fullaug_s42`); `ZEROSHOT_AUG_PROTOCOL.md` marked NOT RUN; no code written, nothing run; the letter keeps the zero-shot results as they are | zeroshot_aug | skipped |
