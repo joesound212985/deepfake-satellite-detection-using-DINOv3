@@ -284,3 +284,6 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26T14:34:37-06:00 | watch.py/go.sh: few-shot table with GDD rows, status marks for new analyses, comments updated | dashboard | ok |
 | 2026-11-26T15:05:22-06:00 |  | zeroshot_extras extract | exit=0 |
 | 2026-11-26T15:05:47-06:00 | `python zeroshot_extras.py` | zeroshot_extras | exit=0 (zeroshot_extras_metrics.json) |
+| 2026-11-26 20:30 | laptop: platform_profile quiet -> performance (turbo stays off), user request | – | done |
+| 2026-11-26 20:34 | `./run_extra_seeds_v2b.sh` started (waiter): plain_s44 moved from laptop to workstation, runs after full_s44; stage 3 + few-shot seeds wait for it | plain_s44 | waiting |
+| 2026-11-26 20:35 | go.sh + watch.py updated: plain_s44 shown as a workstation row, go.sh starts run_extra_seeds_v2b.sh after a restart | dashboard | done |

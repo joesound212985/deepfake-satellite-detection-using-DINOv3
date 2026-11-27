@@ -6,11 +6,12 @@
 #   stage 2  run_extra_seeds_v2.sh    DM-AER + web_s42 cross-dataset eval, SimLBR with DM-AER, robustness /
 #                                     two-class / figure / analysis, official SimLBR, resnetlr_s42,
 #                                     then seeds 43/44 in the order web, full
+#   stage 2b run_extra_seeds_v2b.sh   plain_s44 (moved here from the laptop on 2026-11-26), after stage 2
 #   stage 3  run_web_seeds.sh         test-set re-scoring of all seeds + significance tests, table.csv rebuilt
 #   extras   (started by hand, not by this launcher) run_fewshot*.sh few-shot probes, run_gdd*.sh GDD scoring,
 #            run_zeroshot_extras.sh label-free experiments, run_fewshot_seeds.sh (waits for the queue);
 #            supplement/make_supplement.py rebuilds the supplementary material from the result files
-#   laptop   run_laptop.sh            (second machine) fullnorm_s42, webnorm_s42, then plain seeds 43/44;
+#   laptop   run_laptop.sh            (second machine) fullnorm_s42, webnorm_s42, then plain_s43 (plain_s44: skip_tags.txt);
 #                                     results are copied back into ~/results_dinov3 afterwards
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl; mkdir -p logs
@@ -26,9 +27,11 @@ else
   sleep 3
   nohup ./run_extra_seeds_v2.sh >> logs/run_extra_seeds_v2.nohup 2>&1 &
   sleep 1
+  nohup ./run_extra_seeds_v2b.sh >> logs/run_extra_seeds_v2b.nohup 2>&1 &
+  sleep 1
   nohup ./run_web_seeds.sh >> logs/run_web_seeds.nohup 2>&1 &
   sleep 1
-  # stage 4 and the plain seeds 43/44 moved to the laptop on 2026-11-25 (run_laptop.sh); NORM_HERE=1 runs stage 4 here
+  # stage 4 and plain_s43 run on the laptop (run_laptop.sh, since 2026-11-25); NORM_HERE=1 runs stage 4 here
   [ -n "$NORM_HERE" ] && nohup ./run_norm_check.sh >> logs/run_norm_check.nohup 2>&1 &
   echo "queue started"; sleep 2
 fi

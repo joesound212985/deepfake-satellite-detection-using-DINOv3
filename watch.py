@@ -9,7 +9,7 @@ GRSL = HOME / "grsl"
 RES = HOME / "results_dinov3"
 SAT = RES/"vit/dinov3-vitl16-pretrain-sat493m"
 WEBD = RES/"vit/dinov3-vitl16-pretrain-lvd1689m"
-LAPTOP = {"radio_s42", "plain_s43", "plain_s44", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
+LAPTOP = {"radio_s42", "plain_s43", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
 ROWS = [  # tag, results dir, label, est. hours (measured on this machine where a run has finished) -- in queue order
     ("full_s42",   SAT/"full_s42",    "Full model (DINOv3-SAT)",   8.8),
     ("plain_s42",  SAT/"plain_s42",   "Plain decoder",             8.3),
@@ -23,7 +23,7 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("full_s43",   SAT/"full_s43",    "Full model, seed 43",       8.8),
     ("full_s44",   SAT/"full_s44",    "Full model, seed 44",       8.8),
     ("plain_s43",  SAT/"plain_s43",   "Plain decoder, seed 43 [laptop]",    8.3),
-    ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44 [laptop]",    8.3),
+    ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),   # moved from the laptop 2026-11-26 (run_extra_seeds_v2b.sh)
     ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side) [laptop]",  8.8),
     ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side) [laptop]",  8.8),
 ]
