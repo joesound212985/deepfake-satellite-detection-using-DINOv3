@@ -6,3 +6,7 @@ supplement/SUPPLEMENT.md
 supplement/SUPPLEMENT.html
 supplement/SUPPLEMENT.pdf
 supplement/SUPPLEMENT.docx
+
+# local copies that stay off GitHub
+logs/laptop/
+supplement/old_*/

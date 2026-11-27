@@ -34,13 +34,12 @@ The full model has 309.4 M parameters.
 | Row | Seeds | Accuracy | Macro-F1 | Balanced acc. | Tampered recall | Mask IoU | Mask Dice | Mask MCC | ms / image |
 |---|---|---|---|---|---|---|---|---|---|
 | Full (satellite pretraining) | 42, 43, 44 | 0.903 ± 0.003 | 0.902 ± 0.004 | 0.900 ± 0.004 | 0.774 ± 0.020 | 0.671 ± 0.003 | 0.762 ± 0.003 | 0.742 ± 0.004 | 88.6 |
-| Plain decoder | 42 | 0.901 | 0.898 | 0.897 | 0.765 | 0.675 | 0.767 | 0.745 | 82.6 |
+| Plain decoder | 42, 43, 44 | 0.904 ± 0.003 | 0.902 ± 0.004 | 0.900 ± 0.004 | 0.771 ± 0.015 | 0.674 ± 0.001 | 0.766 ± 0.002 | 0.744 ± 0.002 | 98.1 |
 | Web pretraining | 42, 43, 44 | 0.935 ± 0.002 | 0.935 ± 0.002 | 0.926 ± 0.002 | 0.805 ± 0.011 | 0.706 ± 0.005 | 0.795 ± 0.006 | 0.779 ± 0.005 | 88.8 |
 | Frozen backbone | 42 | 0.643 | 0.512 | 0.593 | 0.015 | 0.462 | 0.572 | 0.536 | 88.2 |
 | ResNet-50, backbone LR 2e-6 | 42 | 0.665 | 0.636 | 0.658 | 0.306 | 0.312 | 0.410 | 0.361 | 39.2 |
 | ResNet-50, backbone LR 1e-4 | 42 | 0.762 | 0.752 | 0.753 | 0.514 | 0.357 | 0.442 | 0.413 | 39.2 |
-
-Not in the table yet: C-RADIOv4.
+| C-RADIOv4 | 42 | 0.835 | 0.819 | 0.826 | 0.572 | 0.587 | 0.679 | 0.660 | 147.3 |
 
 ### Zero-shot on outside datasets (no adaptation; seed-42 checkpoints)
 

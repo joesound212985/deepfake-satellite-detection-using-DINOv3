@@ -313,3 +313,83 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-27 10:40 | `ZEROSHOT_AUG_PROTOCOL.md` written (one run `fullaug_s42` with resampling-factor augmentation, switch `AUG_SHIFT=1`); no code written, nothing run; scratch diagnostics copied to `~/grsl_zeroshot_diag_scratch_2026-11-27/` | zeroshot_aug | protocol draft, run approval pending (Joe) |
 | 2026-11-27 10:42 | Joe decided to skip the resampling-augmentation run (`fullaug_s42`); `ZEROSHOT_AUG_PROTOCOL.md` marked NOT RUN; no code written, nothing run; the letter keeps the zero-shot results as they are | zeroshot_aug | skipped |
 | 2026-11-27 13:43 | laptop address removed from go.sh, watch.py, run_fewshot_gdd.sh, run_zeroshot_extras.sh (Joe: "remove that address", "push the GRSL fix"); now read from `~/.config/grsl/laptop` outside the repo; pushed as 4324913 together with 0b78b5e (seed 43/44 logs); older commits still contain it (history not rewritten) | github | pushed |
+| 2026-11-27 13:54 | new chat resumed from handoff v_10; queues checked (workstation plain_s44 epoch 38/50, laptop plain_s43 epoch 47/50). Supplement Table S8 fix: column "3-class accuracy" was reading `accuracy_argmax` (two-class, 0.9124 for full_s42) instead of `three_class.accuracy` (0.9000, equal to test_metrics.json); 1-line change in supplement/make_supplement.py, supplement not rebuilt yet. Noted: `scale0.75` rows equal the clean rows because test images are 512x512 and 0.75 x 512 = 384 = model input | supplement | fixed, uncommitted |
+| 2026-11-27 13:58 | paper: result figures added (confusion matrices, robustness, few-shot curves, t-SNE, qualitative; seed-42 files only) by `~/Desktop/GRSL_Letter/make_figs_results.py` -> `figs_v3/`; `OJCS_Paper_v_3.docx` built and rendered (8 pages); build_letter.py: figures wider than a column span the page | paper | done |
+| 2026-11-27 14:04 | paper: acknowledgment added (dataset creators; DINOv3, C-RADIO, SimLBR authors; no funding, no AI-tools sentence); `OJCS_Paper_v_4.docx` built and rendered | paper | done |
+| 2026-11-27 14:05 | paper: main-findings sentences in the introduction written from table.csv, cross_*_metrics.json, fewshot*_metrics.json (decoder clause still pending on plain seeds 43/44); `OJCS_Paper_v_5.docx` built and rendered | paper | done |
+| 2026-11-27 15:04 | laptop queue finished 14:59; `radio_s42`, `fullnorm_s42`, `webnorm_s42`, `plain_s43` copied to `~/results_dinov3` (rsync --ignore-existing, 103 files, sha256 equal on both machines); workstation's failed radio folder renamed `radio_s42_FAILED_workstation`, its log `logs/radio_s42_FAILED_workstation.log`; laptop logs, RUNLOG, table.csv and git state saved in `logs/laptop/`; the laptop's RUNLOG lines follow | laptop copy | done |
+<!-- lines merged from the laptop's RUNLOG.md (verbatim, laptop clock) -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+| 2026-11-25T13:33:31-06:00 | `./run_laptop.sh` on joe-Alienware-18-Area-51-AA18250 (NVIDIA GeForce RTX 5090 Laptop GPU) | laptop queue | started |
+| 2026-11-25T13:33:34-06:00 | `SEED=42 BACKBONE=radio EVAL_SPLITS=val,test RUN_TAG=radio_s42 python dinov3_forensics_train_v2.py` | radio_s42 | started |
+| 2026-11-26T02:24:44-06:00 |  | radio_s42 | exit=0, test_metrics.json written |
+| 2026-11-26T02:24:45-06:00 |  | cross_fmow | SKIPPED: fmow-fake-small not accessible ([90mHint: set HF_DEBUG=1 as environment variable for full traceback.[0m) |
+| 2026-11-26T02:24:45-06:00 | `python prepare_rsfake_subset.py --root /home/joe/data/rsfake --per-gen 500 --seed 42` | rsfake_subset | started |
+| 2026-11-26T02:24:46-06:00 |  | cross_rsfake | SKIPPED: subset csv missing |
+| 2026-11-26T02:24:46-06:00 |  | cross_uw | SKIPPED: /home/joe/data/uw_fake_sat/anti-deepfake/anti-deepfake-data and code/data not found |
+| 2026-11-26T02:24:46-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-26T02:24:46-06:00] run_everything.sh finished (SEEDS=42 ROWS=radio)
+| 2026-11-26T02:24:46-06:00 | `SEED=42 EVAL_SPLITS=val,test RUN_TAG=fullnorm_s42 python train_norm.py` | fullnorm_s42 | started |
+| 2026-11-26T15:08:11-06:00 |  | fullnorm_s42 | exit=0, test_metrics.json written |
+| 2026-11-26T15:08:11-06:00 | `SEED=42 DINOV3_CKPT=facebook/dinov3-vitl16-pretrain-lvd1689m EVAL_SPLITS=val,test RUN_TAG=webnorm_s42 python train_norm.py` | webnorm_s42 | started |
+| 2026-11-26T20:34:41-06:00 | laptop: plain_s44 moved to the workstation (Joe: "move it"); skip_tags.txt + 1-line skip check in run_everything.sh | plain_s44 | will be skipped here |
+| 2026-11-27T03:12:14-06:00 |  | webnorm_s42 | exit=0, test_metrics.json written |
+| 2026-11-27T03:12:14-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv rebuilt with fullnorm/webnorm rows |
+[2026-11-27T03:12:17-06:00] run_norm_check.sh finished
+| 2026-11-27T03:12:17-06:00 | `SEED=43 ABL_EDGE_GATE=0 ABL_BOUNDARY=0 ABL_DEEP_SUP=0 EVAL_SPLITS=val,test RUN_TAG=plain_s43 python dinov3_forensics_train_v2.py` | plain_s43 | started |
+| 2026-11-27T14:59:37-06:00 |  | plain_s43 | exit=0, test_metrics.json written |
+| 2026-11-27T14:59:38-06:00 |  | cross_fmow | SKIPPED: fmow-fake-small not accessible ([90mHint: set HF_DEBUG=1 as environment variable for full traceback.[0m) |
+| 2026-11-27T14:59:38-06:00 | `python prepare_rsfake_subset.py --root /home/joe/data/rsfake --per-gen 500 --seed 42` | rsfake_subset | started |
+| 2026-11-27T14:59:38-06:00 |  | cross_rsfake | SKIPPED: subset csv missing |
+| 2026-11-27T14:59:38-06:00 |  | cross_uw | SKIPPED: /home/joe/data/uw_fake_sat/anti-deepfake/anti-deepfake-data and code/data not found |
+| 2026-11-27T14:59:38-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-27T14:59:38-06:00] run_everything.sh finished (SEEDS=43 44 ROWS=plain)
+| 2026-11-27T14:59:38-06:00 |  | laptop queue | finished |
+<!-- end of laptop lines -->
+| 2026-11-27T16:07:09-06:00 |  | plain_s44 | exit=0, test_metrics.json written |
+| 2026-11-27T16:07:09-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-27T16:07:09-06:00] run_everything.sh finished (SEEDS=44 ROWS=plain)
+| 2026-11-27T16:07:09-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv written |
+[2026-11-27T16:07:09-06:00] run_everything.sh finished (SEEDS=43 44 ROWS=web)
+| 2026-11-27T16:07:09-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/plain_s42/best_checkpoint.pt --out overhead_plain_s42_metrics.json --no-edge-gate` | overhead_plain_s42 | started |
+| 2026-11-27T16:11:38-06:00 |  | overhead_plain_s42 | exit=0, overhead_plain_s42_metrics.json written |
+| 2026-11-27T16:11:38-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s43/best_checkpoint.pt --out overhead_full_s43_metrics.json ` | overhead_full_s43 | started |
+| 2026-11-27T16:16:26-06:00 |  | overhead_full_s43 | exit=0, overhead_full_s43_metrics.json written |
+| 2026-11-27T16:16:26-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/plain_s43/best_checkpoint.pt --out overhead_plain_s43_metrics.json --no-edge-gate` | overhead_plain_s43 | started |
+| 2026-11-27T16:20:53-06:00 |  | overhead_plain_s43 | exit=0, overhead_plain_s43_metrics.json written |
+| 2026-11-27T16:20:53-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s43/best_checkpoint.pt --out overhead_web_s43_metrics.json ` | overhead_web_s43 | started |
+| 2026-11-27T16:25:43-06:00 |  | overhead_web_s43 | exit=0, overhead_web_s43_metrics.json written |
+| 2026-11-27T16:25:43-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s44/best_checkpoint.pt --out overhead_full_s44_metrics.json ` | overhead_full_s44 | started |
+| 2026-11-27T16:30:31-06:00 |  | overhead_full_s44 | exit=0, overhead_full_s44_metrics.json written |
+| 2026-11-27T16:30:31-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-sat493m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/plain_s44/best_checkpoint.pt --out overhead_plain_s44_metrics.json --no-edge-gate` | overhead_plain_s44 | started |
+| 2026-11-27T16:35:01-06:00 |  | overhead_plain_s44 | exit=0, overhead_plain_s44_metrics.json written |
+| 2026-11-27T16:35:01-06:00 | `python eval_cross_dataset.py --dataset overhead --dinov3 facebook/dinov3-vitl16-pretrain-lvd1689m --ckpt /home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s44/best_checkpoint.pt --out overhead_web_s44_metrics.json ` | overhead_web_s44 | started |
+| 2026-11-27T16:39:53-06:00 |  | overhead_web_s44 | exit=0, overhead_web_s44_metrics.json written |
+| 2026-11-27T16:40:32-06:00 | `python analyze_extras.py` | analysis_extras | exit=0 (significance tests added) |
+| 2026-11-27T16:40:32-06:00 | `python aggregate_runs.py --csv table.csv` | aggregate | table.csv rebuilt with web seeds |
+| 2026-11-27T16:40:44-06:00 | `python fewshot_adapt.py extract --sets seeds` | fewshot_seeds | started |
+| 2026-11-27T17:05:48-06:00 |  | fewshot_seeds extract | exit=0 |
+| 2026-11-27T17:06:54-06:00 | `python fewshot_adapt.py analyse --sets seeds` | fewshot_seeds | exit=0 (fewshot_seeds_metrics.json) |
+| 2026-11-27 17:14 | queues ended 17:06 without error (plain_s44, re-scoring of all seeds, McNemar tests, table.csv, few-shot seeds 43/44). `python make_results_md.py` -> `RESULTS.md` (new script; every number read from result files). Paper: `~/Desktop/GRSL_Letter/OJCS_Paper_v_6.docx` (11 pages; all results, discussion, conclusion filled from the files through `paper_results_oj.py`; Fig. 2 now from test_metrics.json; figures in `figs_v6/`). Supplement regenerated (new title; robustness table shows three-class accuracy), copy `supplement_draft/Supplement_v_2_2026-11-27.docx`, old files kept in `supplement/old_2026-11-26/`. `python update_readme_results.py` re-run (README results block; not committed, not pushed). `go.sh` / `watch.py` stopped on the workstation at Joe's request; laptop off since 15:05 | results, paper | done; nothing committed |
+| 2026-11-27 17:15 | handoff log `~/Desktop/Handoff_Logs/v_11_2026-11-27.md` written (final state of the first paper, spacecraft planning state) | handoff | done |
+| 2026-11-27 17:30 | supplement finished: DRAFT line removed, Tables S12-S15 added (few-shot over training seeds, per-seed results, McNemar per seed, input normalisation) in `supplement/make_supplement.py`; `supplement_draft/Supplement_v_3_2026-11-27.docx` (12 pages, rendered, checked). Paper `OJCS_Paper_v_7.docx`: one sentence at the start of Results pointing to the supplementary material | supplement, paper | done |

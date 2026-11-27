@@ -1,0 +1,65 @@
+[save] /home/adminuser/grsl/fewshot_seeds_metrics.json
+
+rsfake: held-out n=5000
+  zero-shot full_s42  AUC=0.586 acc=0.538
+  zero-shot web_s42   AUC=0.668 acc=0.540
+  probe full_s43  k4: AUC=0.792 acc=0.697 | k16: AUC=0.910 acc=0.820 | k64: AUC=0.966 acc=0.891 | k256: AUC=0.986 acc=0.929 | pool: AUC=0.998 acc=0.979
+  probe web_s43   k4: AUC=0.707 acc=0.625 | k16: AUC=0.808 acc=0.707 | k64: AUC=0.884 acc=0.792 | k256: AUC=0.948 acc=0.871 | pool: AUC=0.990 acc=0.954
+  probe full_s44  k4: AUC=0.786 acc=0.692 | k16: AUC=0.912 acc=0.820 | k64: AUC=0.962 acc=0.884 | k256: AUC=0.982 acc=0.921 | pool: AUC=0.998 acc=0.976
+  probe web_s44   k4: AUC=0.743 acc=0.649 | k16: AUC=0.839 acc=0.736 | k64: AUC=0.893 acc=0.810 | k256: AUC=0.942 acc=0.865 | pool: AUC=0.987 acc=0.945
+
+uw: held-out n=4032
+  zero-shot full_s42  AUC=0.491 acc=0.498
+  zero-shot web_s42   AUC=0.517 acc=0.492
+  probe full_s43  k4: AUC=0.810 acc=0.705 | k16: AUC=0.955 acc=0.868 | k64: AUC=0.991 acc=0.966 | k256: AUC=1.000 acc=0.994 | pool: AUC=1.000 acc=0.999
+  probe web_s43   k4: AUC=0.826 acc=0.690 | k16: AUC=0.958 acc=0.865 | k64: AUC=0.992 acc=0.959 | k256: AUC=1.000 acc=0.990 | pool: AUC=1.000 acc=0.997
+  probe full_s44  k4: AUC=0.829 acc=0.708 | k16: AUC=0.956 acc=0.872 | k64: AUC=0.991 acc=0.961 | k256: AUC=1.000 acc=0.995 | pool: AUC=1.000 acc=1.000
+  probe web_s44   k4: AUC=0.840 acc=0.696 | k16: AUC=0.957 acc=0.850 | k64: AUC=0.990 acc=0.950 | k256: AUC=0.999 acc=0.985 | pool: AUC=1.000 acc=0.997
+
+dmaer: held-out n=747
+  zero-shot full_s42  AUC=0.760 acc=0.402
+  zero-shot web_s42   AUC=0.732 acc=0.443
+  probe full_s43  k4: AUC=0.871 acc=0.705 | k16: AUC=0.938 acc=0.827 | k64: AUC=0.969 acc=0.905 | pool: AUC=0.994 acc=0.965
+  probe web_s43   k4: AUC=0.882 acc=0.706 | k16: AUC=0.944 acc=0.842 | k64: AUC=0.972 acc=0.914 | pool: AUC=0.993 acc=0.959
+  probe full_s44  k4: AUC=0.878 acc=0.722 | k16: AUC=0.948 acc=0.851 | k64: AUC=0.972 acc=0.918 | pool: AUC=0.992 acc=0.965
+  probe web_s44   k4: AUC=0.900 acc=0.720 | k16: AUC=0.958 acc=0.832 | k64: AUC=0.979 acc=0.911 | pool: AUC=0.994 acc=0.965
+
+fmow: held-out n=60
+  zero-shot full_s42  AUC=0.518 acc=0.500
+  zero-shot web_s42   AUC=0.406 acc=0.500
+  probe full_s43  k4: AUC=0.562 acc=0.525 | k16: AUC=0.604 acc=0.578 | pool: AUC=0.579 acc=0.550
+  probe web_s43   k4: AUC=0.541 acc=0.532 | k16: AUC=0.596 acc=0.555 | pool: AUC=0.563 acc=0.583
+  probe full_s44  k4: AUC=0.549 acc=0.520 | k16: AUC=0.599 acc=0.585 | pool: AUC=0.567 acc=0.517
+  probe web_s44   k4: AUC=0.504 acc=0.483 | k16: AUC=0.571 acc=0.545 | pool: AUC=0.517 acc=0.500
+
+gdd_indomain: held-out n=750
+  zero-shot full_s42  AUC=0.529 acc=0.539
+  zero-shot web_s42   AUC=0.467 acc=0.524
+  probe full_s43  k4: AUC=0.664 acc=0.603 | k16: AUC=0.818 acc=0.738 | k64: AUC=0.948 acc=0.881 | k256: AUC=0.979 acc=0.929 | pool: AUC=0.984 acc=0.941
+  probe web_s43   k4: AUC=0.598 acc=0.568 | k16: AUC=0.713 acc=0.646 | k64: AUC=0.864 acc=0.781 | k256: AUC=0.942 acc=0.865 | pool: AUC=0.955 acc=0.885
+  probe full_s44  k4: AUC=0.688 acc=0.621 | k16: AUC=0.840 acc=0.756 | k64: AUC=0.948 acc=0.883 | k256: AUC=0.978 acc=0.930 | pool: AUC=0.982 acc=0.939
+  probe web_s44   k4: AUC=0.602 acc=0.562 | k16: AUC=0.698 acc=0.636 | k64: AUC=0.858 acc=0.775 | k256: AUC=0.945 acc=0.876 | pool: AUC=0.955 acc=0.896
+
+gdd_crossgenerator: held-out n=998
+  zero-shot full_s42  AUC=0.636 acc=0.531
+  zero-shot web_s42   AUC=0.581 acc=0.533
+  probe full_s43  k4: AUC=0.760 acc=0.673 | k16: AUC=0.922 acc=0.840 | k64: AUC=0.963 acc=0.902 | k256: AUC=0.979 acc=0.926 | pool: AUC=0.983 acc=0.936
+  probe web_s43   k4: AUC=0.621 acc=0.573 | k16: AUC=0.766 acc=0.673 | k64: AUC=0.872 acc=0.792 | k256: AUC=0.926 acc=0.858 | pool: AUC=0.951 acc=0.889
+  probe full_s44  k4: AUC=0.795 acc=0.709 | k16: AUC=0.938 acc=0.863 | k64: AUC=0.964 acc=0.904 | k256: AUC=0.979 acc=0.925 | pool: AUC=0.984 acc=0.934
+  probe web_s44   k4: AUC=0.612 acc=0.577 | k16: AUC=0.779 acc=0.690 | k64: AUC=0.881 acc=0.802 | k256: AUC=0.939 acc=0.880 | pool: AUC=0.959 acc=0.900
+
+gdd_crossdomain: held-out n=998
+  zero-shot full_s42  AUC=0.702 acc=0.538
+  zero-shot web_s42   AUC=0.630 acc=0.537
+  probe full_s43  k4: AUC=0.833 acc=0.729 | k16: AUC=0.933 acc=0.847 | k64: AUC=0.978 acc=0.931 | k256: AUC=0.991 acc=0.956 | pool: AUC=0.993 acc=0.964
+  probe web_s43   k4: AUC=0.692 acc=0.637 | k16: AUC=0.811 acc=0.709 | k64: AUC=0.901 acc=0.813 | k256: AUC=0.960 acc=0.891 | pool: AUC=0.975 acc=0.923
+  probe full_s44  k4: AUC=0.854 acc=0.755 | k16: AUC=0.948 acc=0.871 | k64: AUC=0.982 acc=0.938 | k256: AUC=0.991 acc=0.961 | pool: AUC=0.993 acc=0.965
+  probe web_s44   k4: AUC=0.675 acc=0.621 | k16: AUC=0.806 acc=0.714 | k64: AUC=0.920 acc=0.837 | k256: AUC=0.972 acc=0.918 | pool: AUC=0.982 acc=0.936
+
+gdd_localization: held-out n=497
+  zero-shot full_s42  AUC=0.546 acc=0.517
+  zero-shot web_s42   AUC=0.539 acc=0.515
+  probe full_s43  k4: AUC=0.575 acc=0.550 | k16: AUC=0.675 acc=0.623 | k64: AUC=0.728 acc=0.661 | pool: AUC=0.763 acc=0.676
+  probe web_s43   k4: AUC=0.548 acc=0.527 | k16: AUC=0.640 acc=0.599 | k64: AUC=0.702 acc=0.639 | pool: AUC=0.752 acc=0.692
+  probe full_s44  k4: AUC=0.558 acc=0.535 | k16: AUC=0.667 acc=0.608 | k64: AUC=0.721 acc=0.652 | pool: AUC=0.758 acc=0.688
+  probe web_s44   k4: AUC=0.544 acc=0.529 | k16: AUC=0.646 acc=0.597 | k64: AUC=0.697 acc=0.635 | pool: AUC=0.736 acc=0.664

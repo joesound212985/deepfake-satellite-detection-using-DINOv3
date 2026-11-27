@@ -20,9 +20,8 @@ t = lambda head, rows: out.append(("t", (head, rows))); img = lambda f, cap: out
 ms = lambda d: "–" if not isinstance(d, dict) else (f"{d['mean']:.3f} ± {d['std']:.3f}" if d.get("std") is not None else f"{d['mean']:.3f}")
 
 h("Supplementary Material", 1)
-p("Detecting AI-Generated Satellite Imagery Deepfakes Using DINOv3")
-p(f"DRAFT generated {date.today().isoformat()} by make_supplement.py from the result files in the repository. "
-  "Entries marked 'pending' belong to runs that have not finished.")
+p("Detection and Localization of AI-Generated and Tampered Satellite Images With a Fine-Tuned DINOv3")
+p(f"Generated {date.today().isoformat()} from the result files in the repository; no number is typed by hand.")
 
 # ---- S1 zero-shot with intervals
 cd = J("cross_detail.json")
@@ -94,7 +93,7 @@ for k, sl in SETS:
 t(["Dataset", "Model", "k = 4", "k = 16", "k = 64", "k = 256"], rows)
 p("Table S6. Accuracy when only the decision threshold of the fine-tuned model is re-set on the k shots (no probe).")
 sd = J("fewshot_seeds_metrics.json")
-p("Few-shot results with the backbones of seeds 43 and 44: " + ("see fewshot_seeds_metrics.json (table to be added)." if sd else "pending (queued after the training runs)."))
+p("The same probe on the backbones of training seeds 43 and 44 is summarised in Table S12.")
 
 # ---- S5 SimLBR
 h("S5. SimLBR baseline (authors' released code, trained on our training set)")
@@ -116,7 +115,7 @@ for r, rl in (("full", "Full model (SAT), seed 42"), ("web", "Web backbone, seed
     for d, dl in ((None, "none"), ("jpeg90", "JPEG 90"), ("jpeg70", "JPEG 70"), ("jpeg50", "JPEG 50"), ("jpeg30", "JPEG 30"), ("scale0.75", "scale 0.75"), ("scale0.5", "scale 0.5")):
         m = J(f"overhead_{r}_metrics.json" if d is None else f"robust_{r}_{d}_metrics.json")
         if not m: rows.append([rl, dl, "pending", "", ""]); continue
-        o = m["overall"]; rows.append([rl, dl, f"{o['accuracy_argmax']:.4f}", f"{o['auc_real_vs_manipulated']:.4f}", f"{o['localization']['mean_iou']:.4f}"])
+        o = m["overall"]; rows.append([rl, dl, f"{o['three_class']['accuracy']:.4f}", f"{o['auc_real_vs_manipulated']:.4f}", f"{o['localization']['mean_iou']:.4f}"])
 t(["Checkpoint", "Degradation", "3-class accuracy", "AUC real vs manip.", "Tamper mean IoU"], rows)
 p("Table S8. Test-set performance under degradations applied at test time only.")
 
@@ -151,8 +150,53 @@ else:
         t(["Features", "Dataset", "AUC", "Accuracy", "Det.", "FA"], rows)
         p(f"Table {tn}. {cap}")
 
+# ---- additional tables: few-shot over training seeds, per-seed results, significance, input normalisation
+import csv, statistics as st
+h("S8. Additional tables")
+rows = []
+for k, sl in SETS:
+    for key, lab in (("full", "fine-tuned SAT"), ("web", "fine-tuned web")):
+        cells = []
+        for n in ("k4", "k16", "k64", "k256", "whole_pool"):
+            vals = []
+            for sdd in (42, 43, 44):
+                e = (fs[k]["extractors"] if sdd == 42 else (sd or {}).get("datasets", {}).get(k, {}).get("extractors", {})).get(f"{key}_s{sdd}", {})
+                v = e.get(n)
+                if isinstance(v, dict): vals.append(v["auc"]["mean"] if isinstance(v["auc"], dict) else v["auc"])
+            cells.append(f"{st.mean(vals):.3f} ± {st.stdev(vals):.3f}" if len(vals) == 3 else "–")
+        rows.append([sl, lab] + cells)
+t(["Dataset", "Features", "k = 4", "k = 16", "k = 64", "k = 256", "Whole pool"], rows)
+p("Table S12. Few-shot AUC with the backbones of training seeds 42, 43 and 44: mean ± standard deviation over the three seeds of each seed's mean over 10 draws.")
+RES = Path.home() / "results_dinov3" / "vit"
+rows = []
+for key, bb, lab in (("full", "dinov3-vitl16-pretrain-sat493m", "Full (SAT)"), ("plain", "dinov3-vitl16-pretrain-sat493m", "Plain decoder (SAT)"), ("web", "dinov3-vitl16-pretrain-lvd1689m", "Web backbone")):
+    for sdd in (42, 43, 44):
+        f = RES / bb / f"{key}_s{sdd}" / "test_metrics.json"
+        if not f.exists(): rows.append([lab, sdd, "pending", "", "", "", ""]); continue
+        m = json.load(open(f)); L = m["localization_tampered"]
+        rows.append([lab, sdd, f"{m['accuracy']:.4f}", f"{m['macro_f1']:.4f}", f"{m['per_class']['tampered']['recall']:.4f}", f"{L['mean_iou']:.4f}", m.get("best_epoch")])
+t(["Row", "Seed", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU", "Best epoch (validation)"], rows)
+p("Table S13. Test-set results of each training seed.")
+an = J("analysis_extras.json"); rows = []
+for pair, d in (an or {}).get("significance", {}).get("pairs", {}).items():
+    a_, b_ = pair.split("_vs_")
+    for sdd in ("seed42", "seed43", "seed44"):
+        v = d.get(sdd)
+        if v: rows.append([f"{a_} vs {b_}", sdd[4:], f"{v[f'acc_{a_}']:.4f}", f"{v[f'acc_{b_}']:.4f}", v[f"only_{a_}_correct"], v[f"only_{b_}_correct"], f"{v['p_value']:.2g}"])
+t(["Pair (A vs B)", "Seed", "Accuracy A", "Accuracy B", "Only A correct", "Only B correct", "p"], rows)
+p("Table S14. Exact McNemar tests on three-class correctness of the 3150 test images, per seed; p-values are not corrected for multiple comparisons. "
+  "Accuracies come from the re-evaluation script and can differ from Table S13 in the fourth decimal.")
+tb = {r["variant"]: r for r in csv.DictReader(open(H / "table.csv"))} if (H / "table.csv").exists() else {}
+rows = []
+for key, lab in (("full", "Full (SAT), inputs in [0, 1], 3 seeds"), ("fullnorm", "Full (SAT), backbone normalisation, seed 42"),
+                 ("web", "Web backbone, inputs in [0, 1], 3 seeds"), ("webnorm", "Web backbone, backbone normalisation, seed 42")):
+    r = tb.get(key)
+    if r: rows.append([lab] + [(f"{float(r[c + '_mean']):.3f} ± {float(r[c + '_std']):.3f}" if int(r["n_runs"]) > 1 else f"{float(r[c + '_mean']):.3f}") for c in ("accuracy", "macro_f1", "tampered_recall", "mean_iou")])
+t(["Row", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU"], rows)
+p("Table S15. Side experiment on input normalisation: the backbone's own mean and standard-deviation normalisation against inputs scaled to [0, 1] (the setting of all other runs).")
+
 # ---- figures
-h("S8. Figures")
+h("S9. Figures")
 if (H / "tsne_features.png").exists():
     img("tsne_features.png", "Fig. S1. t-SNE of frozen CLS features (up to 500 real and 500 manipulated images per dataset; perplexity 30, one run, "
         "settings fixed in advance). Top: original DINOv3 SAT. Bottom: fine-tuned full model. Illustration only.")
@@ -190,7 +234,7 @@ for kind, x in items:
         title = re.sub(r"^S\d+\.\s*", "", x[1]); nsec += 1
         md.append(f"## {ROM[nsec-1]}. {title}"); ht.append(f"<h2>{ROM[nsec-1]}. {html.escape(title)}</h2>")
     elif kind == "p":
-        cls = " class='sub'" if x.startswith("Detecting AI-Generated") else (" class='note'" if x.startswith("DRAFT") else "")
+        cls = " class='sub'" if x.startswith("Detection and Localization of AI-Generated") else (" class='note'" if x.startswith("Generated ") else "")
         md.append(x); ht.append(f"<p{cls}>{html.escape(x)}</p>")
     elif kind == "cap":
         num, title = x.split(". ", 1)
@@ -249,8 +293,8 @@ if docx:
         elif kind == "h":
             nsec += 1; para(f"{ROM[nsec-1]}. " + re.sub(r"^S\d+\.\s*", "", x[1]), 10, AL.CENTER, caps=True, before=12, after=5, keep=True)
         elif kind == "p":
-            if x.startswith("Detecting AI-Generated"): para(x, 11, AL.CENTER, after=2)
-            elif x.startswith("DRAFT"): para(x, 8, AL.CENTER, italic=True, after=12)
+            if x.startswith("Detection and Localization of AI-Generated"): para(x, 11, AL.CENTER, after=2)
+            elif x.startswith("Generated "): para(x, 8, AL.CENTER, italic=True, after=12)
             else: para(x, indent=True)
         elif kind == "cap":
             num, title = x.split(". ", 1)
