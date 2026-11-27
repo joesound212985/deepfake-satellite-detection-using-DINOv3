@@ -559,7 +559,7 @@ def render():
     if ROLE != "laptop" and (HOME / "spacecraft/status.py").exists():      # second project: dataset downloads (its own repo)
         try:
             if str(HOME / "spacecraft") not in sys.path: sys.path.insert(0, str(HOME / "spacecraft"))
-            import status as _space; panels.append(_space.panel())
+            import status as _space; panels.insert(0, _space.compact())      # at the top: the bottom of a long view is cut off
         except Exception:
             pass
     return Group(head, *panels, log)
