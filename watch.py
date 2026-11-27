@@ -54,6 +54,9 @@ o["cpu"] = max(t) if t else None
 o["turbo_off"] = sh("cat /sys/devices/system/cpu/intel_pstate/no_turbo")
 o["profile"] = sh("powerprofilesctl get")
 o["load"] = sh("cut -d' ' -f1 /proc/loadavg")
+o["mem"] = sh("free -g | awk '/Mem:/{print $3\"/\"$2}'")
+o["disk"] = sh("df -h --output=avail ~ | tail -1").strip()
+o["hist"] = []
 o["driver"] = bool(sh("pgrep -f 'run_lapto[p]|run_everythin[g]|run_norm_chec[k]'"))
 for pid in sh("pgrep -f 'dinov3_forensics_train_v[2].py|train_nor[m].py'").split():
     try:
@@ -65,6 +68,9 @@ if o["tag"]:
         with open(f"{H}/grsl/logs/{o['tag']}.log", "rb") as f:
             f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 60000)); o["log"] = f.read().decode(errors="ignore")
     except Exception: pass
+    for l in sh("grep -ao '\[epoch [0-9]*/[0-9]*\] [^\r]*' " + f"{H}/grsl/logs/{o['tag']}.log").splitlines():
+        m = re.search(r"\[epoch (\d+)/.*?train_loss=([\d.]+).*?val_f1=([\d.]+) val_iou=([\d.]+)", l)
+        if m: o["hist"].append([int(m.group(1)), float(m.group(3)), float(m.group(4)), float(m.group(2))])
 for f in glob.glob(f"{H}/results_dinov3/*/*/*/test_metrics.json"):
     try:
         m = json.load(open(f)); L = m["localization_tampered"]
@@ -97,6 +103,36 @@ def cpu_temp():
     except Exception:
         pass
     return None
+
+
+_hist = {}
+
+
+def epoch_hist(logf, every=60):
+    """[(epoch, val_f1, val_iou, train_loss)] for every finished epoch of a local log (re-read at most once a minute)."""
+    c = _hist.get(str(logf))
+    if c and time.time() - c[0] < every: return c[1]
+    h = []
+    try:
+        out = subprocess.run(["grep", "-ao", "\\[epoch [0-9]*/[0-9]*\\] [^\r]*", str(logf)], capture_output=True, text=True, errors="ignore").stdout
+        for l in out.splitlines():
+            m = re.search(r"\[epoch (\d+)/.*?train_loss=([\d.]+).*?val_f1=([\d.]+) val_iou=([\d.]+)", l)
+            if m: h.append([int(m.group(1)), float(m.group(3)), float(m.group(4)), float(m.group(2))])
+    except Exception:
+        pass
+    _hist[str(logf)] = (time.time(), h); return h
+
+
+def machine_extra():
+    """Fan, memory, free disk, load and power profile of this machine, as short text."""
+    def sh(c):
+        try: return subprocess.check_output(c, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
+        except Exception: return ""
+    fan = sh("nvidia-smi --query-gpu=fan.speed --format=csv,noheader,nounits")
+    parts = [f"fan {fan}%" if fan.isdigit() else "", "RAM " + sh("free -g | awk '/Mem:/{print $3\"/\"$2}'") + " GB",
+             "disk free " + sh("df -h --output=avail ~ | tail -1").strip(), "load " + sh("cut -d' ' -f1 /proc/loadavg"),
+             "power: " + (sh("powerprofilesctl get") or "?")]
+    return "   ".join(p for p in parts if p)
 
 
 def job_name(stem):
@@ -236,6 +272,40 @@ from rich.text import Text
 from rich import box
 
 WS_COL, LAP_COL = "dodger_blue1", "magenta"       # one colour per machine, used for its panel, bars and rows
+RES_COL = "gold1"
+SPARK = "▁▂▃▄▅▆▇█"
+RAMP = ["red1", "dark_orange", "gold1", "yellow3", "chartreuse3", "green3", "spring_green1", "bright_cyan"]
+
+
+def sc(v):
+    """Colour for a 0-1 score (accuracy, F1, AUC): red below 0.55, through orange / yellow, to bright green from 0.9."""
+    return "bold bright_green" if v >= 0.9 else "green3" if v >= 0.8 else "yellow3" if v >= 0.65 else "dark_orange" if v >= 0.55 else "red1"
+
+
+def metric_text(pairs, tail="", tail_style="dim"):
+    t = Text()
+    for name, v in pairs:
+        t.append(name + " ", style="grey70"); t.append(f"{v:.4f}", style=sc(v)); t.append("  ")
+    if tail: t.append(tail, style=tail_style)
+    return t
+
+
+def spark(h, col):
+    """Coloured sparkline of validation F1 over the finished epochs, with best / latest numbers."""
+    t = Text()
+    if not h: return t
+    f = [x[1] for x in h]; lo, hi = min(f), max(f); bi = f.index(hi)
+    t.append("F1 ", style="grey70")
+    for v in f[-24:]:
+        k = int((v - lo) / (hi - lo) * 7) if hi > lo else 7
+        t.append(SPARK[k], style=RAMP[k])
+    t.append(f"  best {hi:.4f}", style="bold bright_green"); t.append(f" @ep {h[bi][0]}", style="grey70")
+    t.append("   IoU ", style="grey70"); t.append(f"{h[-1][2]:.4f}", style=sc(h[-1][2]))
+    t.append("   train loss ", style="grey70")
+    t.append(f"{h[-1][3]:.4f}", style="bright_cyan")
+    if len(h) > 1:
+        d = h[-1][3] - h[-2][3]; t.append(f" {'▼' if d < 0 else '▲'}{abs(d):.4f}", style="green3" if d < 0 else "dark_orange")
+    return t
 
 
 def gpu_raw():
@@ -259,13 +329,13 @@ def gauge(frac, width, col):
 def sensors(g, cpu, extra=""):
     t = Text()
     if g:
-        t.append("GPU "); t.append_text(gauge(g[2] / 100, 12, "green" if g[2] > 50 else "yellow")); t.append(f" {g[2]:3.0f}%  ")
-        t.append(f"{g[3]:.0f}°C", style=tcol(g[3], 80, 87)); t.append(f"  {g[4]:.0f} W    ")
-        t.append("VRAM "); t.append_text(gauge(g[0] / g[1], 10, "cyan")); t.append(f" {g[0]/1024:.1f}/{g[1]/1024:.0f} GB    ")
+        t.append("GPU ", style="bold bright_green"); t.append_text(gauge(g[2] / 100, 12, "bright_green" if g[2] > 50 else "yellow")); t.append(f" {g[2]:3.0f}%  ")
+        t.append(f"{g[3]:.0f}°C", style=tcol(g[3], 80, 87)); t.append("  ⚡", style="gold1"); t.append(f"{g[4]:.0f} W    ", style="gold1")
+        t.append("VRAM ", style="bold bright_cyan"); t.append_text(gauge(g[0] / g[1], 10, "bright_cyan")); t.append(f" {g[0]/1024:.1f}/{g[1]/1024:.0f} GB    ")
     else:
         t.append("GPU n/a    ", style="red")
-    t.append("CPU "); t.append(f"{cpu}°C" if cpu is not None else "--", style=tcol(cpu, 85, 97) if cpu is not None else "dim")
-    if extra: t.append("    " + extra, style="dim")
+    t.append("CPU ", style="bold orchid1"); t.append(f"{cpu}°C" if cpu is not None else "--", style=tcol(cpu, 85, 97) if cpu is not None else "dim")
+    if extra: t.append("    " + extra, style="grey62")
     return t
 
 
@@ -275,10 +345,12 @@ def row_table(rows, col):
     tb.add_column(width=4, justify="right"); tb.add_column(ratio=1, no_wrap=True, overflow="ellipsis")
     for st, label, frac, detail, sub in rows:
         if st == "done":
-            tb.add_row(Text("✔", style="bold green"), Text(label, style="green"), gauge(1, BAR_W, "green"), "100%", Text(detail, style="green"))
+            tb.add_row(Text("✔", style="bold bright_green"), Text(label, style="green3"), gauge(1, BAR_W, "green3"), Text("100%", style="green3"),
+                       detail if isinstance(detail, Text) else Text(detail, style="green"))
         elif st == "run":
             tb.add_row(Text("▶", style=f"bold {col}"), Text(label, style=f"bold {col}"), gauge(frac, BAR_W, col), f"{frac*100:.0f}%", Text(detail, style="bold white"))
-            if sub: tb.add_row("", "", Text(""), "", Text(sub, style="white"))
+            if isinstance(sub, Text) and sub.plain: tb.add_row("", Text("  └ validation history", style="grey50"), Text(""), "", sub)
+            elif sub and not isinstance(sub, Text): tb.add_row("", "", Text(""), "", Text(sub, style="white"))
         elif st == "eval":
             tb.add_row(Text("◆", style="bold yellow"), Text(label, style="bold yellow"), gauge(frac, BAR_W, "yellow"), f"{frac*100:.0f}%", Text(detail, style="yellow"))
         elif st == "stop":
@@ -286,13 +358,20 @@ def row_table(rows, col):
         elif st == "unk":
             tb.add_row(Text("?", style="yellow"), Text(label, style="yellow"), gauge(0, BAR_W, col), "", Text(detail, style="yellow"))
         else:
-            tb.add_row(Text("·", style="dim"), Text(label, style="dim"), gauge(0, BAR_W, col), "", Text(detail, style="dim"))
+            tb.add_row(Text("◌", style="steel_blue1"), Text(label, style="steel_blue1"), gauge(0, BAR_W, col), "", Text(detail, style="steel_blue"))
     return tb
+
+
+def kv_line(title, pairs):
+    t = Text(); t.append(title + ":  ", style="bold orchid1")
+    for n, v in pairs:
+        t.append(n + " ", style="grey70"); t.append(f"{v:.3f}", style=sc(v)); t.append("   ")
+    return t
 
 
 def done_detail(m, tail):
     L = m["localization_tampered"]
-    return f"acc {m['accuracy']:.4f}  F1 {m['macro_f1']:.4f}  IoU {L['mean_iou']:.4f}  {tail}"
+    return metric_text([("acc", m["accuracy"]), ("F1", m["macro_f1"]), ("IoU", L["mean_iou"]), ("Dice", L["mean_dice"])], tail)
 
 
 def render():
@@ -308,10 +387,10 @@ def render():
                 lap_done += 1; rem.append(("done", label, 1, done_detail(json.load(open(tm)), "copied back"), ""))
             elif lap and tag in lap["done"]:
                 a = lap["done"][tag]; lap_done += 1
-                rem.append(("done", label, 1, f"acc {a[0]:.4f}  F1 {a[1]:.4f}  IoU {a[2]:.4f}  on laptop, not copied back", ""))
+                rem.append(("done", label, 1, metric_text([("acc", a[0]), ("F1", a[1]), ("IoU", a[2]), ("Dice", a[3])], f"{a[4]:.0f} s/ep  on laptop, not copied back"), ""))
             elif lap and lap.get("tag") == tag:
                 d = parse_log(lap["log"]); frac, r, sub = progress(d, hrs); lap_left += r / 3600
-                rem.append(("run", label, frac, f"{sub}   ETA {fmt_td(r)}", val_line(d).strip() if d["val"] else ""))
+                rem.append(("run", label, frac, f"{sub}   ETA {fmt_td(r)}  → {(datetime.now()+timedelta(seconds=r)):%a %H:%M}", spark(lap.get("hist") or [], LAP_COL)))
             elif lap:
                 lap_left += hrs; rem.append(("wait", label, 0, "queued", ""))
             else:
@@ -323,7 +402,7 @@ def render():
             loc.append(("done", label, 1, done_detail(m, f"{m['train_sec_per_epoch']:.0f} s/ep"), ""))
         elif tag == cur:
             d = parse_log(logf); frac, r, sub = progress(d, hrs); done_h += hrs * frac; left_h += r / 3600
-            loc.append(("run", label, frac, f"{sub}   ETA {fmt_td(r)}", val_line(d).strip() if d["val"] else ""))
+            loc.append(("run", label, frac, f"{sub}   ETA {fmt_td(r)}  → {(datetime.now()+timedelta(seconds=r)):%a %H:%M}", spark(epoch_hist(logf), mycol)))
         elif logf.exists() and not driver_alive:
             left_h += hrs; loc.append(("stop", label, 0, "stopped / incomplete (run go.sh to resume)", ""))
         else:
@@ -348,8 +427,8 @@ def render():
     tot = done_h + left_h; foot = Text()
     foot.append_text(gauge(done_h / tot if tot else 0, 40, mycol))
     foot.append(f"  {n_done}/{n_loc} runs done    training left ≈ {fmt_td(left_h*3600)}    finish ≈ {(datetime.now()+timedelta(hours=left_h)):%a %H:%M}")
-    panels = [Panel(Group(sensors(gpu_raw(), cpu_temp()), st, Text(""), row_table(loc, mycol), Text(""), foot),
-                    title=f"[bold {mycol}] {me} [/]", border_style=mycol, box=box.HEAVY, padding=(0, 1))]
+    panels = [Panel(Group(sensors(gpu_raw(), cpu_temp(), machine_extra()), st, Text(""), row_table(loc, mycol), Text(""), foot),
+                    title=f"[bold {mycol}] ◆ {me} ◆ [/]", border_style=mycol, box=box.HEAVY, padding=(0, 1))]
 
     # ---- the laptop, seen from the workstation
     if LAPTOP_HOST:
@@ -363,16 +442,42 @@ def render():
             foot2 = Text(); nl = len(rem)
             foot2.append_text(gauge(lap_done / nl if nl else 0, 40, LAP_COL))
             foot2.append(f"  {lap_done}/{nl} runs done    left ≈ {fmt_td(lap_left*3600)}    finish ≈ {(datetime.now()+timedelta(hours=lap_left)):%a %H:%M} (rough)")
-            ex = f"power: {lap.get('profile') or '?'}{', turbo off' if lap.get('turbo_off') == '1' else ''}   load {lap.get('load', '?')}"
+            ex = (f"RAM {lap.get('mem', '?')} GB   disk free {lap.get('disk', '?')}   load {lap.get('load', '?')}   "
+                  f"power: {lap.get('profile') or '?'}{', turbo off' if lap.get('turbo_off') == '1' else ''}")
             body = Group(sensors(g, lap.get("cpu"), ex), st2, Text(""), row_table(rem, LAP_COL), Text(""), foot2)
         else:
             body = Group(Text(" ○ NOT REACHABLE ", style="bold white on red"), Text("asleep, switched off, or Tailscale is down", style="red"),
                          Text(""), row_table(rem, LAP_COL))
-        panels.append(Panel(body, title=f"[bold {LAP_COL}] LAPTOP (RTX 5090) [/]", border_style=LAP_COL, box=box.HEAVY, padding=(0, 1)))
+        panels.append(Panel(body, title=f"[bold {LAP_COL}] ◆ LAPTOP (RTX 5090) ◆ [/]", border_style=LAP_COL, box=box.HEAVY, padding=(0, 1)))
 
     # ---- results (workstation only)
     if (GRSL / "cross_fmow_metrics.json").exists():
-        tb = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
+        summ = None
+        try:      # own test set, every finished run grouped by variant: mean over seeds and the range
+            grp = {}
+            for tag, out, label, hrs in ROWS:
+                tm = out / "test_metrics.json"; v = None
+                if tm.exists():
+                    m = json.load(open(tm)); L = m["localization_tampered"]; v = [m["accuracy"], m["macro_f1"], L["mean_iou"]]
+                elif lap and tag in lap.get("done", {}): v = lap["done"][tag][:3]
+                if v: grp.setdefault(tag.rsplit("_s", 1)[0], []).append((tag.rsplit("_s", 1)[1], v))
+            if grp:
+                summ = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style=f"bold {RES_COL}")
+                summ.add_column("own test set (3,150 images), mean over finished seeds"); summ.add_column("seeds", style="grey70")
+                for h in ("accuracy", "macro-F1", "tamper IoU"): summ.add_column(h, justify="center")
+                summ.add_column("accuracy", no_wrap=True)
+                for name, runs in sorted(grp.items(), key=lambda kv: -sum(r[1][0] for r in kv[1]) / len(kv[1])):
+                    cells = []
+                    for i in range(3):
+                        x = [r[1][i] for r in runs]; mu = sum(x) / len(x)
+                        c = Text(f"{mu:.4f}", style=sc(mu))
+                        if len(x) > 1: c.append(f" ({min(x):.4f}–{max(x):.4f})", style="grey62")
+                        cells.append(c)
+                    acc = sum(r[1][0] for r in runs) / len(runs)
+                    summ.add_row(Text(name, style="bold"), ",".join(r[0] for r in runs), *cells, gauge((acc - 0.5) / 0.5, 20, sc(acc).replace("bold ", "")))
+        except Exception:
+            summ = None
+        tb = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style=f"bold {RES_COL}")
         tb.add_column("zero-shot on outside data (AUC / accuracy)")
         for h in ("full_s42", "web_s42", "frozen_s42"): tb.add_column(h, justify="center")
         for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
@@ -383,7 +488,7 @@ def render():
                 f = GRSL / f"{pre}{key}_metrics.json"
                 if f.exists():
                     o = json.load(open(f))["overall"]; auc = o.get("auc_real_vs_manipulated"); acc = o.get("accuracy_thr0.5")
-                    cells.append(Text(f"{auc:.3f} / {acc:.3f}", style="green" if auc >= 0.8 else ("yellow" if auc >= 0.65 else "red")))
+                    c = Text(f"{auc:.3f}", style=sc(auc)); c.append(" / ", style="grey50"); c.append(f"{acc:.3f}", style=sc(acc)); cells.append(c)
                 else:
                     cells.append(Text("pending", style="dim"))
             tb.add_row(label, *cells)
@@ -392,10 +497,10 @@ def render():
             fs = json.load(open(GRSL / "fewshot_metrics.json"))["datasets"]
             if (GRSL / "fewshot_gdd_metrics.json").exists():
                 fs.update(json.load(open(GRSL / "fewshot_gdd_metrics.json"))["datasets"])
-            ft = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style="bold")
+            ft = Table(box=box.SIMPLE_HEAD, padding=(0, 1), expand=False, header_style=f"bold {RES_COL}")
             ft.add_column("few-shot AUC, full_s42 features (labelled images per class)")
             for h in ("zero-shot", "4", "16", "64", "256", "whole pool"): ft.add_column(h, justify="center")
-            col = lambda a: "green" if a >= 0.8 else ("yellow" if a >= 0.65 else "red")
+            col = sc
             for key, label in (("fmow", "fmow-fake-small"), ("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
                                ("gdd_indomain", "GDD in-domain"), ("gdd_crossgenerator", "GDD cross-generator"),
                                ("gdd_crossdomain", "GDD cross-domain"), ("gdd_localization", "GDD tamper set")):
@@ -415,22 +520,20 @@ def render():
                 f = GRSL / f"simlbr_official_{bb}_metrics.json"
                 if not f.exists(): continue
                 m = json.load(open(f))["variants"]["lbr"]["mean_std_over_seeds"]
-                extra.append(Text("SimLBR official (" + bb + ") AUC:  " + "   ".join(
-                    f"{n} {m[k]['auc_real_vs_manipulated']['mean']:.3f}" for k, n in (("overhead_test", "own test"), ("cross_fmow", "fmow"),
-                    ("cross_rsfake", "rsfake"), ("cross_uw", "uw"), ("cross_dmaer", "dmaer")) if k in m)))
+                extra.append(kv_line("SimLBR official (" + bb + ") AUC", [(n, m[k]['auc_real_vs_manipulated']['mean']) for k, n in (("overhead_test", "own test"), ("cross_fmow", "fmow"),
+                    ("cross_rsfake", "rsfake"), ("cross_uw", "uw"), ("cross_dmaer", "dmaer")) if k in m]))
         except Exception:
             pass
         try:      # label-free transfer experiments (ZEROSHOT_EXTRAS_PROTOCOL.md): AUC of the frozen-backbone probe
             zx = json.load(open(GRSL / "zeroshot_extras_metrics.json"))["B_frozen_probe"]
             for ex in ("sat_orig", "full_s42"):
-                extra.append(Text(f"frozen probe trained on own data ({ex}) AUC:  " + "   ".join(
-                    f"{n} {zx[ex][k]['auc']:.3f}" for k, n in (("own_test", "own test"), ("rsfake", "rsfake"), ("uw", "uw"), ("dmaer", "dmaer"),
-                    ("gdd_crossgenerator", "gdd-cg"), ("gdd_crossdomain", "gdd-cd")))))
+                extra.append(kv_line(f"frozen probe trained on own data ({ex}) AUC", [(n, zx[ex][k]['auc']) for k, n in (("own_test", "own test"), ("rsfake", "rsfake"), ("uw", "uw"), ("dmaer", "dmaer"),
+                    ("gdd_crossgenerator", "gdd-cg"), ("gdd_crossdomain", "gdd-cd"))]))
         except Exception:
             pass
         nrob = len(list(GRSL.glob("robust_*_metrics.json"))); nov = len(list(GRSL.glob("overhead_*_metrics.json")))
         nf = len(list((HOME / "data/features/fewshot_cls384").glob("*/*.npy")))
-        yes = lambda b: "[green]✔[/]" if b else "[dim]·[/]"
+        yes = lambda b: "[bold bright_green]✔[/]" if b else "[dark_orange]◌[/]"
         ex = Text.from_markup(
             f"robustness {nrob}/12   test two-class {nov}/2   figure {yes((GRSL / 'qualitative.png').exists())}   "
             f"SimLBR official {len(list(GRSL.glob('simlbr_official_*_metrics.json')))}/2   "
@@ -440,14 +543,18 @@ def render():
             f"intervals {yes((GRSL / 'cross_detail.json').exists())}   label-free extras {yes((GRSL / 'zeroshot_extras_metrics.json').exists())}   "
             f"supplement {yes((GRSL / 'supplement/SUPPLEMENT.pdf').exists())}   "
             f"analysis {yes((GRSL / 'analysis_extras.json').exists())}   table.csv {yes((GRSL / 'table.csv').exists())}")
-        panels.append(Panel(Group(tb, *extra, ex), title="[bold] RESULTS SO FAR [/]", border_style="grey50", padding=(0, 1)))
+        key = Text.assemble(("score colours:  ", "grey62"), ("≥0.90 ", sc(0.95)), ("≥0.80 ", sc(0.85)), ("≥0.65 ", sc(0.7)), ("≥0.55 ", sc(0.6)), ("<0.55", sc(0.5)))
+        panels.append(Panel(Group(*([summ] if summ else []), tb, *extra, ex, key), title=f"[bold {RES_COL}] ★ RESULTS SO FAR ★ [/]", border_style=RES_COL, box=box.HEAVY, padding=(0, 1)))
     try:
         last = [l for l in (GRSL / "RUNLOG.md").read_text().splitlines() if l.startswith("|")][-1]
         log = Text("last log entry: " + last[2:150], style="dim", no_wrap=True, overflow="ellipsis")
     except Exception:
         log = Text("")
-    head = Text.assemble(("GRSL experiment queue", "bold"), f"   {datetime.now():%a %d %b %H:%M:%S}   ",
-                         ("■ workstation", WS_COL), "  ", ("■ laptop", LAP_COL), (f"   all training done ≈ {(datetime.now()+timedelta(hours=max(left_h, lap_left))):%a %H:%M}" if ROLE != "laptop" else "", "bold"),
+    allh = max(left_h, lap_left)
+    head = Text.assemble((" GRSL ", "bold black on gold1"), (" experiment queue ", "bold white on dodger_blue3"), (f"  {datetime.now():%a %d %b %H:%M:%S}  ", "bright_cyan"),
+                         ("■ workstation", WS_COL), "  ", ("■ laptop", LAP_COL),
+                         (f"   all training done ≈ {(datetime.now()+timedelta(hours=allh)):%a %H:%M}" if ROLE != "laptop" else "", "bold bright_green"),
+                         (f"  (in {int(allh)} h {int(allh % 1 * 60):02d} m)" if ROLE != "laptop" else "", "green3"),
                          ("   Ctrl-C closes; runs keep going", "dim"))
     return Group(head, *panels, log)
 

@@ -287,3 +287,4 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26 20:30 | laptop: platform_profile quiet -> performance (turbo stays off), user request | – | done |
 | 2026-11-26 20:34 | `./run_extra_seeds_v2b.sh` started (waiter): plain_s44 moved from laptop to workstation, runs after full_s44; stage 3 + few-shot seeds wait for it | plain_s44 | waiting |
 | 2026-11-26 20:35 | go.sh + watch.py updated: plain_s44 shown as a workstation row, go.sh starts run_extra_seeds_v2b.sh after a restart | dashboard | done |
+| 2026-11-26 20:37 | watch.py: more colour and detail (own-test summary by variant, validation history, fan/RAM/disk, finish clock times) | dashboard | done |
