@@ -289,3 +289,4 @@ ms_per_test_image 228.5 here is NOT representative (GPU shared with full_s42 tra
 | 2026-11-26 20:35 | go.sh + watch.py updated: plain_s44 shown as a workstation row, go.sh starts run_extra_seeds_v2b.sh after a restart | dashboard | done |
 | 2026-11-26 20:37 | watch.py: more colour and detail (own-test summary by variant, validation history, fan/RAM/disk, finish clock times) | dashboard | done |
 | 2026-11-26 20:53 | watch.py: optional panel for the separate spacecraft project (~/spacecraft/status.py), workstation only | dashboard | done |
+| 2026-11-26 21:28 | `python supplement/make_supplement.py`: label-free section added (Tables S9-S11), PDF/DOCX rebuilt (git-ignored) | supplement | done |

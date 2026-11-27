@@ -120,8 +120,39 @@ for r, rl in (("full", "Full model (SAT), seed 42"), ("web", "Web backbone, seed
 t(["Checkpoint", "Degradation", "3-class accuracy", "AUC real vs manip.", "Tamper mean IoU"], rows)
 p("Table S8. Test-set performance under degradations applied at test time only.")
 
+# ---- S7 label-free transfer experiments
+zx = J("zeroshot_extras_metrics.json")
+h("S7. Label-free alternatives to few-shot adaptation")
+p("Three ways to use an outside dataset without any of its labels (protocol fixed and committed before any number was computed; "
+  "ZEROSHOT_EXTRAS_PROTOCOL.md in the repository). These experiments were chosen after the zero-shot results were known. "
+  "All use the L2-normalised final-layer CLS feature of a frozen backbone.")
+XS = [("own_test", "Own test set")] + SETS
+if not zx:
+    p("Pending.")
+else:
+    rows = []
+    for ex, el in EX[:2]:
+        for k, sl in SETS:
+            v = zx["A_clustering"].get(ex, {}).get(k)
+            if isinstance(v, dict):
+                rows.append([el, sl, f"{v['accuracy']:.3f}", f"{v['oracle_naming_accuracy']:.3f}", f"{v['detection_rate']:.3f}", f"{v['false_alarm_rate']:.3f}"])
+    t(["Features", "Dataset", "Accuracy", "Accuracy, best naming", "Det.", "FA"], rows)
+    p("Table S9. Unsupervised two-cluster split (k-means) of each outside dataset. The clusters are named real / manipulated by the "
+      "model's own mean score; 'best naming' uses the labels to name them and is an upper bound, not a label-free number.")
+    for key, tn, cap in (("B_frozen_probe", "S10", "Linear probe fitted on the features of our own training set (10,000 images) and applied unchanged to each dataset, threshold 0.5."),
+                         ("C_one_class", "S11", "One-class score: mean cosine distance to the 5 nearest pristine training images. The threshold is the 95th percentile "
+                                                "of held-out pristine training images, so 'FA' above 0.05 on an outside dataset shows that its real images also look unusual.")):
+        rows = []
+        for ex, el in EX:
+            for k, sl in XS:
+                v = zx[key].get(ex, {}).get(k)
+                if isinstance(v, dict):
+                    rows.append([el, sl, f"{v['auc']:.3f}", f"{v['accuracy']:.3f}", f"{v['detection_rate']:.3f}", f"{v['false_alarm_rate']:.3f}"])
+        t(["Features", "Dataset", "AUC", "Accuracy", "Det.", "FA"], rows)
+        p(f"Table {tn}. {cap}")
+
 # ---- figures
-h("S7. Figures")
+h("S8. Figures")
 if (H / "tsne_features.png").exists():
     img("tsne_features.png", "Fig. S1. t-SNE of frozen CLS features (up to 500 real and 500 manipulated images per dataset; perplexity 30, one run, "
         "settings fixed in advance). Top: original DINOv3 SAT. Bottom: fine-tuned full model. Illustration only.")
