@@ -556,6 +556,12 @@ def render():
                          (f"   all training done ≈ {(datetime.now()+timedelta(hours=allh)):%a %H:%M}" if ROLE != "laptop" else "", "bold bright_green"),
                          (f"  (in {int(allh)} h {int(allh % 1 * 60):02d} m)" if ROLE != "laptop" else "", "green3"),
                          ("   Ctrl-C closes; runs keep going", "dim"))
+    if ROLE != "laptop" and (HOME / "spacecraft/status.py").exists():      # second project: dataset downloads (its own repo)
+        try:
+            if str(HOME / "spacecraft") not in sys.path: sys.path.insert(0, str(HOME / "spacecraft"))
+            import status as _space; panels.append(_space.panel())
+        except Exception:
+            pass
     return Group(head, *panels, log)
 
 
