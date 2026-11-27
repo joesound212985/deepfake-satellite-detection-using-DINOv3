@@ -562,6 +562,22 @@ def render():
             import status as _space; panels.insert(0, _space.compact())      # at the top: the bottom of a long view is cut off
         except Exception:
             pass
+    if ROLE == "laptop" and (HOME / ".spacecraft_status.json").exists():   # sent by the workstation (~/spacecraft/push_status.sh)
+        try:
+            sp = json.load(open(HOME / ".spacecraft_status.json")); t = Text(); age = time.time() - sp["t"]
+            stl = {"done": ("✔", "bold bright_green"), "downloading": ("▶", "bold bright_cyan"), "failed": ("✖", "bold red1"),
+                   "stopped": ("■", "dark_orange"), "queued": ("◌", "steel_blue1")}
+            for name, have, gb, state, lic, what, rate in sp["rows"]:
+                mark, sty = stl.get(state, ("?", "yellow")); t.append(f"{mark} {name}", style=sty)
+                if state == "downloading": t.append(f" {have:.1f}/{gb:g} GB" + (f" {rate:.0f} MB/s" if rate else ""), style="bright_cyan")
+                elif state == "done": t.append(f" {have:.0f} GB", style="green3")
+                t.append("   ")
+            nd = sum(r[3] == "done" for r in sp["rows"])
+            panels.insert(0, Panel(t, title=f"[bold spring_green1] ✦ SPACECRAFT PROJECT (on the workstation): dataset downloads  {nd}/{len(sp['rows'])} done  ·  "
+                                            f"{sum(r[1] for r in sp['rows']):.0f} GB on disk  ·  {sp['free']} free ✦ [/]",
+                                   subtitle=f"[grey62]updated {int(age // 60)} min ago[/]", border_style="spring_green1", box=box.HEAVY, padding=(0, 1)))
+        except Exception:
+            pass
     return Group(head, *panels, log)
 
 
