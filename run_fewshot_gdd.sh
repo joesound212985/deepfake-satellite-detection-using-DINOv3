@@ -3,7 +3,8 @@
 # Feature extraction on the laptop (workstation GPU is full with a training run); probes and figure here on CPU.
 source ~/Desktop/.venv/bin/activate
 cd ~/grsl
-L=joe@100.72.70.64
+L=${GRSL_LAPTOP-$(cat ~/.config/grsl/laptop 2>/dev/null)}   # address kept outside the repository
+[ -n "$L" ] || { echo "no laptop address: set GRSL_LAPTOP or write it to ~/.config/grsl/laptop"; exit 1; }
 log() { echo "| $(date -Is) | $1 | $2 | $3 |" >> RUNLOG.md; }
 V=results_dinov3/vit
 log "rsync GDD test data + full_s42/web_s42 checkpoints to laptop" "fewshot_gdd" "started"

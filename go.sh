@@ -36,7 +36,7 @@ else
   echo "queue started"; sleep 2
 fi
 # second machine: start its share (run_laptop.sh) if it is reachable and idle; GRSL_LAPTOP="" skips this
-LAPTOP=${GRSL_LAPTOP-joe@100.72.70.64}
+LAPTOP=${GRSL_LAPTOP-$(cat ~/.config/grsl/laptop 2>/dev/null)}   # address kept outside the repository
 if [ -n "$LAPTOP" ]; then
   ssh -n -o BatchMode=yes -o ConnectTimeout=4 "$LAPTOP" 'pgrep -f "run_lapto[p]|dinov3_forensics_train_v[2]|train_nor[m]" >/dev/null && echo "laptop queue already running" || { cd ~/grsl && mkdir -p logs && (setsid nohup ./run_laptop.sh > logs/run_laptop.nohup 2>&1 < /dev/null &) ; echo "laptop queue started"; }' 2>/dev/null || echo "laptop not reachable"
 fi

@@ -39,7 +39,14 @@ if ROLE == "laptop":      # dashboard started on the laptop itself: show only it
 BAR_W = 28
 
 
-LAPTOP_HOST = "" if ROLE == "laptop" else os.environ.get("GRSL_LAPTOP", "joe@100.72.70.64")   # GRSL_LAPTOP="" disables the laptop block
+def _laptop_default():      # address kept outside the repository
+    try:
+        return open(os.path.expanduser("~/.config/grsl/laptop")).read().strip()
+    except OSError:
+        return ""
+
+
+LAPTOP_HOST = "" if ROLE == "laptop" else os.environ.get("GRSL_LAPTOP", _laptop_default())   # GRSL_LAPTOP="" disables the laptop block
 REMOTE = r'''
 import json, glob, os, re, subprocess
 H = os.path.expanduser("~")
