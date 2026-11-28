@@ -3,7 +3,7 @@
 Experiment code, run log, training logs and result files for the paper
 *Detection and Localization of AI-Generated and Tampered Satellite Images With a Fine-Tuned DINOv3*
 (Soundararajan, Chadha, Xu; in preparation, working title). The original script is on the `main` branch; this
-branch (`grsl-experiments`) holds the revised training script and everything needed to reproduce the tables.
+branch (`ojcs-experiments`) holds the revised training script and everything needed to reproduce the tables.
 
 **Status: the last training runs and the seed re-scoring are still in progress.** The tables below are
 rebuilt from the result files whenever they change; rows marked as missing or pending belong to runs that

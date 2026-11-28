@@ -627,7 +627,7 @@ def main():
                 live.stop(); termios.tcsetattr(fd, termios.TCSADRAIN, old); os.execv(sys.executable, [sys.executable] + sys.argv)
             if ROLE == "laptop" and time.time() - synced > 600:   # laptop: pull the dashboard code and result files
                 synced = time.time()                               # (never logs or RUNLOG.md, which a live run has open)
-                subprocess.Popen("git fetch -q origin grsl-experiments && git checkout -q origin/grsl-experiments -- "
+                subprocess.Popen("git fetch -q origin ojcs-experiments && git checkout -q origin/ojcs-experiments -- "
                                  "watch.py '*_metrics.json' table.csv", shell=True, cwd=GRSL,
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             live.update(render(TAB), refresh=True)
