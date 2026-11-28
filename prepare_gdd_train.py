@@ -41,9 +41,16 @@ for split, files in SPLITS.items():
                     sys.exit(f"{p}: manipulated image without a mask path")
                 seen.add(p); stems[Path(p).stem] += 1
                 rows.append((p, mask, cls, man or (r.get("generator") or "").strip() or (r.get("source_dataset") or "").strip()))
-    dup = [s for s, n in stems.items() if n > 1]
-    if dup:   # the training script identifies images by file stem for its validation hold-out
-        sys.exit(f"{split}: {len(dup)} file stems are not unique, e.g. {dup[0]}")
+    # The training script identifies images by file stem for its validation hold-out, so every stem must be
+    # unique. GDD's training set has pairs of different images with one file name in two manipulation folders;
+    # those (both members) are listed under a link named <folder>__<file name>. Nothing is dropped.
+    dup = {s for s, n in stems.items() if n > 1}
+    alias = {p: f"renamed/{Path(p).parent.name}__{Path(p).name}" for p, _, _, _ in rows if Path(p).stem in dup}
+    names = [Path(alias.get(p, p)).stem for p, _, _, _ in rows]
+    if len(set(names)) != len(names):
+        sys.exit(f"{split}: file stems are still not unique after renaming")
+    if dup:
+        print(f"{split}: {len(dup)} file stems occur more than once; {len(alias)} images listed under renamed links")
     missing = [p for p, m, _, _ in rows if not (G / p).exists() or (m and not (G / m).exists())]
     if missing:
         sys.exit(f"{split}: {len(missing)} of {len(rows)} files missing, e.g. {missing[0]}")
@@ -56,7 +63,12 @@ for split, files in SPLITS.items():
         w = csv.writer(fh)
         w.writerow(["image_filename", "mask_filename", "manipulation_type", "gdd_group"])
         for p, m, cls, grp in rows:
-            w.writerow([f"gdd/{p}", f"gdd/{m}" if m else "", cls, grp])
+            if p in alias:
+                a = d / alias[p]
+                a.parent.mkdir(exist_ok=True)
+                if not a.is_symlink():
+                    os.symlink(G / p, a)
+            w.writerow([alias.get(p, f"gdd/{p}"), f"gdd/{m}" if m else "", cls, grp])
     c = collections.Counter(cls for _, _, cls, _ in rows)
     print(f"{split}: {len(rows)} images  {dict(sorted(c.items()))}  -> {d / 'metadata.csv'}")
     if args.check:

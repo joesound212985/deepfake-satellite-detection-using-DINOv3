@@ -61,3 +61,16 @@ model transfers no better to the benchmark than the benchmark-trained model does
 ## Not done
 
 Training on both families together, or on RSFAKE-1M. Each would be a separate experiment.
+
+## Addendum 2026-11-28 (before any GDD training run): file names that occur twice
+
+The read check found that GDD's training set has 238 pairs of different images with one file name in two
+manipulation folders (`fully-regenerated` and `inpaint-splice`, the same source image manipulated in two ways);
+the in-domain test set has 64 such pairs. The training script identifies an image by its file stem when it draws
+the 10 % validation hold-out, so with equal stems both images of a pair could land in the training part and in
+the hold-out at once. `prepare_gdd_train.py` therefore lists both images of every such pair under a link named
+`<folder>__<file name>` (476 training images, 128 test images). No image is dropped or changed: 11,410 training
+images (5,000 pristine, 5,000 generated, 1,410 manipulated) and 2,000 test images as before. The two images of a
+pair can fall on different sides of the hold-out; they share a source image but not the manipulation. The
+hold-out is used for checkpoint selection only. Read check after the change: 0 unreadable or mismatched files,
+0 empty masks.
