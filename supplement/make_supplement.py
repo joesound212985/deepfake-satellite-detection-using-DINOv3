@@ -8,7 +8,7 @@ from datetime import date
 OUT_DIR = Path(__file__).resolve().parent      # supplement/
 H = OUT_DIR.parent                             # repository root, where the result files are
 J = lambda n: json.load(open(H / n)) if (H / n).exists() else None
-SETS = [("rsfake", "RSFAKE-1M subset"), ("uw", "UW fake satellite"), ("dmaer", "DM-AER (size-matched)"),
+SETS = [("rsfake", "RSFAKE-1M subset"), ("uw", "Zhao et al."), ("dmaer", "DM-AER (size-matched)"),
         ("gdd_indomain", "GDD in-domain"), ("gdd_crossgenerator", "GDD cross-generator"), ("gdd_crossdomain", "GDD cross-domain"),
         ("gdd_localization", "GDD local edits"), ("fmow", "fmow-fake-small (120 images)")]
 CK = [("cross_", "Full model (SAT), seed 42"), ("cross_web_", "Web backbone, seed 42"), ("cross_frozen_", "Frozen backbone, seed 42")]
@@ -38,7 +38,7 @@ for pre, cl in CK:
         rows.append([cl, sl, o["n_real"], o["n_manipulated"], f"{c['auc']:.3f} [{c['auc_ci95'][0]:.3f}, {c['auc_ci95'][1]:.3f}]",
                      f"{o['detection_rate_manipulated_thr0.5']:.3f}", f"{o['false_alarm_rate_real_thr0.5']:.3f}", f"{c['tpr_at_5pct_fpr']:.3f}"])
 t(["Checkpoint", "Dataset", "Real", "Manip.", "AUC [95% CI]", "Det. @0.5", "FA @0.5", "Det. @5% FA"], rows)
-p("Table S1. Zero-shot detection on outside datasets.")
+p("Table S1. Zero-shot detection on outside datasets (seed-42 checkpoints; the three training seeds are in Tables S16 and S22).")
 
 # ---- S2 per group
 h("S2. Zero-shot results per generator / manipulation type")
@@ -51,23 +51,23 @@ for k, sl in SETS:
 t(["Dataset", "Group", "n", "AUC vs reals", "Det. @0.5", "Det. @5% FA"], rows)
 p("Table S2. Zero-shot detection per generator or manipulation type.")
 
-# ---- S3 tamper localisation outside
-h("S3. Tamper localisation on GDD local edits")
+# ---- S3 tamper localization outside
+h("S3. Tamper localization on GDD local edits")
 rows = []
 for pre, cl in CK:
     m = J(f"{pre}gdd_localization_metrics.json")
     if m:
         L = m["overall"]["localization"]; rows.append([cl, L["n_images_with_mask"], f"{L['mean_iou']:.3f}", f"{L['mean_dice']:.3f}", f"{L['mean_mcc']:.3f}"])
 t(["Checkpoint", "Images with mask", "Mean IoU", "Mean Dice", "Mean MCC"], rows)
-p("Table S3. Zero-shot tamper localisation on the GDD localisation subset.")
+p("Table S3. Zero-shot tamper localization on the GDD localization subset.")
 
 # ---- S4 few-shot
 h("S4. Few-shot adaptation")
 p("Protocol (fixed and committed before any number was computed; FEWSHOT_PROTOCOL.md in the repository): each outside dataset is split "
   "once 50/50, stratified by group, into an adaptation pool and a held-out half. A logistic-regression probe (C = 1, no tuning) is "
-  "fitted on the L2-normalised final-layer CLS feature of a frozen backbone, using k labelled images per class drawn from the pool "
+  "fitted on the L2-normalized final-layer CLS feature of a frozen backbone, using k labeled images per class drawn from the pool "
   "(10 random draws; mean ± standard deviation). All numbers are on the held-out half. The held-out images share source and generators "
-  "with the shots, so this measures adaptation to a known new source, not generalisation to another unseen one.")
+  "with the shots, so this measures adaptation to a known new source, not generalization to another unseen one.")
 fs = {}
 for f in ("fewshot_metrics.json", "fewshot_gdd_metrics.json"):
     d = J(f)
@@ -82,7 +82,7 @@ for metric, lab, tn in (("auc", "AUC", "S4"), ("accuracy", "accuracy", "S5")):
             rows.append([sl, el, f"{z[metric]:.3f}" if isinstance(z, dict) else "–"] + [ms(e[f"k{n}"][metric]) if isinstance(e.get(f"k{n}"), dict) else "–" for n in (4, 16, 64, 256)]
                         + [f"{e['whole_pool'][metric]:.3f}"])
     t(["Dataset", "Features", "Zero-shot", "k = 4", "k = 16", "k = 64", "k = 256", "Whole pool"], rows)
-    p(f"Table {tn}. Few-shot {lab} on the held-out half (k labelled images per class; '–' = not applicable or pool too small).")
+    p(f"Table {tn}. Few-shot {lab} on the held-out half (k labeled images per class; '–' = not applicable or pool too small).")
 rows = []
 for k, sl in SETS:
     d = fs.get(k)
@@ -93,7 +93,7 @@ for k, sl in SETS:
 t(["Dataset", "Model", "k = 4", "k = 16", "k = 64", "k = 256"], rows)
 p("Table S6. Accuracy when only the decision threshold of the fine-tuned model is re-set on the k shots (no probe).")
 sd = J("fewshot_seeds_metrics.json")
-p("The same probe on the backbones of training seeds 43 and 44 is summarised in Table S12.")
+p("The same probe on the backbones of training seeds 43 and 44 is summarized in Table S12.")
 
 # ---- S5 SimLBR
 h("S5. SimLBR baseline (authors' released code, trained on our training set)")
@@ -103,13 +103,13 @@ for bb, bl in (("sat", "SAT"), ("web", "web")):
     if not s: rows.append([bl, "pending"] + [""] * 3); continue
     for v, vl in (("lbr", "with latent blending"), ("nolbr", "without")):
         m = s["variants"][v]["mean_std_over_seeds"]
-        for k, kl in (("overhead_test", "Own test set"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"), ("cross_dmaer", "DM-AER"), ("cross_fmow", "fmow-fake-small")):
+        for k, kl in (("overhead_test", "Own test set"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "Zhao et al."), ("cross_dmaer", "DM-AER"), ("cross_fmow", "fmow-fake-small")):
             if k in m: rows.append([bl, vl, kl, ms(m[k]["auc_real_vs_manipulated"]), ms(m[k]["accuracy_thr0.5"])])
 t(["Backbone", "Variant", "Evaluated on", "AUC", "Accuracy @0.5"], rows)
 p("Table S7. SimLBR trained on our data with the authors' code and settings, three seeds (mean ± standard deviation).")
 
 # ---- S6 robustness
-h("S6. Robustness to JPEG compression and down-scaling (own test set)")
+h("S6. Robustness to JPEG compression and downscaling (own test set)")
 rows = []
 for r, rl in (("full", "Full model (SAT), seed 42"), ("web", "Web backbone, seed 42")):
     for d, dl in ((None, "none"), ("jpeg90", "JPEG 90"), ("jpeg70", "JPEG 70"), ("jpeg50", "JPEG 50"), ("jpeg30", "JPEG 30"), ("scale0.75", "scale 0.75"), ("scale0.5", "scale 0.5")):
@@ -117,14 +117,14 @@ for r, rl in (("full", "Full model (SAT), seed 42"), ("web", "Web backbone, seed
         if not m: rows.append([rl, dl, "pending", "", ""]); continue
         o = m["overall"]; rows.append([rl, dl, f"{o['three_class']['accuracy']:.4f}", f"{o['auc_real_vs_manipulated']:.4f}", f"{o['localization']['mean_iou']:.4f}"])
 t(["Checkpoint", "Degradation", "3-class accuracy", "AUC real vs manip.", "Tamper mean IoU"], rows)
-p("Table S8. Test-set performance under degradations applied at test time only.")
+p("Table S8. Test-set performance under degradations applied at test time only (seed-42 checkpoints; the three training seeds are in Table S23).")
 
 # ---- S7 label-free transfer experiments
 zx = J("zeroshot_extras_metrics.json")
 h("S7. Label-free alternatives to few-shot adaptation")
 p("Three ways to use an outside dataset without any of its labels (protocol fixed and committed before any number was computed; "
   "ZEROSHOT_EXTRAS_PROTOCOL.md in the repository). These experiments were chosen after the zero-shot results were known. "
-  "All use the L2-normalised final-layer CLS feature of a frozen backbone.")
+  "All use the L2-normalized final-layer CLS feature of a frozen backbone.")
 XS = [("own_test", "Own test set")] + SETS
 if not zx:
     p("Pending.")
@@ -149,8 +149,9 @@ else:
                     rows.append([el, sl, f"{v['auc']:.3f}", f"{v['accuracy']:.3f}", f"{v['detection_rate']:.3f}", f"{v['false_alarm_rate']:.3f}"])
         t(["Features", "Dataset", "AUC", "Accuracy", "Det.", "FA"], rows)
         p(f"Table {tn}. {cap}")
+    p("Tables S9 to S11 use the seed-42 checkpoints and the original backbones; Table S24 gives the three label-free alternatives over the three training seeds.")
 
-# ---- additional tables: few-shot over training seeds, per-seed results, significance, input normalisation
+# ---- additional tables: few-shot over training seeds, per-seed results, significance, input normalization
 import csv, statistics as st
 h("S8. Additional tables")
 rows = []
@@ -183,7 +184,7 @@ for key, sub, lab in (("frozen", "vit/dinov3-vitl16-pretrain-sat493m", "Frozen b
         m = json.load(open(f)); L = m["localization_tampered"]
         rows.append([lab, sdd, f"{m['accuracy']:.4f}", f"{m['macro_f1']:.4f}", f"{m['per_class']['tampered']['recall']:.4f}", f"{L['mean_iou']:.4f}", m.get("best_epoch")])
 t(["Row", "Seed", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU", "Best epoch (validation)"], rows)
-p("Table S13. Test-set results of each training seed. For the frozen-backbone, ResNet-50 and C-RADIO rows the seeds finished so far are listed.")
+p("Table S13. Test-set results of each training seed. The number of seeds of each row is that of Table III of the paper.")
 an = J("analysis_extras.json"); rows = []
 for pair, d in (an or {}).get("significance", {}).get("pairs", {}).items():
     a_, b_ = pair.split("_vs_")
@@ -195,12 +196,12 @@ p("Table S14. Exact McNemar tests on three-class correctness of the 3150 test im
   "Accuracies come from the re-evaluation script and can differ from Table S13 in the fourth decimal.")
 tb = {r["variant"]: r for r in csv.DictReader(open(H / "table.csv"))} if (H / "table.csv").exists() else {}
 rows = []
-for key, lab in (("full", "Full (SAT), inputs in [0, 1], 3 seeds"), ("fullnorm", "Full (SAT), backbone normalisation, seed 42"),
-                 ("web", "Web backbone, inputs in [0, 1], 3 seeds"), ("webnorm", "Web backbone, backbone normalisation, seed 42")):
+for key, lab in (("full", "Full (SAT), inputs in [0, 1], 3 seeds"), ("fullnorm", "Full (SAT), backbone normalization, seed 42"),
+                 ("web", "Web backbone, inputs in [0, 1], 3 seeds"), ("webnorm", "Web backbone, backbone normalization, seed 42")):
     r = tb.get(key)
     if r: rows.append([lab] + [(f"{float(r[c + '_mean']):.3f} ± {float(r[c + '_std']):.3f}" if int(r["n_runs"]) > 1 else f"{float(r[c + '_mean']):.3f}") for c in ("accuracy", "macro_f1", "tampered_recall", "mean_iou")])
 t(["Row", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU"], rows)
-p("Table S15. Side experiment on input normalisation: the backbone's own mean and standard-deviation normalisation against inputs scaled to [0, 1] (the setting of all other runs).")
+p("Table S15. Side experiment on input normalization: the backbone's own mean and standard-deviation normalization against inputs scaled to [0, 1] (the setting of all other runs).")
 
 # ---- per-seed zero-shot, held-out generator, TruFor (added 2026-11-28)
 rows = []
@@ -219,7 +220,7 @@ if lo:
     rows = [[sl, fl] + [lgm(k, key, n, mode) for n in ("k16", "k64", "whole_pool") for mode in ("seen", "unseen")]
             for k, sl in LS for key, fl in (("full", "fine-tuned SAT"), ("web", "fine-tuned web"))]
     t(["Dataset", "Features", "k = 16: seen", "k = 16: left out", "k = 64: seen", "k = 64: left out", "Pool: seen", "Pool: left out"], rows)
-    p("Table S17. Few-shot AUC with the test generator or manipulation type left out of the labelled images, against the same test with it "
+    p("Table S17. Few-shot AUC with the test generator or manipulation type left out of the labeled images, against the same test with it "
       "included ('seen'). Mean over the groups of each dataset and over training seeds 42, 43 and 44. Protocol: addendum in FEWSHOT_PROTOCOL.md.")
     rows = []
     for k, sl in LS:
@@ -238,7 +239,7 @@ if tf:
                                  "detection_rate_tampered_thr0.5", "detection_rate_fake_thr0.5", "false_alarm_rate_thr0.5")]
        + [f"{L[c]:.3f}" for c in ("mean_iou", "mean_dice", "mean_mcc")]])
     p(f"Table S19. TruFor with its authors' code and weights, without training, on the {tf['n_images']} test images at their native 512 × 512 resolution "
-      f"(tamper map thresholded at {tf['localization']['mask_threshold']}; localisation over the {L['n_images_with_mask']} tampered images). Protocol: TRUFOR_PROTOCOL.md.")
+      f"(tamper map thresholded at {tf['localization']['mask_threshold']}; localization over the {L['n_images_with_mask']} tampered images). Protocol: TRUFOR_PROTOCOL.md.")
 
 # ---- real-anchored matched filter (added 2026-11-28; REAL_ANCHOR_PROTOCOL.md)
 ra = J("real_anchor_metrics.json")
@@ -258,7 +259,7 @@ if ra:
     h("S9. Matched filter anchored on authentic images of the new source")
     p("Protocol (fixed and committed before any number was computed; REAL_ANCHOR_PROTOCOL.md): the manipulation signature is the mean feature of "
       "the manipulated training images minus that of the pristine training images. An image of an outside dataset is scored by the matched "
-      "filter with that signature after centring and whitening with the mean and the Ledoit-Wolf covariance of k authentic images drawn from "
+      "filter with that signature after centering and whitening with the mean and the Ledoit-Wolf covariance of k authentic images drawn from "
       "the adaptation pool (10 draws; the whole pool once). No manipulated image of the outside dataset is used. All numbers are on the "
       "held-out half. 'No anchor' uses the mean and covariance of the pristine training images instead, so no image of the new source. "
       "The experiment was designed after the other results were known. The rule fixed in advance was that the method counts as a success "
@@ -282,17 +283,48 @@ if ra:
       "and covariance. RX: squared Mahalanobis distance to the k authentic images, without the signature. Det. and FA: detection and false-alarm "
       "rate of the matched filter at the threshold 1.645, which would give 5% false alarms if the score were standard normal on authentic images.")
 
+# ---- three-seed versions of the seed-42 tables (added 2026-11-28)
+h("S10. Zero-shot rates, robustness and label-free alternatives over the three training seeds")
+p("Tables S1 and S8 to S11 report the seed-42 checkpoints. The tables of this section repeat their main columns for the checkpoints of "
+  "training seeds 42, 43 and 44 of the full model and of the web model, with unchanged scripts and settings, as mean ± standard deviation "
+  "over the three seeds.")
+S3 = (42, 43, 44); msd = lambda v: f"{st.mean(v):.3f} ± {st.stdev(v):.3f}"
+rows = []
+for pre, lab in (("cross_", "Full (SAT)"), ("cross_web_", "Web backbone")):
+    for k, sl in SETS:
+        o = [J(f"{pre}{'' if sdd == 42 else f's{sdd}_'}{k}_metrics.json")["overall"] for sdd in S3]
+        d = [x["detection_rate_manipulated_thr0.5"] for x in o]; fa = [x["false_alarm_rate_real_thr0.5"] for x in o]
+        rows.append([lab, sl, msd(d), f"{max(d):.3f}", msd(fa), f"{max(fa):.3f}"])
+t(["Model", "Dataset", "Det. @0.5", "Det. @0.5, largest", "FA @0.5", "FA @0.5, largest"], rows)
+p("Table S22. Zero-shot detection and false-alarm rates at the fixed threshold 0.5 over the three training seeds (the AUC per seed is in Table S16). "
+  "'Largest': the largest value among the three seeds.")
+rows = []
+for r, rl in (("full", "Full (SAT)"), ("web", "Web backbone")):
+    for d, dl in ((None, "none"), ("jpeg90", "JPEG 90"), ("jpeg70", "JPEG 70"), ("jpeg50", "JPEG 50"), ("jpeg30", "JPEG 30"), ("scale0.75", "scale 0.75"), ("scale0.5", "scale 0.5")):
+        o = [J((f"overhead_{r}{'' if sdd == 42 else f'_s{sdd}'}_metrics.json") if d is None else (f"robust_{r}{'' if sdd == 42 else f'_s{sdd}'}_{d}_metrics.json"))["overall"] for sdd in S3]
+        rows.append([rl, dl, msd([x["three_class"]["accuracy"] for x in o]), msd([x["auc_real_vs_manipulated"] for x in o]), msd([x["localization"]["mean_iou"] for x in o])])
+t(["Model", "Degradation", "3-class accuracy", "AUC real vs manip.", "Tamper mean IoU"], rows)
+p("Table S23. Test-set performance under degradations applied at test time only, over the three training seeds.")
+zxs = J("zeroshot_extras_seeds_metrics.json")
+if zx and zxs:
+    lf = lambda part, m, k, fld: [(zx if sdd == 42 else zxs)[part][f"{m}_s{sdd}"][k][fld] for sdd in S3]
+    rows = [[ml, sl, msd(lf("A_clustering", m, k, "accuracy")), msd(lf("B_frozen_probe", m, k, "auc")), msd(lf("C_one_class", m, k, "auc")),
+             msd(lf("C_one_class", m, k, "false_alarm_rate"))] for m, ml in (("full", "fine-tuned SAT"), ("web", "fine-tuned web")) for k, sl in SETS]
+    t(["Features", "Dataset", "Clustering accuracy", "Source probe AUC", "One-class AUC", "One-class FA"], rows)
+    p("Table S24. The three label-free alternatives of Tables S9 to S11 on the features of the fine-tuned backbones, over the three training seeds.")
+
 # ---- figures
-h("S10. Figures")
+h("S11. Figures")
 if (H / "tsne_features.png").exists():
     img("tsne_features.png", "Fig. S1. t-SNE of frozen CLS features (up to 500 real and 500 manipulated images per dataset; perplexity 30, one run, "
-        "settings fixed in advance). Top: original DINOv3 SAT. Bottom: fine-tuned full model. Illustration only.")
+        "settings fixed in advance). Top: original DINOv3 SAT. Bottom: fine-tuned full model. Illustration only. "
+        "'UW fake satellite' in the panel titles is the dataset of Zhao et al.")
 if (H / "qualitative.png").exists():
     img("qualitative.png", "Fig. S2. Qualitative examples chosen by a fixed rule (see qualitative.json): image, ground-truth mask, full-model mask, web-backbone mask.")
 
-# ---- write (IEEE-like look: Times, centred small-caps section heads with roman numerals, table captions above
+# ---- write (IEEE-like look: Times, centered small-caps section heads with roman numerals, table captions above
 #      the table as "TABLE S1" + small-caps title, horizontal rules only, "Fig. S1." captions below figures)
-ROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
+ROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"]
 CSS = """@page{size:letter;margin:0.75in 0.7in}
 body{font-family:'Times New Roman','Nimbus Roman',Times,serif;font-size:10pt;line-height:1.15;text-align:justify}
 h1{font-size:22pt;font-weight:normal;text-align:center;margin:0 0 4pt}
