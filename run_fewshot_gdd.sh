@@ -13,7 +13,7 @@ rsync -a ~/data/gdd/ $L:data/gdd/ || exit 1
 rsync -a ~/$V/dinov3-vitl16-pretrain-sat493m/full_s42/best_checkpoint.pt $L:$V/dinov3-vitl16-pretrain-sat493m/full_s42/ || exit 1
 rsync -a ~/$V/dinov3-vitl16-pretrain-lvd1689m/web_s42/best_checkpoint.pt $L:$V/dinov3-vitl16-pretrain-lvd1689m/web_s42/ || exit 1
 log "\`python fewshot_adapt.py extract --sets gdd\` (on laptop, alongside its training run)" "fewshot_gdd" "started"
-ssh -n $L 'cd ~/grsl && git fetch -q origin grsl-experiments && git checkout -q origin/grsl-experiments -- fewshot_adapt.py eval_cross_dataset.py && source ~/Desktop/.venv/bin/activate && python fewshot_adapt.py extract --sets gdd' > logs/fewshot_gdd_extract.log 2>&1
+ssh -n $L 'cd ~/grsl && git fetch -q origin ojcs-experiments && git checkout -q origin/ojcs-experiments -- fewshot_adapt.py eval_cross_dataset.py && source ~/Desktop/.venv/bin/activate && python fewshot_adapt.py extract --sets gdd' > logs/fewshot_gdd_extract.log 2>&1
 rc=$?; log "" "fewshot_gdd extract" "exit=$rc"; [ $rc -eq 0 ] || exit 1
 rsync -a --ignore-existing $L:data/features/fewshot_cls384/ ~/data/features/fewshot_cls384/ || exit 1
 python fewshot_adapt.py analyse --sets gdd > logs/fewshot_gdd_analyse.log 2>&1; log "\`python fewshot_adapt.py analyse --sets gdd\`" "fewshot_gdd" "exit=$? (fewshot_gdd_metrics.json)"
