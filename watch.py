@@ -9,7 +9,7 @@ GRSL = HOME / "grsl"
 RES = HOME / "results_dinov3"
 SAT = RES/"vit/dinov3-vitl16-pretrain-sat493m"
 WEBD = RES/"vit/dinov3-vitl16-pretrain-lvd1689m"
-LAPTOP = {"radio_s42", "plain_s43", "fullnorm_s42", "webnorm_s42"}  # run on the second machine (run_laptop.sh), copied back
+LAPTOP = {"radio_s42", "plain_s43", "fullnorm_s42", "webnorm_s42", "gdd_s43", "gdd_s44"}  # run on the second machine (run_laptop.sh, run_laptop_gdd.sh), copied back
 ROWS = [  # tag, results dir, label, est. hours (measured on this machine where a run has finished) -- in queue order
     ("full_s42",   SAT/"full_s42",    "Full model (DINOv3-SAT)",   8.8),
     ("plain_s42",  SAT/"plain_s42",   "Plain decoder",             8.3),
@@ -31,6 +31,12 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("resnet_s44", RES/"resnet/resnet50/resnet_s44",     "ResNet-50, seed 44",          3.0),
     ("resnetlr_s43", RES/"resnet/resnet50/resnetlr_s43", "ResNet-50, LR 1e-4, seed 43", 3.2),
     ("resnetlr_s44", RES/"resnet/resnet50/resnetlr_s44", "ResNet-50, LR 1e-4, seed 44", 3.2),
+    ("lora_s42", SAT/"lora_s42", "LoRA rank 16, seed 42", 7.0),   # hours: a guess until the first run has finished
+    ("lora_s43", SAT/"lora_s43", "LoRA rank 16, seed 43", 7.0),
+    ("lora_s44", SAT/"lora_s44", "LoRA rank 16, seed 44", 7.0),
+    # the full model trained on GDD (GDD_TRAIN_PROTOCOL.md): seeds 43, 44 on the laptop since 2026-11-28 (run_laptop_gdd.sh), seed 42 on Calypso
+    ("gdd_s43", SAT/"gdd_s43", "Trained on GDD, seed 43 [laptop]", 10.0),   # hours: a guess until the first run has finished
+    ("gdd_s44", SAT/"gdd_s44", "Trained on GDD, seed 44 [laptop]", 10.0),
 ]
 # (metrics file stem, log stem, label)
 CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"),
@@ -115,6 +121,7 @@ CALYPSO_ROWS = [  # more seeds of the single-run rows (review request); lane "ra
     ("radio_s44", RES/"radio/C-RADIOv4-SO400M/radio_s44", "C-RADIOv4, seed 44  [GPU 0]", 7.6),
     ("frozen_s43", SAT/"frozen_s43",  "Frozen backbone, seed 43  [GPU 1]",  6.5),
     ("frozen_s44", SAT/"frozen_s44",  "Frozen backbone, seed 44  [GPU 1]",  6.5),
+    ("gdd_s42", SAT/"gdd_s42",  "Trained on GDD, seed 42  [GPU 1]",  12.0),   # hours: a guess until the first run has finished
 ]
 _cal = {"t": 0.0, "data": None}
 
@@ -190,6 +197,8 @@ def machine_extra():
 def job_name(stem):
     m = re.match(r"robust_(full|web)_(?:s(\d+)_)?(jpeg|scale)([\d.]+)$", stem)
     if m: return f"Robustness: {m.group(1)} model{' seed ' + m.group(2) if m.group(2) else ''}, {'JPEG quality' if m.group(3) == 'jpeg' else 'down-scale'} {m.group(4)}"
+    m = re.match(r"cross_(lora|gddtrain)_s(\d+)_(\w+)$", stem)
+    if m: return f"Outside data: {'LoRA' if m.group(1) == 'lora' else 'GDD-trained'} model seed {m.group(2)} on {m.group(3)}"
     m = re.match(r"cross_(web_)?s(\d+)_(\w+)$", stem)
     if m: return f"Outside data: {'web' if m.group(1) else 'full'} model seed {m.group(2)} on {m.group(3)}"
     if stem == "trufor_overhead": return "TruFor on the test folder"
