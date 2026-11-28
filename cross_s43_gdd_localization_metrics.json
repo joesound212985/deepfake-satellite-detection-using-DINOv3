@@ -1,0 +1,175 @@
+{
+  "dataset": "gdd",
+  "root": "/home/adminuser/data/gdd",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s43/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": "localization",
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 1000,
+    "n_real": 500,
+    "n_manipulated": 500,
+    "auc_real_vs_manipulated": 0.555476,
+    "accuracy_thr0.5": 0.524,
+    "accuracy_argmax": 0.524,
+    "detection_rate_manipulated_thr0.5": 0.06,
+    "false_alarm_rate_real_thr0.5": 0.012,
+    "localization": {
+      "n_images_with_mask": 500,
+      "mean_iou": 0.0914059174399227,
+      "mean_dice": 0.11587720474523318,
+      "mean_mcc": 0.09722627034438105
+    },
+    "predicted_class_counts": {
+      "pristine": 966,
+      "tampered": 27,
+      "fake": 7
+    }
+  },
+  "per_group": {
+    "manip/fully-regenerated": {
+      "n_images": 84,
+      "n_real": 0,
+      "n_manipulated": 84,
+      "detection_rate_manipulated_thr0.5": 0.19047619047619047,
+      "localization": {
+        "n_images_with_mask": 84,
+        "mean_iou": 0.23767538669358268,
+        "mean_dice": 0.2987011285727488,
+        "mean_mcc": 0.25163566328011383
+      },
+      "predicted_class_counts": {
+        "pristine": 68,
+        "tampered": 13,
+        "fake": 3
+      }
+    },
+    "manip/inpaint-splice": {
+      "n_images": 84,
+      "n_real": 0,
+      "n_manipulated": 84,
+      "detection_rate_manipulated_thr0.5": 0.10714285714285714,
+      "localization": {
+        "n_images_with_mask": 84,
+        "mean_iou": 0.17682289150215083,
+        "mean_dice": 0.2187939282219504,
+        "mean_mcc": 0.21394781256451617
+      },
+      "predicted_class_counts": {
+        "pristine": 75,
+        "tampered": 9,
+        "fake": 0
+      }
+    },
+    "manip/object-copy-move": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.024096385542168676,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.004401462273333281,
+        "mean_dice": 0.007724777281872925,
+        "mean_mcc": -0.005298672436464937
+      },
+      "predicted_class_counts": {
+        "pristine": 82,
+        "tampered": 0,
+        "fake": 1
+      }
+    },
+    "manip/object-splice": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.024096385542168676,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.0402712730656593,
+        "mean_dice": 0.050651689544733924,
+        "mean_mcc": 0.03877446963393555
+      },
+      "predicted_class_counts": {
+        "pristine": 81,
+        "tampered": 1,
+        "fake": 1
+      }
+    },
+    "manip/simple-copy-move": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.004198056013247103,
+        "mean_dice": 0.007272300301232132,
+        "mean_mcc": -0.019389349069045752
+      },
+      "predicted_class_counts": {
+        "pristine": 83,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "manip/simple-splice": {
+      "n_images": 83,
+      "n_real": 0,
+      "n_manipulated": 83,
+      "detection_rate_manipulated_thr0.5": 0.012048192771084338,
+      "localization": {
+        "n_images_with_mask": 83,
+        "mean_iou": 0.08227503216004635,
+        "mean_dice": 0.10867674614760506,
+        "mean_mcc": 0.10042106032026914
+      },
+      "predicted_class_counts": {
+        "pristine": 82,
+        "tampered": 1,
+        "fake": 0
+      }
+    },
+    "real/fmow": {
+      "n_images": 167,
+      "n_real": 167,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 167,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "real/millionaid": {
+      "n_images": 170,
+      "n_real": 170,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.01764705882352941,
+      "predicted_class_counts": {
+        "pristine": 168,
+        "tampered": 2,
+        "fake": 0
+      }
+    },
+    "real/xbd": {
+      "n_images": 163,
+      "n_real": 163,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.018404907975460124,
+      "predicted_class_counts": {
+        "pristine": 160,
+        "tampered": 1,
+        "fake": 2
+      }
+    }
+  },
+  "wall_sec": 92.06089019899991,
+  "torch_version": "2.14.1+cu126"
+}

@@ -1,5 +1,5 @@
 # Results
-Generated 2026-11-27 17:10 by `make_results_md.py` from the files named in each section. Rows with one seed are single runs; the others are mean ± standard deviation over the listed seeds (sample standard deviation, as written by `aggregate_runs.py`).
+Generated 2026-11-28 00:42 by `make_results_md.py` from the files named in each section. Rows with one seed are single runs; the others are mean ± standard deviation over the listed seeds (sample standard deviation, as written by `aggregate_runs.py`).
 
 
 ## 1. Environment
@@ -447,6 +447,133 @@ B. Linear probe fitted on our training set and applied unchanged, threshold 0.5.
 C. One-class score (mean cosine distance to the 5 nearest pristine training images), threshold at the 95th percentile of held-out pristine training images.
 
 Source: `zeroshot_extras_metrics.json` (protocol `ZEROSHOT_EXTRAS_PROTOCOL.md`).
+
+
+## Other training seeds: zero-shot, robustness, label-free (added 2026-11-27/28)
+
+Protocol: `ZEROSHOT_EXTRAS_PROTOCOL.md`, addendum 2026-11-27. Unchanged scripts applied to the seed-43 and seed-44 checkpoints (`run_seed_evals.sh`). Files `cross_s43_*`, `cross_web_s43_*`, `robust_full_s43_*`, `zeroshot_extras_seeds_metrics.json` and the same for seed 44.
+
+
+### Zero-shot AUC per seed (whole outside set)
+
+| Dataset | Full s42 | Full s43 | Full s44 | Full mean ± sd | Web s42 | Web s43 | Web s44 | Web mean ± sd |
+|---|---|---|---|---|---|---|---|---|
+| RSFAKE-1M subset | 0.584 | 0.561 | 0.591 | 0.579 ± 0.016 | 0.668 | 0.653 | 0.680 | 0.667 ± 0.013 |
+| UW fake satellite | 0.500 | 0.418 | 0.423 | 0.447 ± 0.046 | 0.527 | 0.527 | 0.527 | 0.527 ± 0.000 |
+| DM-AER (size-matched) | 0.780 | 0.786 | 0.760 | 0.775 ± 0.013 | 0.738 | 0.768 | 0.740 | 0.749 ± 0.017 |
+| GDD in-domain | 0.536 | 0.556 | 0.620 | 0.571 ± 0.044 | 0.481 | 0.489 | 0.481 | 0.484 ± 0.005 |
+| GDD cross-generator | 0.648 | 0.663 | 0.718 | 0.677 ± 0.037 | 0.596 | 0.583 | 0.628 | 0.602 ± 0.023 |
+| GDD cross-domain | 0.706 | 0.709 | 0.734 | 0.716 ± 0.015 | 0.634 | 0.614 | 0.625 | 0.625 ± 0.010 |
+| GDD local edits | 0.568 | 0.555 | 0.533 | 0.552 ± 0.018 | 0.560 | 0.552 | 0.585 | 0.566 ± 0.017 |
+| fmow-fake-small | 0.450 | 0.419 | 0.378 | 0.416 ± 0.036 | 0.432 | 0.451 | 0.453 | 0.446 ± 0.012 |
+| DM-AER, all real images | 0.665 | 0.689 | 0.650 | 0.668 ± 0.020 | 0.657 | 0.691 | 0.656 | 0.668 ± 0.020 |
+
+
+### Detection and false-alarm rates at threshold 0.5, mean over seeds
+
+| Dataset | Full: detection | Full: false alarm | Web: detection | Web: false alarm |
+|---|---|---|---|---|
+| RSFAKE-1M subset | 0.093 ± 0.017 | 0.042 ± 0.007 | 0.112 ± 0.007 | 0.031 ± 0.007 |
+| UW fake satellite | 0.024 ± 0.011 | 0.036 ± 0.004 | 0.026 ± 0.008 | 0.038 ± 0.014 |
+| DM-AER (size-matched) | 0.118 ± 0.032 | 0.009 ± 0.003 | 0.181 ± 0.004 | 0.015 ± 0.005 |
+| GDD in-domain | 0.087 ± 0.012 | 0.015 ± 0.002 | 0.051 ± 0.034 | 0.014 ± 0.007 |
+| GDD cross-generator | 0.068 ± 0.011 | 0.016 ± 0.002 | 0.070 ± 0.007 | 0.012 ± 0.004 |
+| GDD cross-domain | 0.068 ± 0.011 | 0.003 ± 0.003 | 0.070 ± 0.007 | 0.004 ± 0.001 |
+| GDD local edits | 0.054 ± 0.010 | 0.012 ± 0.000 | 0.049 ± 0.012 | 0.012 ± 0.006 |
+| fmow-fake-small | 0.000 ± 0.000 | 0.000 ± 0.000 | 0.000 ± 0.000 | 0.000 ± 0.000 |
+
+
+### Robustness on the test set, mean ± sd over seeds 42-44
+
+| Condition | Full: accuracy | Full: tamper IoU | Web: accuracy | Web: tamper IoU |
+|---|---|---|---|---|
+| clean | 0.903 ± 0.003 | 0.671 ± 0.003 | 0.935 ± 0.003 | 0.706 ± 0.005 |
+| jpeg90 | 0.901 ± 0.004 | 0.670 ± 0.003 | 0.934 ± 0.003 | 0.703 ± 0.005 |
+| jpeg70 | 0.910 ± 0.005 | 0.686 ± 0.005 | 0.935 ± 0.002 | 0.713 ± 0.006 |
+| jpeg50 | 0.885 ± 0.005 | 0.643 ± 0.004 | 0.910 ± 0.002 | 0.665 ± 0.004 |
+| jpeg30 | 0.867 ± 0.002 | 0.599 ± 0.005 | 0.894 ± 0.004 | 0.621 ± 0.004 |
+| scale0.75 | 0.903 ± 0.003 | 0.671 ± 0.003 | 0.935 ± 0.003 | 0.706 ± 0.005 |
+| scale0.5 | 0.730 ± 0.021 | 0.539 ± 0.011 | 0.868 ± 0.014 | 0.634 ± 0.006 |
+
+
+### Label-free alternatives, mean ± sd over seeds 42-44
+
+Features of the full model:
+
+| Dataset | Clustering accuracy | Source probe AUC | One-class AUC | One-class false-alarm rate |
+|---|---|---|---|---|
+| RSFAKE-1M subset | 0.558 ± 0.018 | 0.548 ± 0.034 | 0.522 ± 0.043 | 0.876 ± 0.034 |
+| UW fake satellite | 0.422 ± 0.005 | 0.490 ± 0.064 | 0.558 ± 0.035 | 0.770 ± 0.013 |
+| DM-AER (size-matched) | 0.592 ± 0.031 | 0.770 ± 0.011 | 0.720 ± 0.017 | 0.737 ± 0.024 |
+| GDD in-domain | 0.577 ± 0.010 | 0.528 ± 0.021 | 0.499 ± 0.006 | 0.744 ± 0.043 |
+| GDD cross-generator | 0.612 ± 0.079 | 0.650 ± 0.021 | 0.589 ± 0.007 | 0.725 ± 0.051 |
+| GDD cross-domain | 0.625 ± 0.044 | 0.748 ± 0.004 | 0.728 ± 0.009 | 0.457 ± 0.045 |
+| GDD local edits | 0.529 ± 0.011 | 0.542 ± 0.014 | 0.517 ± 0.019 | 0.739 ± 0.049 |
+| fmow-fake-small | 0.453 ± 0.039 | 0.362 ± 0.007 | 0.346 ± 0.010 | 0.767 ± 0.100 |
+
+Features of the web model:
+
+| Dataset | Clustering accuracy | Source probe AUC | One-class AUC | One-class false-alarm rate |
+|---|---|---|---|---|
+| RSFAKE-1M subset | 0.595 ± 0.003 | 0.737 ± 0.010 | 0.785 ± 0.008 | 0.604 ± 0.037 |
+| UW fake satellite | 0.575 ± 0.003 | 0.584 ± 0.020 | 0.724 ± 0.018 | 0.581 ± 0.031 |
+| DM-AER (size-matched) | 0.474 ± 0.012 | 0.772 ± 0.021 | 0.788 ± 0.011 | 0.781 ± 0.045 |
+| GDD in-domain | 0.513 ± 0.047 | 0.523 ± 0.015 | 0.621 ± 0.016 | 0.504 ± 0.022 |
+| GDD cross-generator | 0.542 ± 0.039 | 0.625 ± 0.016 | 0.694 ± 0.018 | 0.481 ± 0.022 |
+| GDD cross-domain | 0.553 ± 0.011 | 0.607 ± 0.009 | 0.655 ± 0.021 | 0.563 ± 0.058 |
+| GDD local edits | 0.497 ± 0.034 | 0.548 ± 0.005 | 0.564 ± 0.009 | 0.506 ± 0.025 |
+| fmow-fake-small | 0.403 ± 0.027 | 0.381 ± 0.014 | 0.360 ± 0.027 | 0.267 ± 0.044 |
+
+
+## Few-shot with the test generator left out of the labeled images (added 2026-11-27)
+
+Protocol: `FEWSHOT_PROTOCOL.md`, addendum 2026-11-27 (evening). File `fewshot_logo_metrics.json`. Each generator or manipulation type in turn is tested alone against the real images of the held-out half. AUC, mean over the left-out groups; fine-tuned extractors: mean over seeds 42-44. 'seen' = shots of the original protocol, 'left out' = no labeled image of the tested group. The real images of shots and test share their sources.
+
+| Dataset | Groups | Features | k=4: seen | k=4: left out | k=16: seen | k=16: left out | k=64: seen | k=64: left out | k=256: seen | k=256: left out | pool: seen | pool: left out |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| RSFAKE-1M subset | 10 | fine-tuned satellite | 0.790 | 0.766 | 0.911 | 0.880 | 0.964 | 0.935 | 0.984 | 0.961 | 0.998 | 0.981 |
+| RSFAKE-1M subset | 10 | fine-tuned web | 0.720 | 0.697 | 0.823 | 0.804 | 0.891 | 0.867 | 0.944 | 0.921 | 0.988 | 0.971 |
+| RSFAKE-1M subset | 10 | original satellite | 0.885 | 0.859 | 0.936 | 0.915 | 0.958 | 0.939 | 0.979 | 0.960 | 0.996 | 0.979 |
+| RSFAKE-1M subset | 10 | original web | 0.695 | 0.708 | 0.810 | 0.783 | 0.900 | 0.867 | 0.948 | 0.918 | 0.986 | 0.959 |
+| UW fake satellite | 2 | fine-tuned satellite | 0.833 | 0.768 | 0.959 | 0.864 | 0.992 | 0.914 | 1.000 | 0.959 | 1.000 | 0.984 |
+| UW fake satellite | 2 | fine-tuned web | 0.834 | 0.811 | 0.955 | 0.935 | 0.992 | 0.975 | 1.000 | 0.995 | 1.000 | 0.998 |
+| UW fake satellite | 2 | original satellite | 0.933 | 0.918 | 0.982 | 0.962 | 0.996 | 0.978 | 0.999 | 0.992 | 1.000 | 0.996 |
+| UW fake satellite | 2 | original web | 0.934 | 0.920 | 0.980 | 0.969 | 0.995 | 0.986 | 1.000 | 0.997 | 1.000 | 0.999 |
+| fmow-fake-small | 3 | fine-tuned satellite | 0.558 | 0.546 | 0.601 | 0.510 | – | – | – | – | 0.577 | 0.517 |
+| fmow-fake-small | 3 | fine-tuned web | 0.508 | 0.491 | 0.547 | 0.470 | – | – | – | – | 0.480 | 0.460 |
+| fmow-fake-small | 3 | original satellite | 0.485 | 0.452 | 0.442 | 0.347 | – | – | – | – | 0.390 | 0.319 |
+| fmow-fake-small | 3 | original web | 0.466 | 0.461 | 0.482 | 0.352 | – | – | – | – | 0.397 | 0.333 |
+| GDD in-domain | 5 | fine-tuned satellite | 0.677 | 0.483 | 0.826 | 0.551 | 0.948 | 0.645 | 0.979 | 0.722 | 0.984 | 0.731 |
+| GDD in-domain | 5 | fine-tuned web | 0.603 | 0.469 | 0.712 | 0.469 | 0.862 | 0.564 | 0.942 | 0.668 | 0.954 | 0.687 |
+| GDD in-domain | 5 | original satellite | 0.724 | 0.629 | 0.825 | 0.670 | 0.927 | 0.735 | 0.977 | 0.768 | 0.983 | 0.772 |
+| GDD in-domain | 5 | original web | 0.616 | 0.552 | 0.708 | 0.546 | 0.850 | 0.636 | 0.932 | 0.691 | 0.948 | 0.700 |
+| GDD cross-generator | 3 | fine-tuned satellite | 0.771 | 0.648 | 0.929 | 0.771 | 0.963 | 0.819 | 0.978 | 0.846 | 0.983 | 0.856 |
+| GDD cross-generator | 3 | fine-tuned web | 0.607 | 0.485 | 0.768 | 0.525 | 0.873 | 0.560 | 0.931 | 0.601 | 0.953 | 0.611 |
+| GDD cross-generator | 3 | original satellite | 0.695 | 0.608 | 0.864 | 0.719 | 0.914 | 0.771 | 0.948 | 0.792 | 0.961 | 0.797 |
+| GDD cross-generator | 3 | original web | 0.592 | 0.507 | 0.752 | 0.546 | 0.866 | 0.574 | 0.921 | 0.630 | 0.942 | 0.644 |
+| GDD cross-domain | 3 | fine-tuned satellite | 0.845 | 0.702 | 0.939 | 0.810 | 0.979 | 0.871 | 0.990 | 0.907 | 0.992 | 0.917 |
+| GDD cross-domain | 3 | fine-tuned web | 0.668 | 0.525 | 0.803 | 0.583 | 0.912 | 0.666 | 0.967 | 0.730 | 0.980 | 0.747 |
+| GDD cross-domain | 3 | original satellite | 0.711 | 0.626 | 0.857 | 0.696 | 0.950 | 0.773 | 0.978 | 0.840 | 0.984 | 0.855 |
+| GDD cross-domain | 3 | original web | 0.653 | 0.546 | 0.773 | 0.598 | 0.891 | 0.663 | 0.955 | 0.735 | 0.973 | 0.756 |
+| GDD local edits | 6 | fine-tuned satellite | 0.570 | 0.571 | 0.673 | 0.636 | 0.727 | 0.692 | – | – | 0.761 | 0.726 |
+| GDD local edits | 6 | fine-tuned web | 0.543 | 0.554 | 0.639 | 0.602 | 0.699 | 0.660 | – | – | 0.744 | 0.709 |
+| GDD local edits | 6 | original satellite | 0.572 | 0.561 | 0.636 | 0.607 | 0.679 | 0.658 | – | – | 0.716 | 0.689 |
+| GDD local edits | 6 | original web | 0.548 | 0.565 | 0.603 | 0.598 | 0.654 | 0.647 | – | – | 0.729 | 0.701 |
+
+
+## TruFor on the test folder (added 2026-11-28)
+
+Protocol: `TRUFOR_PROTOCOL.md`. Authors' code and weights, no training, 3,150 test images at 512 x 512, one run. Not a like-for-like comparison: TruFor was trained on edited photographs; masks are scored at 512 x 512 (our models at 384 x 384).
+
+| Quantity | Value |
+|---|---|
+| AUC, pristine vs manipulated | 0.530 |
+| AUC, pristine vs tampered | 0.594 |
+| AUC, pristine vs fake | 0.455 |
+| Accuracy at 0.5 | 0.516 |
+| Detection rate at 0.5 (tampered / fake) | 0.229 / 0.085 |
+| False-alarm rate at 0.5 | 0.101 |
+| Tamper IoU / Dice / MCC (888 tampered images) | 0.207 / 0.255 / 0.244 |
 
 
 ## 11. Deviations, order of analyses, and open questions

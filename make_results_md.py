@@ -252,6 +252,71 @@ if zx:
         p(cap)
     p("Source: `zeroshot_extras_metrics.json` (protocol `ZEROSHOT_EXTRAS_PROTOCOL.md`).")
 
+# ------------------------------------------------------------------ additions of 2026-11-27/28 (review requests)
+S3 = (42, 43, 44); sd3 = lambda v: f"{st.mean(v):.3f} ± {st.stdev(v):.3f}"
+if J("cross_s43_rsfake_metrics.json"):
+    h("Other training seeds: zero-shot, robustness, label-free (added 2026-11-27/28)")
+    p("Protocol: `ZEROSHOT_EXTRAS_PROTOCOL.md`, addendum 2026-11-27. Unchanged scripts applied to the seed-43 and seed-44 checkpoints "
+      "(`run_seed_evals.sh`). Files `cross_s43_*`, `cross_web_s43_*`, `robust_full_s43_*`, `zeroshot_extras_seeds_metrics.json` and the same for seed 44.")
+    def zs3(kind, k, key="auc_real_vs_manipulated"):
+        pre = "cross_" if kind == "full" else "cross_web_"
+        return [J(f"{pre}{'' if s == 42 else f's{s}_'}{k}_metrics.json")["overall"][key] for s in S3]
+    h("Zero-shot AUC per seed (whole outside set)", 3)
+    t(["Dataset", "Full s42", "Full s43", "Full s44", "Full mean ± sd", "Web s42", "Web s43", "Web s44", "Web mean ± sd"],
+      [[lab] + [f3(v) for v in zs3("full", k)] + [sd3(zs3("full", k))] + [f3(v) for v in zs3("web", k)] + [sd3(zs3("web", k))]
+       for k, lab in SETS + [("allreals_dmaer", "DM-AER, all real images")]])
+    h("Detection and false-alarm rates at threshold 0.5, mean over seeds", 3)
+    t(["Dataset", "Full: detection", "Full: false alarm", "Web: detection", "Web: false alarm"],
+      [[lab, sd3(zs3("full", k, "detection_rate_manipulated_thr0.5")), sd3(zs3("full", k, "false_alarm_rate_real_thr0.5")),
+        sd3(zs3("web", k, "detection_rate_manipulated_thr0.5")), sd3(zs3("web", k, "false_alarm_rate_real_thr0.5"))] for k, lab in SETS])
+    AX = J("analysis_extras.json")["robustness"]
+    def rb3(m, c, key):
+        out = []
+        for s in S3:
+            if s == 42: out.append(AX[f"{m}_s42"][c][key]); continue
+            o = J(f"overhead_{m}_s{s}_metrics.json" if c == "clean" else f"robust_{m}_s{s}_{c}_metrics.json")["overall"]
+            out.append(o["three_class"]["accuracy"] if key == "accuracy" else o["localization"]["mean_iou"])
+        return out
+    h("Robustness on the test set, mean ± sd over seeds 42-44", 3)
+    t(["Condition", "Full: accuracy", "Full: tamper IoU", "Web: accuracy", "Web: tamper IoU"],
+      [[c, sd3(rb3("full", c, "accuracy")), sd3(rb3("full", c, "mean_iou_tampered")), sd3(rb3("web", c, "accuracy")), sd3(rb3("web", c, "mean_iou_tampered"))]
+       for c in ["clean", "jpeg90", "jpeg70", "jpeg50", "jpeg30", "scale0.75", "scale0.5"]])
+    ZX0, ZX1 = J("zeroshot_extras_metrics.json"), J("zeroshot_extras_seeds_metrics.json")
+    lf3 = lambda part, k, f, m: [(ZX0 if s == 42 else ZX1)[part][f"{m}_s{s}"][k][f] for s in S3]
+    h("Label-free alternatives, mean ± sd over seeds 42-44", 3)
+    for m, name in (("full", "full model"), ("web", "web model")):
+        p(f"Features of the {name}:")
+        t(["Dataset", "Clustering accuracy", "Source probe AUC", "One-class AUC", "One-class false-alarm rate"],
+          [[lab, sd3(lf3("A_clustering", k, "accuracy", m)), sd3(lf3("B_frozen_probe", k, "auc", m)), sd3(lf3("C_one_class", k, "auc", m)),
+            sd3(lf3("C_one_class", k, "false_alarm_rate", m))] for k, lab in SETS])
+LG = J("fewshot_logo_metrics.json")
+if LG:
+    h("Few-shot with the test generator left out of the labeled images (added 2026-11-27)")
+    p("Protocol: `FEWSHOT_PROTOCOL.md`, addendum 2026-11-27 (evening). File `fewshot_logo_metrics.json`. Each generator or manipulation type in "
+      "turn is tested alone against the real images of the held-out half. AUC, mean over the left-out groups; fine-tuned extractors: mean over "
+      "seeds 42-44. 'seen' = shots of the original protocol, 'left out' = no labeled image of the tested group. The real images of shots and test share their sources.")
+    def lgm(d, exs, n, mode):
+        v = [LG["datasets"][d]["extractors"][e]["_mean_over_groups_auc"][mode][n] for e in exs]
+        return "–" if None in v else f"{st.mean(v):.3f}"
+    EX = [("fine-tuned satellite", [f"full_s{s}" for s in S3]), ("fine-tuned web", [f"web_s{s}" for s in S3]), ("original satellite", ["sat_orig"]), ("original web", ["web_orig"])]
+    rows = []
+    for d, D in LG["datasets"].items():
+        lab = dict(SETS)[d]
+        for en, exs in EX:
+            rows.append([lab, len(D["groups"]), en] + [lgm(d, exs, n, mode) for n in ("k4", "k16", "k64", "k256", "whole_pool") for mode in ("seen", "unseen")])
+    t(["Dataset", "Groups", "Features"] + [f"{n}: {m}" for n in ("k=4", "k=16", "k=64", "k=256", "pool") for m in ("seen", "left out")], rows)
+TF = J("trufor_overhead_metrics.json")
+if TF:
+    h("TruFor on the test folder (added 2026-11-28)")
+    p("Protocol: `TRUFOR_PROTOCOL.md`. Authors' code and weights, no training, 3,150 test images at 512 x 512, one run. Not a like-for-like "
+      "comparison: TruFor was trained on edited photographs; masks are scored at 512 x 512 (our models at 384 x 384).")
+    t(["Quantity", "Value"],
+      [["AUC, pristine vs manipulated", f3(TF["auc_pristine_vs_manipulated"])], ["AUC, pristine vs tampered", f3(TF["auc_pristine_vs_tampered"])],
+       ["AUC, pristine vs fake", f3(TF["auc_pristine_vs_fake"])], ["Accuracy at 0.5", f3(TF["accuracy_thr0.5"])],
+       ["Detection rate at 0.5 (tampered / fake)", f3(TF["detection_rate_tampered_thr0.5"]) + " / " + f3(TF["detection_rate_fake_thr0.5"])],
+       ["False-alarm rate at 0.5", f3(TF["false_alarm_rate_thr0.5"])],
+       ["Tamper IoU / Dice / MCC (888 tampered images)", " / ".join(f3(TF["localization"][k]) for k in ("mean_iou", "mean_dice", "mean_mcc"))]])
+
 # ------------------------------------------------------------------ deviations and open questions
 h("11. Deviations, order of analyses, and open questions")
 p("Recorded in `RUNLOG.md` and the git history (`git log`). In summary:")

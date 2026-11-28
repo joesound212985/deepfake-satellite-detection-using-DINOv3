@@ -1,0 +1,155 @@
+{
+  "dataset": "rsfake",
+  "root": "/home/adminuser/data/rsfake",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s44/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": 500,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": null,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 10000,
+    "n_real": 5000,
+    "n_manipulated": 5000,
+    "auc_real_vs_manipulated": 0.5913654800000001,
+    "accuracy_thr0.5": 0.5192,
+    "accuracy_argmax": 0.5178,
+    "detection_rate_manipulated_thr0.5": 0.0754,
+    "false_alarm_rate_real_thr0.5": 0.037,
+    "predicted_class_counts": {
+      "pristine": 9474,
+      "tampered": 257,
+      "fake": 269
+    }
+  },
+  "per_group": {
+    "generated_RSSD_768": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 500,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "generated_SDFRS": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.19,
+      "predicted_class_counts": {
+        "pristine": 414,
+        "tampered": 31,
+        "fake": 55
+      }
+    },
+    "generated_crsdiff": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.11,
+      "predicted_class_counts": {
+        "pristine": 446,
+        "tampered": 30,
+        "fake": 24
+      }
+    },
+    "generated_diffusion_sat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.03,
+      "predicted_class_counts": {
+        "pristine": 485,
+        "tampered": 7,
+        "fake": 8
+      }
+    },
+    "generated_diffusion_sat_256": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.144,
+      "predicted_class_counts": {
+        "pristine": 436,
+        "tampered": 27,
+        "fake": 37
+      }
+    },
+    "generated_geosynth": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.006,
+      "predicted_class_counts": {
+        "pristine": 497,
+        "tampered": 3,
+        "fake": 0
+      }
+    },
+    "generated_geosynth_canny": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.028,
+      "predicted_class_counts": {
+        "pristine": 486,
+        "tampered": 8,
+        "fake": 6
+      }
+    },
+    "generated_geosynth_sam": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.012,
+      "predicted_class_counts": {
+        "pristine": 494,
+        "tampered": 6,
+        "fake": 0
+      }
+    },
+    "generated_mapsat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.03,
+      "predicted_class_counts": {
+        "pristine": 485,
+        "tampered": 15,
+        "fake": 0
+      }
+    },
+    "generated_rsinpaint": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.204,
+      "predicted_class_counts": {
+        "pristine": 405,
+        "tampered": 69,
+        "fake": 26
+      }
+    },
+    "real_fmow": {
+      "n_images": 5000,
+      "n_real": 5000,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.037,
+      "predicted_class_counts": {
+        "pristine": 4826,
+        "tampered": 61,
+        "fake": 113
+      }
+    }
+  },
+  "wall_sec": 881.1784029530008,
+  "torch_version": "2.14.1+cu126"
+}

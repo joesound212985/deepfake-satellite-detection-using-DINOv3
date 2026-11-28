@@ -1,0 +1,155 @@
+{
+  "dataset": "rsfake",
+  "root": "/home/adminuser/data/rsfake",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-sat493m/full_s43/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-sat493m",
+  "seed": 42,
+  "per_gen": 500,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": null,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 10000,
+    "n_real": 5000,
+    "n_manipulated": 5000,
+    "auc_real_vs_manipulated": 0.560956,
+    "accuracy_thr0.5": 0.5232,
+    "accuracy_argmax": 0.5221,
+    "detection_rate_manipulated_thr0.5": 0.097,
+    "false_alarm_rate_real_thr0.5": 0.0506,
+    "predicted_class_counts": {
+      "pristine": 9299,
+      "tampered": 359,
+      "fake": 342
+    }
+  },
+  "per_group": {
+    "generated_RSSD_768": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.0,
+      "predicted_class_counts": {
+        "pristine": 500,
+        "tampered": 0,
+        "fake": 0
+      }
+    },
+    "generated_SDFRS": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.228,
+      "predicted_class_counts": {
+        "pristine": 393,
+        "tampered": 41,
+        "fake": 66
+      }
+    },
+    "generated_crsdiff": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.154,
+      "predicted_class_counts": {
+        "pristine": 426,
+        "tampered": 36,
+        "fake": 38
+      }
+    },
+    "generated_diffusion_sat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.042,
+      "predicted_class_counts": {
+        "pristine": 479,
+        "tampered": 11,
+        "fake": 10
+      }
+    },
+    "generated_diffusion_sat_256": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.18,
+      "predicted_class_counts": {
+        "pristine": 417,
+        "tampered": 36,
+        "fake": 47
+      }
+    },
+    "generated_geosynth": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.008,
+      "predicted_class_counts": {
+        "pristine": 496,
+        "tampered": 3,
+        "fake": 1
+      }
+    },
+    "generated_geosynth_canny": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.038,
+      "predicted_class_counts": {
+        "pristine": 482,
+        "tampered": 12,
+        "fake": 6
+      }
+    },
+    "generated_geosynth_sam": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.012,
+      "predicted_class_counts": {
+        "pristine": 494,
+        "tampered": 6,
+        "fake": 0
+      }
+    },
+    "generated_mapsat": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.054,
+      "predicted_class_counts": {
+        "pristine": 473,
+        "tampered": 27,
+        "fake": 0
+      }
+    },
+    "generated_rsinpaint": {
+      "n_images": 500,
+      "n_real": 0,
+      "n_manipulated": 500,
+      "detection_rate_manipulated_thr0.5": 0.254,
+      "predicted_class_counts": {
+        "pristine": 379,
+        "tampered": 81,
+        "fake": 40
+      }
+    },
+    "real_fmow": {
+      "n_images": 5000,
+      "n_real": 5000,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.0506,
+      "predicted_class_counts": {
+        "pristine": 4760,
+        "tampered": 106,
+        "fake": 134
+      }
+    }
+  },
+  "wall_sec": 887.572455173,
+  "torch_version": "2.14.1+cu126"
+}

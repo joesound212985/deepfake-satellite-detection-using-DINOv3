@@ -1,0 +1,27 @@
+{
+ "protocol": "TRUFOR_PROTOCOL.md",
+ "root": "/home/adminuser/data/overhead/test_jpg/test",
+ "weights": "/home/adminuser/external/trufor_src/weights/trufor.pth.tar",
+ "n_images": 3150,
+ "n_pristine": 1511,
+ "n_tampered": 888,
+ "n_fake": 751,
+ "auc_pristine_vs_manipulated": 0.5301149310183729,
+ "auc_pristine_vs_tampered": 0.5937755260223824,
+ "auc_pristine_vs_fake": 0.45484115157288624,
+ "accuracy_thr0.5": 0.5161904761904762,
+ "detection_rate_thr0.5": 0.16290420988407567,
+ "detection_rate_tampered_thr0.5": 0.2286036036036036,
+ "detection_rate_fake_thr0.5": 0.085219707057257,
+ "false_alarm_rate_thr0.5": 0.10059563203176704,
+ "localization": {
+  "n_images_with_mask": 888,
+  "mask_threshold": 0.5,
+  "resolution": "native 512x512",
+  "mean_iou": 0.20694206377321106,
+  "mean_dice": 0.2547411016373108,
+  "mean_mcc": 0.24438785143878294
+ },
+ "wall_sec": 92.27199815199856,
+ "torch_version": "2.14.1+cu126"
+}

@@ -1,14 +1,11 @@
 [setup]  ok   overhead dataset: 20002 train files, 6302 test files
-[setup]  ok   Hugging Face login: user=joesound212985
+[setup]  ok   Hugging Face login: 
 [setup]  ok   model cached: facebook/dinov3-vitl16-pretrain-sat493m
 [setup]  ok   model cached: facebook/dinov3-vitl16-pretrain-lvd1689m
 [setup]  ok   model cached: nvidia/C-RADIOv4-SO400M
 [setup]  ok   model cached: timm resnet50 (ImageNet)
-[setup]  ...  RSFAKE-1M: downloading split csvs + all fake zips (27.6 GB) + fMoW crop metadata
-[setup]  ok   RSFAKE files downloaded
-[setup]  ...  RSFAKE-1M: extracting 500 fakes/generator and rebuilding 5000 real fMoW patches (public S3)
-[setup]  ok   RSFAKE subset built: /home/adminuser/data/rsfake/subset_seed42_n500.csv
-[setup]  ok   fmow-fake-small downloaded
-[setup]  ...  UW fake satellite: downloading 1.9 GB from figshare
-[setup]  ok   UW fake satellite downloaded
+[setup]  ok   RSFAKE subset: 10000 rows, 0 missing files
+[setup]  ok   fmow-fake-small: 120 images
+[setup]  ok   UW fake satellite: 8064 images
+[setup]  ok   DM-AER sample: 2000 images
 [setup] done.  DATA=/home/adminuser/data

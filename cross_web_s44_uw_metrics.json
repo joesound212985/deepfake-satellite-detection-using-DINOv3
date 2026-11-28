@@ -1,0 +1,89 @@
+{
+  "dataset": "uw",
+  "root": "/home/adminuser/data/uw_fake_sat/anti-deepfake/anti-deepfake-data and code/data",
+  "checkpoint": "/home/adminuser/results_dinov3/vit/dinov3-vitl16-pretrain-lvd1689m/web_s44/best_checkpoint.pt",
+  "dinov3": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+  "seed": 42,
+  "per_gen": null,
+  "dmaer_matched": null,
+  "dmaer_note": null,
+  "degrade": null,
+  "edge_gate": true,
+  "gdd_split": null,
+  "preprocessing": "BGR->RGB, cv2.INTER_AREA 384x384, /255, no mean-std; TTA none/hflip/vflip/hvflip; mask thr 0.5",
+  "scoring": "P(manipulated)=P(tampered)+P(fake); threshold 0.5",
+  "overall": {
+    "n_images": 8064,
+    "n_real": 4032,
+    "n_manipulated": 4032,
+    "auc_real_vs_manipulated": 0.5270352679555619,
+    "accuracy_thr0.5": 0.49888392857142855,
+    "accuracy_argmax": 0.4990079365079365,
+    "detection_rate_manipulated_thr0.5": 0.021081349206349208,
+    "false_alarm_rate_real_thr0.5": 0.023313492063492064,
+    "predicted_class_counts": {
+      "pristine": 7886,
+      "tampered": 171,
+      "fake": 7
+    }
+  },
+  "per_group": {
+    "authentic/Beijing": {
+      "n_images": 1008,
+      "n_real": 1008,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.000992063492063492,
+      "predicted_class_counts": {
+        "pristine": 1007,
+        "tampered": 1,
+        "fake": 0
+      }
+    },
+    "authentic/Seattle": {
+      "n_images": 1008,
+      "n_real": 1008,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.027777777777777776,
+      "predicted_class_counts": {
+        "pristine": 980,
+        "tampered": 26,
+        "fake": 2
+      }
+    },
+    "authentic/Tacoma": {
+      "n_images": 2016,
+      "n_real": 2016,
+      "n_manipulated": 0,
+      "false_alarm_rate_real_thr0.5": 0.032242063492063495,
+      "predicted_class_counts": {
+        "pristine": 1952,
+        "tampered": 60,
+        "fake": 4
+      }
+    },
+    "fake/Beijing_style": {
+      "n_images": 2016,
+      "n_real": 0,
+      "n_manipulated": 2016,
+      "detection_rate_manipulated_thr0.5": 0.03125,
+      "predicted_class_counts": {
+        "pristine": 1953,
+        "tampered": 62,
+        "fake": 1
+      }
+    },
+    "fake/Seattle_style": {
+      "n_images": 2016,
+      "n_real": 0,
+      "n_manipulated": 2016,
+      "detection_rate_manipulated_thr0.5": 0.010912698412698412,
+      "predicted_class_counts": {
+        "pristine": 1994,
+        "tampered": 22,
+        "fake": 0
+      }
+    }
+  },
+  "wall_sec": 711.2815630240002,
+  "torch_version": "2.14.1+cu126"
+}

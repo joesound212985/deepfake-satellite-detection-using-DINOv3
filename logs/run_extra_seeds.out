@@ -20,3 +20,37 @@
 [skip] cross_rsfake_metrics.json exists
 [skip] cross_uw_metrics.json exists
 [2026-11-27T16:07:09-06:00] aggregate: table.csv written
+[skip] web_s43 done
+[skip] web_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:29:25-06:00] aggregate: table.csv written
+[skip] full_s43 done
+[skip] full_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:29:25-06:00] aggregate: table.csv written
+[skip] plain_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:29:28-06:00] aggregate: table.csv written
+[skip] web_s43 done
+[skip] web_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:51:12-06:00] aggregate: table.csv written
+[skip] full_s43 done
+[skip] full_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:51:12-06:00] aggregate: table.csv written
+[skip] plain_s44 done
+[skip] cross_fmow_metrics.json exists
+[skip] cross_rsfake_metrics.json exists
+[skip] cross_uw_metrics.json exists
+[2026-11-27T22:51:16-06:00] aggregate: table.csv written

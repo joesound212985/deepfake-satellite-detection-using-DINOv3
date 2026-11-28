@@ -26,10 +26,8 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),   # moved from the laptop 2026-11-26 (run_extra_seeds_v2b.sh)
     ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side) [laptop]",  8.8),
     ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side) [laptop]",  8.8),
-    # stage 5 (run_review_seeds.sh, 2026-11-28): more seeds of the single-run rows, in queue order
-    ("frozen_s43", SAT/"frozen_s43",  "Frozen backbone, seed 43",  4.8),
+    # stage 5 (run_review_seeds.sh, 2026-11-28): workstation share of the extra seeds
     ("resnet_s43", RES/"resnet/resnet50/resnet_s43",     "ResNet-50, seed 43",          3.0),
-    ("frozen_s44", SAT/"frozen_s44",  "Frozen backbone, seed 44",  4.8),
     ("resnet_s44", RES/"resnet/resnet50/resnet_s44",     "ResNet-50, seed 44",          3.0),
     ("resnetlr_s43", RES/"resnet/resnet50/resnetlr_s43", "ResNet-50, LR 1e-4, seed 43", 3.2),
     ("resnetlr_s44", RES/"resnet/resnet50/resnetlr_s44", "ResNet-50, LR 1e-4, seed 44", 3.2),
@@ -57,7 +55,7 @@ LAPTOP_HOST = "" if ROLE == "laptop" else os.environ.get("GRSL_LAPTOP", _laptop_
 REMOTE = r'''
 import json, glob, os, re, subprocess
 H = os.path.expanduser("~")
-o = {"done": {}, "tag": None, "log": ""}
+o = {"done": {}, "tag": None, "log": "", "runs": {}}
 def sh(c):
     try: return subprocess.check_output(c, shell=True, text=True, stderr=subprocess.DEVNULL).strip()
     except Exception: return ""
@@ -75,8 +73,17 @@ o["driver"] = bool(sh("pgrep -f 'run_lapto[p]|run_everythin[g]|run_norm_chec[k]'
 for pid in sh("pgrep -f 'dinov3_forensics_train_v[2].py|train_nor[m].py'").split():
     try:
         for kv in open(f"/proc/{pid}/environ", "rb").read().split(b"\0"):
-            if kv.startswith(b"RUN_TAG="): o["tag"] = kv[8:].decode()
+            if kv.startswith(b"RUN_TAG="):
+                o["tag"] = kv[8:].decode(); o["runs"][o["tag"]] = {"log": "", "hist": []}
     except Exception: pass
+for _t, _r in o["runs"].items():
+    try:
+        with open(f"{H}/grsl/logs/{_t}.log", "rb") as f:
+            f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 60000)); _r["log"] = f.read().decode(errors="ignore")
+    except Exception: pass
+    for l in sh("grep -ao '\[epoch [0-9]*/[0-9]*\] [^\r]*' " + f"{H}/grsl/logs/{_t}.log").splitlines():
+        m = re.search(r"\[epoch (\d+)/.*?train_loss=([\d.]+).*?val_f1=([\d.]+) val_iou=([\d.]+)", l)
+        if m: _r["hist"].append([int(m.group(1)), float(m.group(3)), float(m.group(4)), float(m.group(2))])
 if o["tag"]:
     try:
         with open(f"{H}/grsl/logs/{o['tag']}.log", "rb") as f:
@@ -93,6 +100,37 @@ for f in glob.glob(f"{H}/results_dinov3/*/*/*/test_metrics.json"):
 print(json.dumps(o))
 '''
 _lap = {"t": 0.0, "data": None}
+# third machine (Calypso, added 2026-11-28): address in ~/.config/grsl/calypso, files under ~/joe_grsl/home there
+def _calypso_default():
+    try:
+        return open(os.path.expanduser("~/.config/grsl/calypso")).read().strip()
+    except OSError:
+        return ""
+
+
+CALYPSO_HOST = "" if ROLE == "laptop" else os.environ.get("GRSL_CALYPSO", _calypso_default())   # GRSL_CALYPSO="" disables the block
+CAL_COL = "spring_green2"
+CALYPSO_ROWS = [  # more seeds of the single-run rows (review request); lane "radio" on GPU 0, lane "review" on GPU 1, each in queue order
+    ("radio_s43", RES/"radio/C-RADIOv4-SO400M/radio_s43", "C-RADIOv4, seed 43  [GPU 0]", 7.6),
+    ("radio_s44", RES/"radio/C-RADIOv4-SO400M/radio_s44", "C-RADIOv4, seed 44  [GPU 0]", 7.6),
+    ("frozen_s43", SAT/"frozen_s43",  "Frozen backbone, seed 43  [GPU 1]",  6.5),
+    ("frozen_s44", SAT/"frozen_s44",  "Frozen backbone, seed 44  [GPU 1]",  6.5),
+]
+_cal = {"t": 0.0, "data": None}
+
+
+def calypso(every=30):
+    """Like laptop(): one ssh call every `every` seconds, with HOME pointed at the run folder on that machine."""
+    if not CALYPSO_HOST: return None
+    if time.time() - _cal["t"] < every: return _cal["data"]
+    _cal["t"] = time.time()
+    try:
+        out = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", CALYPSO_HOST, "HOME=$HOME/joe_grsl/home python3 -"],
+                             input=REMOTE.replace("run_lapto[p]", "run_calyps[o]"), capture_output=True, text=True, timeout=14).stdout
+        _cal["data"] = json.loads(out[out.index("{"):])
+    except Exception:
+        _cal["data"] = None
+    return _cal["data"]
 
 
 def laptop(every=15):
@@ -472,6 +510,40 @@ def render(tab=None):
             body = Group(Text(" ○ NOT REACHABLE ", style="bold white on red"), Text("asleep, switched off, or Tailscale is down", style="red"),
                          Text(""), row_table(rem, LAP_COL))
         panels.append(Panel(body, title=f"[bold {LAP_COL}] ◆ LAPTOP (RTX 5090) ◆ [/]", border_style=LAP_COL, box=box.HEAVY, padding=(0, 1)))
+
+    # ---- Calypso, seen from the workstation
+    if CALYPSO_HOST:
+        cal = calypso(); crow = []; c_done = 0; c_left = 0.0
+        for tag, out, label, hrs in CALYPSO_ROWS:
+            tm = out / "test_metrics.json"
+            if tm.exists():
+                c_done += 1; crow.append(("done", label, 1, done_detail(json.load(open(tm)), "copied back"), ""))
+            elif cal and tag in cal["done"]:
+                a = cal["done"][tag]; c_done += 1
+                crow.append(("done", label, 1, metric_text([("acc", a[0]), ("F1", a[1]), ("IoU", a[2]), ("Dice", a[3])], f"{a[4]:.0f} s/ep  on Calypso, not copied back"), ""))
+            elif cal and tag in cal.get("runs", {}):
+                d = parse_log(cal["runs"][tag]["log"]); frac, r, sub = progress(d, hrs); c_left += r / 3600
+                crow.append(("run", label, frac, f"{sub}   ETA {fmt_td(r)}  → {(datetime.now()+timedelta(seconds=r)):%a %H:%M}", spark(cal["runs"][tag].get("hist") or [], CAL_COL)))
+            elif cal:
+                c_left += hrs; crow.append(("wait", label, 0, "queued", ""))
+            else:
+                crow.append(("unk", label, 0, "Calypso not reachable", ""))
+        if cal:
+            try: g = [float(x) for x in cal["gpu"].splitlines()[0].split(", ")]
+            except Exception: g = None
+            st3 = Text()
+            if cal.get("runs"): st3.append(" ● TRAINING ", style="bold black on green"); st3.append("  " + ", ".join(sorted(cal["runs"])), style="bold green")
+            elif cal.get("driver"): st3.append(" ● BETWEEN JOBS ", style="bold black on yellow")
+            else: st3.append(" ○ IDLE ", style="bold white on red"); st3.append("  no job of ours running", style="red")
+            foot3 = Text(); foot3.append_text(gauge(c_done / len(crow) if crow else 0, 40, CAL_COL))
+            foot3.append(f"  {c_done}/{len(crow)} runs done    GPU hours left ≈ {c_left:.0f} over two cards (rough)")
+            ex = f"sensors: GPU 0 of 2 (shared machine)   RAM {cal.get('mem', '?')} GB   disk free {cal.get('disk', '?')}   load {cal.get('load', '?')}"
+            body = Group(sensors(g, cal.get("cpu"), ex), st3, Text(""), row_table(crow, CAL_COL), Text(""), foot3)
+        else:
+            body = Group(Text(" ○ NOT REACHABLE ", style="bold white on red"),
+                         Text("off, Tailscale down, or its SSH approval expired (run: ssh " + CALYPSO_HOST + " and open the link)", style="red"),
+                         Text(""), row_table(crow, CAL_COL))
+        panels.append(Panel(body, title=f"[bold {CAL_COL}] ◆ CALYPSO (RTX A6000) ◆ [/]", border_style=CAL_COL, box=box.HEAVY, padding=(0, 1)))
 
     # ---- results (workstation only)
     if (GRSL / "cross_fmow_metrics.json").exists():
