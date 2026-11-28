@@ -240,8 +240,50 @@ if tf:
     p(f"Table S19. TruFor with its authors' code and weights, without training, on the {tf['n_images']} test images at their native 512 × 512 resolution "
       f"(tamper map thresholded at {tf['localization']['mask_threshold']}; localisation over the {L['n_images_with_mask']} tampered images). Protocol: TRUFOR_PROTOCOL.md.")
 
+# ---- real-anchored matched filter (added 2026-11-28; REAL_ANCHOR_PROTOCOL.md)
+ra = J("real_anchor_metrics.json")
+if ra:
+    RAX = ra["extractors"]
+    def rv(ex, k, key, name, f="auc"):
+        d = RAX[ex]["sets"][k].get(key)
+        if not isinstance(d, dict): return None
+        v = d[name][f]; return v["mean"] if isinstance(v, dict) else v
+    def r3(m, k, key, name, f="auc"):          # original backbones: one extractor; fine-tuned: mean over training seeds
+        if m.endswith("_orig"): return rv(m, k, key, name, f)
+        v = [rv(f"{m}_s{sdd}", k, key, name, f) for sdd in (42, 43, 44)]; return None if None in v else st.mean(v)
+    def na(m, k, f="auc"):
+        return RAX[m]["sets"][k]["no_anchor"][f] if m.endswith("_orig") else st.mean(RAX[f"{m}_s{sdd}"]["sets"][k]["no_anchor"][f] for sdd in (42, 43, 44))
+    c = lambda v: "–" if v is None else f"{v:.3f}"
+    FEATS = (("sat_orig", "original SAT"), ("full", "fine-tuned SAT"), ("web_orig", "original web"), ("web", "fine-tuned web"))
+    h("S9. Matched filter anchored on authentic images of the new source")
+    p("Protocol (fixed and committed before any number was computed; REAL_ANCHOR_PROTOCOL.md): the manipulation signature is the mean feature of "
+      "the manipulated training images minus that of the pristine training images. An image of an outside dataset is scored by the matched "
+      "filter with that signature after centring and whitening with the mean and the Ledoit-Wolf covariance of k authentic images drawn from "
+      "the adaptation pool (10 draws; the whole pool once). No manipulated image of the outside dataset is used. All numbers are on the "
+      "held-out half. 'No anchor' uses the mean and covariance of the pristine training images instead, so no image of the new source. "
+      "The experiment was designed after the other results were known. The rule fixed in advance was that the method counts as a success "
+      "only if, at k = 64, its AUC exceeds the zero-shot AUC of the fine-tuned model on at least six of the eight sets for the original "
+      "SAT backbone or for the fine-tuned SAT backbone; it does so on fewer (Table S21). On our own test folder the signature with "
+      "training statistics reaches an AUC of " + ", ".join(f"{na(m, 'own_test'):.3f} ({lab})" for m, lab in FEATS) + ".")
+    rows = [[sl, lab, c(na(m, k))] + [c(r3(m, k, kk, "anchor_matched_filter")) for kk in ("k4", "k16", "k64", "k256", "whole_pool")]
+            for k, sl in SETS for m, lab in FEATS]
+    t(["Dataset", "Features", "No anchor", "k = 4", "k = 16", "k = 64", "k = 256", "Whole pool"], rows)
+    p("Table S20. Matched filter anchored on k authentic images of the new source: AUC on the held-out half. Fine-tuned features: mean over "
+      "training seeds 42, 43 and 44 of each seed's mean over 10 draws. '–': the pool has fewer than k authentic images.")
+    rows = []
+    for k, sl in SETS:
+        zsw = st.mean(J(f"cross_{'' if sdd == 42 else f's{sdd}_'}{k}_metrics.json")["overall"]["auc_real_vs_manipulated"] for sdd in (42, 43, 44))
+        for m, lab in FEATS[:2]:
+            rows.append([sl, lab, f"{zsw:.3f}", c(na(m, k))] + [c(r3(m, k, "k64", n)) for n in ("anchor_mean", "anchor_matched_filter", "anchor_rx")]
+                        + [c(r3(m, k, "k64", "anchor_matched_filter", "detection_rate")), c(r3(m, k, "k64", "anchor_matched_filter", "false_alarm_rate"))])
+    t(["Dataset", "Features", "Zero-shot AUC", "No anchor AUC", "Anchored mean AUC", "Matched filter AUC", "RX AUC", "Det.", "FA"], rows)
+    p("Table S21. The comparison fixed in advance, at k = 64. Zero-shot: the fine-tuned full model without adaptation, whole outside set, mean over "
+      "three seeds (Table S16). Anchored mean: target mean with the training covariance (same ranking as 'no anchor'). Matched filter: target mean "
+      "and covariance. RX: squared Mahalanobis distance to the k authentic images, without the signature. Det. and FA: detection and false-alarm "
+      "rate of the matched filter at the threshold 1.645, which would give 5% false alarms if the score were standard normal on authentic images.")
+
 # ---- figures
-h("S9. Figures")
+h("S10. Figures")
 if (H / "tsne_features.png").exists():
     img("tsne_features.png", "Fig. S1. t-SNE of frozen CLS features (up to 500 real and 500 manipulated images per dataset; perplexity 30, one run, "
         "settings fixed in advance). Top: original DINOv3 SAT. Bottom: fine-tuned full model. Illustration only.")
