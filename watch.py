@@ -26,13 +26,20 @@ ROWS = [  # tag, results dir, label, est. hours (measured on this machine where 
     ("plain_s44",  SAT/"plain_s44",   "Plain decoder, seed 44",    8.3),   # moved from the laptop 2026-11-26 (run_extra_seeds_v2b.sh)
     ("fullnorm_s42", SAT/"fullnorm_s42", "Norm check, SAT (side) [laptop]",  8.8),
     ("webnorm_s42",  WEBD/"webnorm_s42", "Norm check, web (side) [laptop]",  8.8),
+    # stage 5 (run_review_seeds.sh, 2026-11-28): more seeds of the single-run rows, in queue order
+    ("frozen_s43", SAT/"frozen_s43",  "Frozen backbone, seed 43",  4.8),
+    ("resnet_s43", RES/"resnet/resnet50/resnet_s43",     "ResNet-50, seed 43",          3.0),
+    ("frozen_s44", SAT/"frozen_s44",  "Frozen backbone, seed 44",  4.8),
+    ("resnet_s44", RES/"resnet/resnet50/resnet_s44",     "ResNet-50, seed 44",          3.0),
+    ("resnetlr_s43", RES/"resnet/resnet50/resnetlr_s43", "ResNet-50, LR 1e-4, seed 43", 3.2),
+    ("resnetlr_s44", RES/"resnet/resnet50/resnetlr_s44", "ResNet-50, LR 1e-4, seed 44", 3.2),
 ]
 # (metrics file stem, log stem, label)
 CROSS = [("cross_fmow", "fmow-fake-small"), ("cross_rsfake", "RSFAKE-1M subset"), ("cross_uw", "UW fake satellite"),
          ("cross_dmaer", "DM-AER (size-matched)")]
 CROSS_WEB = [("cross_web_fmow", "fmow-fake-small"), ("cross_web_rsfake", "RSFAKE-1M subset"), ("cross_web_uw", "UW fake satellite"),
              ("cross_web_dmaer", "DM-AER (size-matched)")]
-QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check|run_laptop|run_fewshot|run_frozen_cross|run_zeroshot_extras"
+QUEUE_PAT = "run_everything.sh|run_extra_seeds|run_web_seeds|run_norm_check|run_laptop|run_fewshot|run_frozen_cross|run_zeroshot_extras|run_seed_evals|run_trufor|run_review_seeds"
 ROLE = os.environ.get("GRSL_ROLE") or ("laptop" if (GRSL / ".laptop").exists() else "workstation")
 if ROLE == "laptop":      # dashboard started on the laptop itself: show only its own rows, read locally
     ROWS = [r for r in ROWS if r[0] in LAPTOP]; LAPTOP = set()
@@ -143,8 +150,12 @@ def machine_extra():
 
 
 def job_name(stem):
-    m = re.match(r"robust_(full|web)_(jpeg|scale)([\d.]+)$", stem)
-    if m: return f"Robustness: {m.group(1)} model, {'JPEG quality' if m.group(2) == 'jpeg' else 'down-scale'} {m.group(3)}"
+    m = re.match(r"robust_(full|web)_(?:s(\d+)_)?(jpeg|scale)([\d.]+)$", stem)
+    if m: return f"Robustness: {m.group(1)} model{' seed ' + m.group(2) if m.group(2) else ''}, {'JPEG quality' if m.group(3) == 'jpeg' else 'down-scale'} {m.group(4)}"
+    m = re.match(r"cross_(web_)?s(\d+)_(\w+)$", stem)
+    if m: return f"Outside data: {'web' if m.group(1) else 'full'} model seed {m.group(2)} on {m.group(3)}"
+    if stem == "trufor_overhead": return "TruFor on the test folder"
+    if stem.startswith("zeroshot_extras_seeds"): return "Label-free tests, seeds 43/44"
     m = re.match(r"cross_(web_|frozen_|allreals_|web_allreals_)?(\w+)$", stem)
     if m: return f"Outside data: {(m.group(1) or 'full_').rstrip('_')} model on {m.group(2)}"
     m = re.match(r"overhead_(\w+)$", stem)
