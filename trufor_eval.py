@@ -29,6 +29,9 @@ os.chdir(a.src); sys.path.insert(0, a.src)
 from lib.config import config, update_config  # noqa: E402
 from lib.utils import get_model  # noqa: E402
 update_config(config, argparse.Namespace(experiment="trufor_ph3", gpu=None, opts=["TEST.MODEL_FILE", a.weights]))
+# the checkpoint stores a few numpy scalars (epoch, best value); allow only those types, keep the safe loader
+import numpy.core.multiarray as _ncm  # noqa: E402
+torch.serialization.add_safe_globals([(_ncm.scalar, "numpy.core.multiarray.scalar"), np.dtype] + [type(np.dtype(t)) for t in ("float64", "float32", "int64", "int32")])
 ck = torch.load(a.weights, map_location="cpu", weights_only=True)
 model = get_model(config); model.load_state_dict(ck["state_dict"]); model = model.cuda().eval()
 
