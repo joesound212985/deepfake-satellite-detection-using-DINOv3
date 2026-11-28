@@ -229,17 +229,18 @@ if __name__ == "__main__":
     ap.add_argument("cmd", choices=["extract", "analyse"])
     ap.add_argument("--dry", type=int, default=0, help="debug: N images per set, written to a scratch dir, NOT a result")
     ap.add_argument("--scratch", default="")
-    ap.add_argument("--sets", choices=["external", "gdd", "seeds", "own"], default="external")
+    ap.add_argument("--sets", choices=["external", "gdd", "seeds", "own", "own_seeds"], default="external")
     a = ap.parse_args()
     tag = ""
     if a.sets == "gdd":
         DATASETS[:] = GDD_SETS; tag = "_gdd"
-    if a.sets == "own":
+    if a.sets in ("own", "own_seeds"):
         DATASETS[:] = ["own_train", "own_test"]; tag = "_own"
         if a.cmd == "analyse":
             sys.exit("own-data features are analysed by zeroshot_extras.py")
-    if a.sets == "seeds":      # addendum 2026-11-26: other model seeds, all eight sets
-        DATASETS[:] = ["rsfake", "uw", "dmaer", "fmow"] + GDD_SETS; tag = "_seeds"
+    if a.sets in ("seeds", "own_seeds"):      # addendum 2026-11-26: other model seeds, all eight sets (own_seeds: 2026-11-27, own data)
+        if a.sets == "seeds":
+            DATASETS[:] = ["rsfake", "uw", "dmaer", "fmow"] + GDD_SETS; tag = "_seeds"
         EXTRACTORS.clear()
         for sd in (43, 44):
             EXTRACTORS[f"full_s{sd}"] = (SAT, RES / "dinov3-vitl16-pretrain-sat493m" / f"full_s{sd}" / "best_checkpoint.pt")

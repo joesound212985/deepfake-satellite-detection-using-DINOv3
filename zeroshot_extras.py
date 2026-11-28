@@ -10,12 +10,16 @@ from sklearn.neighbors import NearestNeighbors
 
 HERE = Path(__file__).resolve().parent
 FEAT = Path.home() / "data" / "features" / "fewshot_cls384"
-OUT = HERE / "zeroshot_extras_metrics.json"
+SEEDS = "--seeds" in sys.argv      # addendum 2026-11-27: seed-43/44 checkpoints, same settings
+OUT = HERE / ("zeroshot_extras_seeds_metrics.json" if SEEDS else "zeroshot_extras_metrics.json")
 if OUT.exists():
     sys.exit(f"{OUT} exists; not overwriting")
 EXS = ["full_s42", "web_s42", "sat_orig", "web_orig"]
 SETS = ["rsfake", "uw", "dmaer", "fmow", "gdd_indomain", "gdd_crossgenerator", "gdd_crossdomain", "gdd_localization"]
 ZS = {"full_s42": "cross_{d}_metrics.per_image.json", "web_s42": "cross_web_{d}_metrics.per_image.json"}
+if SEEDS:
+    EXS = ["full_s43", "web_s43", "full_s44", "web_s44"]
+    ZS = {f"{m}_s{s}": ("cross_" if m == "full" else "cross_web_") + f"s{s}_" + "{d}_metrics.per_image.json" for s in (43, 44) for m in ("full", "web")}
 
 
 def load(ex, d):

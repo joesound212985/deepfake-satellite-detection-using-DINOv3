@@ -84,3 +84,31 @@ Run with `python fewshot_adapt.py {extract,analyse} --sets seeds` after the trai
 results in `fewshot_seeds_metrics.json`. Purpose: spread of the few-shot numbers over model seeds
 (report mean and std over seeds 42/43/44 of the per-seed means). Earlier result files are not touched.
 The zero-shot reference rows in that file are those of seed 42 (the only seed scored zero-shot on every set).
+
+## Addendum 2026-11-27 (evening): held-out generator
+Written before any number of this addendum was computed (Joe approved the same evening, after a review
+comment that the few-shot test is not out-of-distribution). All earlier few-shot results were known.
+Nothing is tuned; every cell is reported whatever it shows. Script: `fewshot_logo.py` ->
+`fewshot_logo_metrics.json` (refuses to overwrite). CPU only, on the cached features; earlier files untouched.
+
+Question: does a probe fitted on labelled images of some generators (or manipulation types) of a new source
+detect a generator (or type) of that source that it has not seen?
+
+- Sets: every outside set with at least two manipulated groups: `rsfake` (10 generators), `uw` (2 styles),
+  `fmow` (3 manipulation types), `gdd_indomain` (5 generators), `gdd_crossgenerator` (3), `gdd_crossdomain` (3),
+  `gdd_localization` (6 manipulation types). `dmaer` has one generator and is left out.
+- Extractors: `full_s42/43/44`, `web_s42/43/44`, `sat_orig`, `web_orig`. Same features, same probe
+  (`LogisticRegression(C=1.0, max_iter=2000)` on the L2-normalised CLS token), same pool / held-out split.
+- For each manipulated group g of a set:
+  - test images: the real images of the held-out half and the held-out manipulated images of g only;
+  - **unseen**: k real shots from the pool's real images and k manipulated shots from the pool's manipulated
+    images of all groups except g (`RandomState(seed)`, seeds 0-9, reals drawn first), k in {4, 16, 64, 256};
+    a k larger than either class available is skipped; plus one fit on all pool images except those of g;
+  - **seen** (reference): the shots of the original protocol (drawn from the whole pool, g included) and the
+    whole pool, scored on the same test images.
+- Reported: AUC per held-out group (mean and standard deviation over the 10 draws), and per set the mean over
+  groups, unseen against seen; for the fine-tuned extractors also mean and standard deviation over seeds 42-44.
+  Accuracy, detection rate on g and false-alarm rate at 0.5 are saved as well.
+- Limits to state: the real images of shots and test come from the same sources, so only the generator is
+  unseen, not the source; the other generators of the same dataset may be related to g; fmow-fake-small has 10
+  held-out manipulated images per type.

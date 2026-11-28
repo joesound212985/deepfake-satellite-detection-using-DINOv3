@@ -30,3 +30,15 @@ For each extractor: the pristine images of the training folder are split 90/10 (
 Score of an image = mean cosine distance to its 5 nearest neighbours among the 90% (reference set).
 Threshold = 95th percentile of the scores of the other 10% (own pristine images, never an outside image).
 Reported on our test folder and every outside set: AUC, detection rate and false-alarm rate at that threshold.
+
+## Addendum 2026-11-27 (evening): other model seeds
+Written before any of these numbers was computed (Joe approved the same evening, after a review comment that
+the zero-shot, robustness and label-free results use seed 42 only). Unchanged scripts and settings, applied to
+the seed-43 and seed-44 checkpoints of the full and the web model (`run_seed_evals.sh`):
+- zero-shot on the eight outside test sets and DM-AER with all real images: `eval_cross_dataset.py`, outputs
+  `cross_s43_*`, `cross_s44_*`, `cross_web_s43_*`, `cross_web_s44_*`;
+- robustness on the test folder (JPEG 90/70/50/30, scale 0.75/0.5): outputs `robust_full_s43_*` etc.;
+- label-free A/B/C: own-data features with `python fewshot_adapt.py extract --sets own_seeds`, then
+  `python zeroshot_extras.py --seeds` -> `zeroshot_extras_seeds_metrics.json`.
+To report: mean and standard deviation over seeds 42/43/44. The frozen-backbone row stays a single run.
+Every cell is reported whatever it shows; earlier result files are not touched.
