@@ -20,7 +20,7 @@ t = lambda head, rows: out.append(("t", (head, rows))); img = lambda f, cap: out
 ms = lambda d: "–" if not isinstance(d, dict) else (f"{d['mean']:.3f} ± {d['std']:.3f}" if d.get("std") is not None else f"{d['mean']:.3f}")
 
 h("Supplementary Material", 1)
-p("Detection and Localization of AI-Generated and Tampered Satellite Images With a Fine-Tuned DINOv3")
+p("Fine-Tuned DINOv3 for Detecting and Localizing AI-Generated and Tampered Satellite Images: A Benchmark Study")
 p(f"Generated {date.today().isoformat()} from the result files in the repository; no number is typed by hand.")
 
 # ---- S1 zero-shot with intervals
@@ -175,8 +175,15 @@ for key, bb, lab in (("full", "dinov3-vitl16-pretrain-sat493m", "Full (SAT)"), (
         if not f.exists(): rows.append([lab, sdd, "pending", "", "", "", ""]); continue
         m = json.load(open(f)); L = m["localization_tampered"]
         rows.append([lab, sdd, f"{m['accuracy']:.4f}", f"{m['macro_f1']:.4f}", f"{m['per_class']['tampered']['recall']:.4f}", f"{L['mean_iou']:.4f}", m.get("best_epoch")])
+for key, sub, lab in (("frozen", "vit/dinov3-vitl16-pretrain-sat493m", "Frozen backbone (SAT)"), ("resnet", "resnet/resnet50", "ResNet-50, LR 2e-6"),
+                      ("resnetlr", "resnet/resnet50", "ResNet-50, LR 1e-4"), ("radio", "radio/C-RADIOv4-SO400M", "C-RADIO")):
+    for sdd in (42, 43, 44):          # rows added in review: only the seeds that have finished are listed
+        f = RES.parent / sub / f"{key}_s{sdd}" / "test_metrics.json"
+        if not f.exists(): continue
+        m = json.load(open(f)); L = m["localization_tampered"]
+        rows.append([lab, sdd, f"{m['accuracy']:.4f}", f"{m['macro_f1']:.4f}", f"{m['per_class']['tampered']['recall']:.4f}", f"{L['mean_iou']:.4f}", m.get("best_epoch")])
 t(["Row", "Seed", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU", "Best epoch (validation)"], rows)
-p("Table S13. Test-set results of each training seed.")
+p("Table S13. Test-set results of each training seed. For the frozen-backbone, ResNet-50 and C-RADIO rows the seeds finished so far are listed.")
 an = J("analysis_extras.json"); rows = []
 for pair, d in (an or {}).get("significance", {}).get("pairs", {}).items():
     a_, b_ = pair.split("_vs_")
@@ -194,6 +201,44 @@ for key, lab in (("full", "Full (SAT), inputs in [0, 1], 3 seeds"), ("fullnorm",
     if r: rows.append([lab] + [(f"{float(r[c + '_mean']):.3f} ± {float(r[c + '_std']):.3f}" if int(r["n_runs"]) > 1 else f"{float(r[c + '_mean']):.3f}") for c in ("accuracy", "macro_f1", "tampered_recall", "mean_iou")])
 t(["Row", "Accuracy", "Macro-F1", "Tampered recall", "Tamper IoU"], rows)
 p("Table S15. Side experiment on input normalisation: the backbone's own mean and standard-deviation normalisation against inputs scaled to [0, 1] (the setting of all other runs).")
+
+# ---- per-seed zero-shot, held-out generator, TruFor (added 2026-11-28)
+rows = []
+for pre, lab in (("cross_", "Full (SAT)"), ("cross_web_", "Web backbone")):
+    for k, sl in SETS:
+        v = [J(f"{pre}{'' if sdd == 42 else f's{sdd}_'}{k}_metrics.json")["overall"]["auc_real_vs_manipulated"] for sdd in (42, 43, 44)]
+        rows.append([lab, sl] + [f"{x:.3f}" for x in v] + [f"{st.mean(v):.3f} ± {st.stdev(v):.3f}"])
+t(["Model", "Dataset", "Seed 42", "Seed 43", "Seed 44", "Mean ± std"], rows)
+p("Table S16. Zero-shot AUC (real against manipulated, no adaptation) of each training seed on the outside datasets.")
+lo = J("fewshot_logo_metrics.json")
+if lo:
+    LS = [(k, sl) for k, sl in SETS if k in lo["datasets"]]
+    def lgm(k, key, n, mode):
+        v = [lo["datasets"][k]["extractors"][f"{key}_s{sdd}"]["_mean_over_groups_auc"][mode][n] for sdd in (42, 43, 44)]
+        return "–" if None in v else f"{st.mean(v):.3f}"
+    rows = [[sl, fl] + [lgm(k, key, n, mode) for n in ("k16", "k64", "whole_pool") for mode in ("seen", "unseen")]
+            for k, sl in LS for key, fl in (("full", "fine-tuned SAT"), ("web", "fine-tuned web"))]
+    t(["Dataset", "Features", "k = 16: seen", "k = 16: left out", "k = 64: seen", "k = 64: left out", "Pool: seen", "Pool: left out"], rows)
+    p("Table S17. Few-shot AUC with the test generator or manipulation type left out of the labelled images, against the same test with it "
+      "included ('seen'). Mean over the groups of each dataset and over training seeds 42, 43 and 44. Protocol: addendum in FEWSHOT_PROTOCOL.md.")
+    rows = []
+    for k, sl in LS:
+        ex = lo["datasets"][k]["extractors"]
+        for g in [g for g in ex["full_s42"] if not g.startswith("_")]:
+            cell = lambda mode: st.mean(ex[f"full_s{sdd}"][g][mode]["k64"]["auc"]["mean"] for sdd in (42, 43, 44))
+            try: rows.append([sl, g.split("/", 1)[-1], f"{cell('seen'):.3f}", f"{cell('unseen'):.3f}"])
+            except (KeyError, TypeError): rows.append([sl, g.split("/", 1)[-1], "–", "–"])
+    t(["Dataset", "Generator or manipulation type", "k = 64: seen", "k = 64: left out"], rows)
+    p("Table S18. The same comparison for each generator or manipulation type (fine-tuned SAT backbone, k = 64, mean over training seeds 42, 43 and 44).")
+tf = J("trufor_overhead_metrics.json")
+if tf:
+    L = tf["localization"]
+    t(["AUC pristine vs. manipulated", "AUC pristine vs. tampered", "AUC pristine vs. fake", "Accuracy @0.5", "Det. tampered", "Det. fake", "FA", "Tamper IoU", "Dice", "MCC"],
+      [[f"{tf[c]:.3f}" for c in ("auc_pristine_vs_manipulated", "auc_pristine_vs_tampered", "auc_pristine_vs_fake", "accuracy_thr0.5",
+                                 "detection_rate_tampered_thr0.5", "detection_rate_fake_thr0.5", "false_alarm_rate_thr0.5")]
+       + [f"{L[c]:.3f}" for c in ("mean_iou", "mean_dice", "mean_mcc")]])
+    p(f"Table S19. TruFor with its authors' code and weights, without training, on the {tf['n_images']} test images at their native 512 × 512 resolution "
+      f"(tamper map thresholded at {tf['localization']['mask_threshold']}; localisation over the {L['n_images_with_mask']} tampered images). Protocol: TRUFOR_PROTOCOL.md.")
 
 # ---- figures
 h("S9. Figures")
