@@ -683,6 +683,78 @@ class DINOv3SegFormerV2_3C(nn.Module):
         return cls_logits, seg_logits, seg_mid
 
 
+class LoRAAdapters(nn.Module):
+    """
+    [lora] Low-rank adapters (LoRA, Hu et al. 2022) on the query and value projections of every encoder block.
+    Switched on by LORA_RANK > 0 (default 0 = this class is never built and nothing changes).
+    For a projection y = W x + b the adapted output is y + (alpha / rank) * B A x, with A (rank x in) drawn as in
+    nn.Linear and B (out x rank) starting at zero, so training starts from the pre-trained encoder exactly.
+    The update is added through forward hooks, so the encoder keeps its own parameter names; the adapter weights
+    live under `lora.*`. Saved best checkpoints hold the merged weights W + (alpha / rank) * B A and no `lora.*`
+    keys (export_state_dict), so every evaluation script loads them as an ordinary model.
+    """
+    TARGETS = ("q_proj", "v_proj")
+
+    def __init__(self, encoder: nn.Module, rank: int, alpha: float):
+        super().__init__()
+        self.rank = int(rank)
+        self.scale = float(alpha) / float(rank)
+        self.A = nn.ParameterDict()
+        self.B = nn.ParameterDict()
+        self.names = []                       # encoder-relative module names, e.g. "model.layer.0.attention.q_proj"
+        for name, mod in encoder.named_modules():
+            if isinstance(mod, nn.Linear) and name.split(".")[-1] in self.TARGETS:
+                key = name.replace(".", "__")
+                a = torch.empty(self.rank, mod.in_features)
+                nn.init.kaiming_uniform_(a, a=math.sqrt(5))
+                self.A[key] = nn.Parameter(a)
+                self.B[key] = nn.Parameter(torch.zeros(mod.out_features, self.rank))
+                mod.register_forward_hook(self._hook(key))
+                self.names.append(name)
+        if not self.names:
+            raise RuntimeError("[lora] no q_proj / v_proj linear layers found in the encoder")
+
+    def _hook(self, key: str):
+        def hook(module, inputs, output):
+            return output + F.linear(F.linear(inputs[0], self.A[key]), self.B[key]) * self.scale
+        return hook
+
+    def delta(self, name: str) -> torch.Tensor:
+        key = name.replace(".", "__")
+        return (self.B[key].detach().float() @ self.A[key].detach().float()) * self.scale
+
+
+def export_state_dict(model: nn.Module) -> Dict[str, torch.Tensor]:
+    """[lora] State dict for best_checkpoint.pt. Without adapters this is model.state_dict() unchanged.
+    With adapters the low-rank update is folded into the projection weights and the `lora.*` keys are dropped."""
+    sd = model.state_dict()
+    lora = getattr(model, "lora", None)
+    if lora is None:
+        return sd
+    out = {k: v.clone() for k, v in sd.items() if not k.startswith("lora.")}
+    for name in lora.names:
+        k = f"encoder.{name}.weight"
+        out[k] = (out[k].float() + lora.delta(name).to(out[k].device)).to(out[k].dtype)
+    return out
+
+
+def load_exported_state_dict(model: nn.Module, sd: Dict[str, torch.Tensor]):
+    """[lora] Inverse of export_state_dict for the live model: without adapters a strict load, as before. With
+    adapters the merged weights are loaded into the encoder and B is set to zero, which is the same function."""
+    lora = getattr(model, "lora", None)
+    if lora is None:
+        model.load_state_dict(sd)
+        return
+    missing, unexpected = model.load_state_dict(sd, strict=False)
+    if unexpected or any(not k.startswith("lora.") for k in missing):
+        raise RuntimeError(f"[lora] checkpoint keys do not match: missing={missing[:6]} unexpected={unexpected[:6]}")
+    if not missing:      # a resume-style state dict that still carries its own adapter weights
+        return
+    with torch.no_grad():
+        for b in lora.B.values():
+            b.zero_()
+
+
 class DINOv3ViTSegFormer3C(nn.Module):
     """
     DINOv3 ViT backbone with ViT-style decoder (edge-gated) and 3-class head.
@@ -1564,6 +1636,9 @@ def train_3class(model: nn.Module,
         if (not unfroze) and (not freeze_backbone) and (epoch >= freeze_warmup_epochs):
             set_encoder_trainable(model, True)
             unfroze = True
+        if getattr(model, "lora", None) is not None:   # [lora] adapters wait out the warm-up, like the backbone does
+            for p in model.lora.parameters():
+                p.requires_grad = (epoch >= freeze_warmup_epochs)
 
         model.train()
         t_epoch = time.perf_counter()
@@ -1767,7 +1842,7 @@ def train_3class(model: nn.Module,
                 best_score = monitor_value
                 best_epoch = epoch + 1
                 torch.save({
-                    "model": model.state_dict(),
+                    "model": export_state_dict(model),   # [lora] identical to model.state_dict() without adapters
                     "epoch": best_epoch,
                     "metric": best_metric,
                     "score": best_score,
@@ -1801,7 +1876,7 @@ def train_3class(model: nn.Module,
 
     if save_best and best_path is not None and best_path.exists():
         state = torch.load(best_path, map_location=device, weights_only=True)
-        model.load_state_dict(state["model"])
+        load_exported_state_dict(model, state["model"])   # [lora] strict load without adapters, as before
         logs["best_epoch"] = state.get("epoch", best_epoch)
         logs["best_score"] = state.get("score", best_score)
 
@@ -3182,6 +3257,12 @@ def main():
     FREEZE_BACKBONE = env_flag("FREEZE_BACKBONE", False) # 1 = frozen-encoder baseline
     MASK_AUG        = env_flag("MASK_AUG", False)        # 1 = old mask-only augmentation
     LEGACY_TOKEN_SLICE = env_flag("LEGACY_TOKEN_SLICE", False)  # 1 = old token slicing
+    # [lora] LORA_RANK > 0: encoder weights stay frozen, low-rank adapters on the query/value projections are trained
+    # at the decoder learning rate (LR_DECODER). Default 0 = off. See LORA_PROTOCOL.md.
+    LORA_RANK       = int(os.environ.get("LORA_RANK", "0"))
+    LORA_ALPHA      = float(os.environ.get("LORA_ALPHA", str(LORA_RANK or 1)))
+    if LORA_RANK > 0 and (not USE_VIT or FREEZE_BACKBONE):
+        raise RuntimeError("[lora] LORA_RANK is only wired for the DINOv3 ViT encoder and not together with FREEZE_BACKBONE")
 
     W_BOUND   = 0.25 if ABL_BOUNDARY else 0.0
     DS_WEIGHT = 0.3 if ABL_DEEP_SUP else 0.0
@@ -3199,6 +3280,8 @@ def main():
         variant_parts.append("maskaug")
     if LEGACY_TOKEN_SLICE:
         variant_parts.append("legacytokens")
+    if LORA_RANK > 0:
+        variant_parts.append(f"lora{LORA_RANK}")
     if USE_RESNET:
         variant_parts.insert(0, BACKBONE)
     if USE_RADIO:
@@ -3251,10 +3334,14 @@ def main():
             embed_dim=256,
             num_classes=3,
         ).to(device)
+    if LORA_RANK > 0:   # [lora]
+        model.lora = LoRAAdapters(model.encoder, LORA_RANK, LORA_ALPHA).to(device)
+        print(f"[lora] rank={LORA_RANK} alpha={LORA_ALPHA:g} on {len(model.lora.names)} projections "
+              f"({'/'.join(LoRAAdapters.TARGETS)}), adapter parameters={sum(p.numel() for p in model.lora.parameters())/1e6:.3f}M")
     param_counts = count_params(model)  # [v2]
     print(f"[init] parameters: total={param_counts['total']/1e6:.2f}M "
           f"encoder={param_counts['encoder']/1e6:.2f}M heads={param_counts['heads']/1e6:.3f}M")
-    if FREEZE_WARMUP_EPOCHS > 0 or FREEZE_BACKBONE:
+    if FREEZE_WARMUP_EPOCHS > 0 or FREEZE_BACKBONE or LORA_RANK > 0:
         set_encoder_trainable(model, False)
     if USE_COMPILE and hasattr(torch, "compile"):
         try:
@@ -3284,6 +3371,9 @@ def main():
         sd = state["model"] if isinstance(state, dict) and "model" in state else state
         sd = remap_state_dict_keys(sd, model)  # [v2-fix] transformers 4.x -> 5.x key names
         missing, unexpected = model.load_state_dict(sd, strict=False)
+        if LORA_RANK > 0 and not unexpected and missing and all(k.startswith("lora.") for k in missing):
+            # [lora] a merged checkpoint: the adapters' effect is already inside the weights, so they are zeroed
+            load_exported_state_dict(model, sd); missing = []
         print(f"[load] loaded checkpoint from {load_path}, missing={len(missing)}, unexpected={len(unexpected)}")
         if missing or unexpected:
             print("[load] missing:", missing[:8]); print("[load] unexpected:", unexpected[:8])
@@ -3406,7 +3496,7 @@ def main():
                                   lr_decoder=LR_DECODER,
                                   w_bound=W_BOUND,
                                   ds_weight=DS_WEIGHT,
-                                  freeze_backbone=FREEZE_BACKBONE)
+                                  freeze_backbone=(FREEZE_BACKBONE or LORA_RANK > 0))   # [lora] base encoder weights stay frozen
 
     # ------------------------------------------
     # EVALUATE — TRAIN
@@ -3616,6 +3706,7 @@ def main():
                 "val_seed": VAL_SEED, "best_metric": BEST_METRIC,
                 "freeze_warmup_epochs": FREEZE_WARMUP_EPOCHS, "tta": USE_TTA, "amp_dtype": _AMP_NAME,
                 "heavy_tta": HEAVY_TTA, "trained_in_this_run": bool(train_logs is not None),
+                "lora_rank": LORA_RANK, "lora_alpha": (LORA_ALPHA if LORA_RANK > 0 else None),
             },
             "n_test": int(len(yt)),
             "accuracy": float((yp == yt).mean()),
